@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosso Tempo Juntos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Fundo preto */
+            color: #fff; /* Texto branco */
+            overflow: auto; /* Garante que a barra de rolagem apareça */
+        }
+
+        /* Barra de rolagem visível */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #ff69b4;
+        }
+        body::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        /* Tela de presente */
+        #present-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #present-button {
+            background-color: #ff69b4;
+            color: #fff;
+            font-size: 2rem;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+
+        #present-button:hover {
+            background-color: #ff4081;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Ocultar conteúdo principal antes do clique */
+        #main-content {
+            display: none;
+        }
+
+        #contador {
+            font-size: 2rem;
+            color: #ff69b4;
+            margin-bottom: 20px;
+        }
+
+        #mensagem {
+            font-size: 1.5rem;
+            margin: 20px 0;
+        }
+
+        p {
+            margin: 20px 0;
+        }
+
+        /* Carrossel */
+        .carousel {
+            position: relative;
+            width: 100%; /* Largura 100% para responsividade */
+            max-width: 800px; /* Largura máxima do carrossel */
+            height: 400px; /* Altura ajustada */
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        .carousel img {
+            position: absolute;
+            width: 100%; /* Ocupa 100% da largura */
+            height: 100%; /* Ocupa 100% da altura */
+            object-fit: contain; /* Ajusta a imagem para caber sem cortar */
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .carousel img.active {
+            opacity: 1;
+        }
+
+        /* Corações caindo */
+        .heart {
+            position: fixed;
+            top: -10%;
+            color: #ff69b4;
+            font-size: 2rem;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100%);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 600px) {
+            #present-button {
+                font-size: 1.5rem; /* Botão menor em dispositivos móveis */
+                padding: 15px 30px;
+            }
+
+            #contador {
+                font-size: 1.5rem;
+            }
+
+            #mensagem {
+                font-size: 1rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .carousel {
+                height: 350px; /* Altura um pouco maior para dispositivos móveis */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Tela de presente -->
+    <div id="present-screen">
+        <button id="present-button">Abrir presente 🎁</button>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div id="main-content">
+        <audio id="background-music" loop>
+            <source src="audiomusic\die-with-a-smile-official-music-video.mp3" type="audio/mp3">
+            <source src="audiomusic\die-with-a-smile-official-music-video.wav" type="audio/x-wav">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+        
+        <h1>Quanto tempo estamos juntos ❤️</h1>
+        <div id="contador"></div>
+
+        <!-- Parágrafo entre contador e mensagem -->
+        <p>Estamos vivendo momentos incríveis, que merecem ser celebrados a cada segundo!</p>
+
+        <div id="mensagem"><h4>
+        </center<p>Desde o dia em que você entrou na minha vida, tudo mudou. Não apenas em pequenos detalhes, mas em todas as cores, sentidos e direções. Você trouxe luz aos meus dias mais nublados, trouxe música aos momentos de silêncio e fez meu coração bater em um ritmo que eu nunca tinha sentido antes.</p>
+    <p>Você é muito mais do que um amor. Você é minha inspiração, minha força, minha razão de acreditar em tudo o que é bom e possível. Cada sorriso seu ilumina meu mundo, cada palavra sua acalma minha alma mesmo as vezes você estressada teve paciência para conversar comigo mesmo depois de um dia ruim isso me cativou muito, e cada toque seu me faz sentir amado de um jeito que nunca imaginei ser possível.</p>
+    <p>Eu olho para nós dois e vejo mais do que apenas um casal. Vejo parceiros, amigos, cúmplices. Vejo duas almas que se encontraram e se reconheceram, como se o universo já soubesse que éramos destinados a ficar juntos</p>
+    <p>Vitória meu amor, você é o sonho mais lindo que eu poderia viver, e todos os dias eu agradeço a DEUS por ter ido aquele dia na oficina no horário de almoço e te vi pela primeira vez e por ter a sorte de te chamar de minha. Sei que destino eo futuro que nos reserva pode ser muito desafiador e ao mesmo tempo ter tantos momentos incríveis, mas, mesmo assim, nada supera o agora: este momento em que posso dizer, com toda a certeza do meu coração, que você é o maior presente que a vida me deu uma mulher tão incrível que eu admiro e amo muito.</p>
+    <p>Eu prometo continuar ao seu lado, segurando sua mão nos dias bons e ruins, celebrando cada vitória e enfrentando cada desafio. Prometo te amar com tudo o que sou, hoje, amanhã e sempre</p>
+    <p>Você é minha história, meu destino e meu infinito. Eu te amo, Vitória, mais do que as palavras podem expressar e mais do que o coração pode sentir.</p>
+    <p>Obrigado por tudo até hoje meu amor sou imensamente grato a tudo o que você fez para mim e suportou minhas chatices meus momentos meio na bad eu tive o prazer de estar ao seu lado em seus momentos únicos que foi sua formação a psicóloga e desejo que conquiste mais e mais meu amor pois você merece sabemos que você meu amor passou por dificuldade e lutas sua resiliência é exemplar mesmo em momentos tão difíceis você ainda olhava com esses lindos olhos e um belo sorriso falava que vai dar certo. </p>
+    
+    </h4></div>
+
+        <!-- Parágrafo entre mensagem e imagens -->
+        <p>Acompanhe essas memórias incríveis que construímos juntos:</p>
+
+        <div class="carousel">
+            <img src="arquivoscontador\unidade00001.jpeg" alt="Imagem 1" class="active">
+            <img src="arquivoscontador\unidade00002.jpeg" alt="Imagem 2">
+            <img src="arquivoscontador\unidade00003.jpeg" alt="Imagem 3">
+            <img src="arquivoscontador\unidade00004.jpeg" alt="Imagem 4">
+            <img src="arquivoscontador\unidade00005.jpeg" alt="Imagem 5">
+            <img src="arquivoscontador\unidade00006.jpeg" alt="Imagem 6">
+            <img src="arquivoscontador\unidade00007.jpeg" alt="Imagem 7">
+            <img src="arquivoscontador\unidade00008.jpeg" alt="Imagem 8">
+            <img src="arquivoscontador\unidade00009.jpeg" alt="Imagem 9">
+            <img src="arquivoscontador\unidade000010.jpeg" alt="Imagem 10">
+            <img src="arquivoscontador\unidade000011.jpeg" alt="Imagem 11">
+            <img src="arquivoscontador\unidade000012.jpeg" alt="Imagem 12">
+            <img src="" alt="Imagem 13">
+            <img src="" alt="Imagem 14">
+            <img src="" alt="Imagem 15">
+            <img src="" alt="Imagem 16">
+            <img src="" alt="Imagem 17">
+            <img src="" alt="Imagem 18">
+            <img src="" alt="Imagem 19">
+            <img src="" alt="Imagem 20">
+            <img src="" alt="Imagem 21">
+            <img src="" alt="Imagem 22">
+        </div>
+    </div>
+
+    <script>
+        const dataInicio = new Date("2024-09-04"); // Substitua pela data do início do namoro
+        const contador = document.getElementById("contador");
+        const presentScreen = document.getElementById("present-screen");
+        const presentButton = document.getElementById("present-button");
+        const mainContent = document.getElementById("main-content");
+        const backgroundMusic = document.getElementById("background-music");
+
+        // Função para calcular o tempo juntos
+        function calcularDiferenca(data1, data2) {
+            const totalSegundos = Math.floor((data2 - data1) / 1000);
+            const anos = Math.floor(totalSegundos / (365.25 * 24 * 60 * 60));
+            const meses = Math.floor(totalSegundos / (30.44 * 24 * 60 * 60)) % 12;
+            const dias = Math.floor(totalSegundos / (24 * 60 * 60)) % 30;
+            const horas = Math.floor((totalSegundos % (24 * 60 * 60)) / (60 * 60));
+            const minutos = Math.floor((totalSegundos % (60 * 60)) / 60);
+            const segundos = totalSegundos % 60;
+
+            return { anos, meses, dias, horas, minutos, segundos };
+        }
+
+        // Atualizar contador
+        function atualizarContador() {
+            const agora = new Date();
+            const { anos, meses, dias, horas, minutos, segundos } = calcularDiferenca(dataInicio, agora);
+
+            let textoContador = `${meses} meses, ${dias} dias, ${horas} horas, ${minutos} minutos e ${segundos} segundos juntos.`;
+            if (anos > 0) {
+                textoContador = `${anos} anos, ` + textoContador;
+            }
+
+            contador.textContent = textoContador;
+        }
+
+        setInterval(atualizarContador, 1000);
+
+       // Carrossel de imagens
+const imagens = document.querySelectorAll('.carousel img');
+let indexAtual = 0;
+let carrosselInterval; // Variável para armazenar o intervalo do carrossel
+
+function trocarImagem() {
+    imagens[indexAtual].classList.remove('active');
+    indexAtual = (indexAtual + 1) % imagens.length; // Volta ao início após a última imagem
+    imagens[indexAtual].classList.add('active');
+}
+
+// Exibir conteúdo principal ao clicar no botão de presente
+presentButton.addEventListener("click", () => {
+    presentScreen.style.display = "none";
+    mainContent.style.display = "block";
+    backgroundMusic.play(); // Inicia a música
+    iniciarCoracoes(); // Começa os corações caindo
+
+    // Inicia o carrossel
+    carrosselInterval = setInterval(trocarImagem, 5000); // Troca a imagem a cada 5 segundos
+});
+
+
+        // Exibir conteúdo principal ao clicar no botão de presente
+        presentButton.addEventListener("click", () => {
+            presentScreen.style.display = "none";
+            mainContent.style.display = "block";
+            backgroundMusic.play(); // Inicia a música
+            iniciarCoracoes(); // Começa os corações caindo
+        });
+
+        // Função para criar corações caindo
+        function criarCoracao() {
+            const heart = document.createElement('div');
+            heart.textContent = '❤️';
+            heart.classList.add('heart');
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 2 + 3 + 's'; // Duração entre 3 e 5 segundos
+            document.body.appendChild(heart);
+
+            // Remove o coração após a animação
+            setTimeout(() => {
+                heart.remove();
+            }, 5000);
+        }
+
+        function iniciarCoracoes() {
+            setInterval(criarCoracao, 600); // Cria um coração a cada 600ms
+        }
+
+    </script>
+<p>
+
+</p>
+
+<h4>
+    <p>Meu amor esse era o projeto que te falei que eu estava desenvolvendo com base alguns exemplos porem eu queria de algo autoria minha fazendo do zero assim como está sendo nosso futuro  usando de uma forma de demonstrar meu amor por você vou fazer de tudo para que esse link fique sempre online e usar como nossa linha do tempo claro com o tempo vou aprimorar com tudo que construímos durante a nossa vida juntos eu te amo com todas as forças 2x+ <p>    </h4>
+    
+
+</body>
+</html>
