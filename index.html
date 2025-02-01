@@ -192,22 +192,84 @@
         <!-- Parágrafo entre mensagem e imagens -->
         <p>Acompanhe essas memórias incríveis que construímos juntos:</p>
 
-        <div class="carousel">
-            <img src="arquivoscontador\unidade00001.jpeg" alt="Imagem 1" class="active">
-            <img src="arquivoscontador\unidade00002.jpeg" alt="Imagem 2">
-            <img src="arquivoscontador\unidade00003.jpeg" alt="Imagem 3">
-            <img src="arquivoscontador\unidade00004.jpeg" alt="Imagem 4">
-            <img src="arquivoscontador\unidade00005.jpeg" alt="Imagem 5">
-            <img src="arquivoscontador\unidade00006.jpeg" alt="Imagem 6">
-            <img src="arquivoscontador\unidade00007.jpeg" alt="Imagem 7">
-            <img src="arquivoscontador\unidade00008.jpeg" alt="Imagem 8">
-            <img src="arquivoscontador\unidade00009.jpeg" alt="Imagem 9">
-            <img src="arquivoscontador\unidade000010.jpeg" alt="Imagem 10">
-            <img src="arquivoscontador\unidade000011.jpeg" alt="Imagem 11">
-            <img src="arquivoscontador\unidade000012.jpeg" alt="Imagem 12">
-            
+        <div class="gallery">
+            <button id="prev" class="gallery-button">&#9665;</button>
+            <div class="gallery-container">
+                <img src="arquivoscontador/unidade00001.jpeg" alt="Imagem 1" class="gallery-img active">
+                <img src="arquivoscontador/unidade00002.jpeg" alt="Imagem 2" class="gallery-img">
+                <img src="arquivoscontador/unidade00003.jpeg" alt="Imagem 3" class="gallery-img">
+                <img src="arquivoscontador/unidade00004.jpeg" alt="Imagem 4" class="gallery-img">
+                <img src="arquivoscontador/unidade00005.jpeg" alt="Imagem 5" class="gallery-img">
+                <img src="arquivoscontador\unidade00006.jpeg" alt="Imagem 6" class="gallery-img">
+                <img src="arquivoscontador\unidade00007.jpeg" alt="Imagem 7" class="gallery-img">
+                <img src="arquivoscontador\unidade00008.jpeg" alt="Imagem 8" class="gallery-img">
+                <img src="arquivoscontador\unidade00009.jpeg" alt="Imagem 9" class="gallery-img">
+                <img src="arquivoscontador\unidade00010.jpeg" alt="Imagem 10" class="gallery-img">
+                <img src="arquivoscontador\unidade00011.jpeg" alt="Imagem 11" class="gallery-img">
+                <img src="arquivoscontador\unidade00012.jpeg" alt="Imagem 12" class="gallery-img">
+                <img src="arquivoscontador\unidade00013.jpeg" alt="Imagem 13" class="gallery-img">
+                <img src="arquivoscontador\unidade00014.jpeg" alt="Imagem 14" class="gallery-img">
+                <img src="arquivoscontador\unidade00015.jpeg" alt="Imagem 15" class="gallery-img">
+                <img src="arquivoscontador\unidade00016.jpeg" alt="Imagem 16" class="gallery-img">
+            </div>
+            <button id="next" class="gallery-button">&#9655;</button>
         </div>
-    </div>
+        
+        <style>
+            .gallery {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                max-width: 800px;
+                margin: auto;
+            }
+            .gallery-container {
+                display: flex;
+                overflow: hidden;
+                width: 100%;
+                justify-content: center;
+            }
+            .gallery-img {
+                display: none;
+                width: 100%;
+                max-height: 400px;
+                object-fit: contain;
+            }
+            .gallery-img.active {
+                display: block;
+            }
+            .gallery-button {
+                background: #ff69b4;
+                border: none;
+                color: white;
+                font-size: 2rem;
+                cursor: pointer;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .gallery-button:hover {
+                background: #ff4081;
+            }
+        </style>
+        
+        <script>
+            const images = document.querySelectorAll('.gallery-img');
+            let currentIndex = 0;
+        
+            document.getElementById('prev').addEventListener('click', () => {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                images[currentIndex].classList.add('active');
+            });
+        
+            document.getElementById('next').addEventListener('click', () => {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                images[currentIndex].classList.add('active');
+            });
+        </script>
+        
 
     <script>
         const dataInicio = new Date("2024-09-04"); // Substitua pela data do início do namoro
@@ -245,16 +307,7 @@
 
         setInterval(atualizarContador, 1000);
 
-       // Carrossel de imagens
-const imagens = document.querySelectorAll('.carousel img');
-let indexAtual = 0;
-let carrosselInterval; // Variável para armazenar o intervalo do carrossel
-
-function trocarImagem() {
-    imagens[indexAtual].classList.remove('active');
-    indexAtual = (indexAtual + 1) % imagens.length; // Volta ao início após a última imagem
-    imagens[indexAtual].classList.add('active');
-}
+       
 
 // Exibir conteúdo principal ao clicar no botão de presente
 presentButton.addEventListener("click", () => {
