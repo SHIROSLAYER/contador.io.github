@@ -8,6 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat&amp;display=swap">
     <title>Segunda Página</title>
+    <style>
+        /* Remove as barras de rolagem */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Isso remove as barras de rolagem */
+        }
+
+        /* Garante que o conteúdo principal ocupe toda a tela */
+        .app {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
     <div class="app">
@@ -107,6 +122,29 @@
 
     <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.3/gsap.min.js"></script>
+    <!-- Adicionando Hammer.js para detectar gestos de deslize -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="segundapagina/main.js"></script>
+    <script>
+        // Configuração do Hammer.js para detectar gestos de deslize
+        const cardList = document.querySelector('.cardList');
+        const hammer = new Hammer(cardList);
+
+        // Função para mudar para o próximo card
+        function nextCard() {
+            const nextButton = document.querySelector('.btn--right');
+            nextButton.click(); // Simula o clique no botão de próximo
+        }
+
+        // Função para mudar para o card anterior
+        function previousCard() {
+            const previousButton = document.querySelector('.btn--left');
+            previousButton.click(); // Simula o clique no botão de anterior
+        }
+
+        // Configuração dos gestos
+        hammer.on('swipeleft', nextCard); // Deslizar para a esquerda avança
+        hammer.on('swiperight', previousCard); // Deslizar para a direita retrocede
+    </script>
 </body>
 </html>
