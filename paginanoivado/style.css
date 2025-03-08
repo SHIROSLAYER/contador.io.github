@@ -1,0 +1,275 @@
+/* author: Aysenur Turk
+https://codepen.io/TurkAysenur/pen/bGawdKv */
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  -webkit-animation: bg-anim 15s ease infinite;
+  animation: bg-anim 15s ease infinite;
+  background-image: linear-gradient(-45deg, #4571d8, #21586f, #666b7a, #2b5ea5);
+  background-size: 400% 400%;
+}
+
+.container {
+  position: relative;
+  width: 263px;
+  max-height: 525px;
+  height: 100vh;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.device {
+  position: absolute;
+}
+
+.layer1,
+.layer2 {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: scale(1.01);
+}
+
+.layer2 {
+  opacity: 0;
+  transition: 4s;
+}
+
+.layer1 {
+  opacity: 1;
+  transition: 4s;
+}
+
+.moon {
+  transform: translate(-50px, 230px);
+  transition: 4s;
+}
+
+.rising-star {
+  transform: translate(225px, -160px);
+  transition: 4s;
+}
+
+.sun {
+  transition: 5s;
+}
+
+.cloud1,
+.cloud2,
+.cloud3,
+.cloud4 {
+  transition: 4s;
+}
+
+.light-mode .layer2 {
+  opacity: 1;
+}
+.light-mode .moon,
+.light-mode .rising-star {
+  transform: none;
+  transition-delay: 1s;
+}
+.light-mode .sun {
+  transform: translate(64px, -290px);
+}
+.light-mode .cloud1 {
+  transform: translateX(-140px);
+}
+.light-mode .cloud2 {
+  transform: translateX(-100px);
+}
+.light-mode .cloud3 {
+  transform: translateX(-200px);
+}
+.light-mode .cloud4 {
+  transform: translateX(-180px);
+}
+
+.toggle {
+  width: 45px;
+  height: 24px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 1;
+  cursor: pointer;
+}
+
+:root {
+  --mountainY: 0;
+}
+
+.mountain3 {
+  transform: translateX(29px) scaleX(1.04) translateY(var(--mountainY));
+}
+
+[class*="mountain"] {
+  transform: translateY(var(--mountainY));
+  -webkit-animation: goUp 2s both;
+  animation: goUp 2s both;
+}
+
+.mountain2 {
+  -webkit-animation-delay: 0.2s;
+  animation-delay: 0.2s;
+}
+
+.mountain3 {
+  -webkit-animation-delay: 0.4s;
+  animation-delay: 0.4s;
+}
+
+.mountain4 {
+  -webkit-animation-delay: 0.6s;
+  animation-delay: 0.6s;
+}
+
+.mountain5 {
+  -webkit-animation-delay: 0.8s;
+  animation-delay: 0.8s;
+}
+
+.mountain6 {
+  -webkit-animation-delay: 1s;
+  animation-delay: 1s;
+}
+
+.mountain7 {
+  -webkit-animation-delay: 1.2s;
+  animation-delay: 1.2s;
+}
+
+.right {
+  -webkit-animation: goLeft 2s 0.2s both;
+  animation: goLeft 2s 0.2s both;
+}
+
+.tree {
+  -webkit-animation: goUp 2s both;
+  animation: goUp 2s both;
+}
+
+.sun {
+  -webkit-animation: fadeIn 2s 2s both;
+  animation: fadeIn 2s 2s both;
+}
+
+.sky {
+  -webkit-animation: sky 2s 2s both;
+  animation: sky 2s 2s both;
+}
+
+.m3 {
+  transform: translateX(26px) scaleX(1.1);
+}
+
+@-webkit-keyframes goUp {
+  from {
+    transform: translateY(200px);
+  }
+}
+
+@keyframes goUp {
+  from {
+    transform: translateY(200px);
+  }
+}
+@-webkit-keyframes sky {
+  from {
+    transform: scale(2);
+  }
+}
+@keyframes sky {
+  from {
+    transform: scale(2);
+  }
+}
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+@-webkit-keyframes goLeft {
+  from {
+    transform: translateX(200px);
+  }
+}
+@keyframes goLeft {
+  from {
+    transform: translateX(200px);
+  }
+}
+@-webkit-keyframes bg-anim {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes bg-anim {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.message-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.main-message {
+  font-size: 30px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.coming-soon {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fad505; /* Cor dourada para brilho */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-top: 10px;
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    opacity: 5;
+  }
+  to {
+    opacity: 9;
+  }
+}

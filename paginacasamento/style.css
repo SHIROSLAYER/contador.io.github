@@ -1,0 +1,81 @@
+html {
+    background: #833ab4;
+    background: linear-gradient(to bottom, #65FAFF, #FBB3CF);
+}
+body,
+html {
+    display: grid;
+    place-content: center;
+    height: 100%;
+    font-family: helvetica neue, helvetica, sans-serif;
+}
+.watereffect {
+    isolation: isolate;
+    mix-blend-mode: multiply;
+    position: relative;
+}
+.watereffect::before {
+    content: "";
+    display: block;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background-image: url(https://media0.giphy.com/media/3oEdvaxmd15YTHy6Uo/giphy.gif?cid=ecf05e47azzm1vgxel8zf4vjfphwcu5m9h4lfy1p27sko8uc&ep=v1_gifs_related&rid=giphy.gif&ct=g);
+    filter: saturate(0);
+    background-size: cover;
+    background-position: center;
+    background-repeat: none;
+    animation: darken 9s 4s;
+    opacity: 1;
+    animation-fill-mode: forwards;
+}
+.watereffect>* {
+    font-size: clamp(40px, 5vw, 201px);
+    position: relative;
+    padding: 20px;
+    margin: -20px;
+    mix-blend-mode: screen;
+    background-color: white;
+    color: #0BD3D3;
+    overflow: hidden;
+    animation: blur 7s;
+}
+.watereffect>*::after {
+    content: "";
+    display: block;
+    top: 0;
+    height: 100%;
+    width: 200%;
+    position: absolute;
+    background-image: linear-gradient(315deg, #000000 0%, #ffffff 50%);
+    mix-blend-mode: screen;
+    animation: move 10s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes move {
+    from {
+        transform: translateX(0);
+
+    }
+    to {
+        transform: translateX(-100%)
+    }
+}
+@keyframes darken {
+    from {
+        opacity: 1
+    }
+    to {
+        opacity: 0;
+    }
+}
+@keyframes blur {
+    from {
+        filter: blur(10px);
+    }
+    to {
+        filter: blur(0px);
+    }
+}

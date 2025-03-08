@@ -1,0 +1,193 @@
+/* Copyright (c) 2025 by GlitchWorker (https://codepen.io/glitchworker/pen/jENZGOV) */
+html, body {
+  font-family: "Dongle", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Define um contêiner de texto que cobre toda a tela */
+.text-container {
+  z-index: 100; /* Mantém o texto acima de outros elementos */
+  inline-size: 100vw; /* Ocupa toda a largura da tela */
+  block-size: 100vh; /* Ocupa toda a altura da tela */
+  display: flex; /* Usa o modelo Flexbox para facilitar o alinhamento */
+  position: absolute; /* Garante que o elemento fique fixo na tela */
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  justify-content: center; /* Centraliza o conteúdo horizontalmente */
+  align-items: center; /* Centraliza o conteúdo verticalmente */
+  font-size: 6vw; /* Ajusta o tamanho do texto conforme a largura da tela */
+  color: white; /* Define a cor do texto */
+  opacity: 0.9; /* Aumenta a opacidade para melhor visibilidade */
+  user-select: none; /* Impede que o usuário selecione o texto */
+  text-shadow: 2px 2px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra para melhorar a leitura */
+  text-align: center; /* Garante que o texto fique centralizado */
+  padding: 10px; /* Adiciona um pequeno espaçamento interno */
+  box-sizing: border-box; /* Evita que padding afete o tamanho do contêiner */
+}
+
+/* Media Query para melhorar a exibição em telas menores */
+@media (max-width: 600px) {
+  .text-container {
+    font-size: 15vw; /* Aumenta o tamanho do texto em telas pequenas */
+    padding: 20px; /* Adiciona mais espaço ao redor do texto */
+  }
+}
+
+/* Estiliza o botão */
+.btn {
+  background: #ff7b00; /* Cor laranja vibrante para o botão */
+  color: white; /* Texto branco para contraste */
+  font-size: 24px; /* Tamanho grande para melhor legibilidade */
+  padding: 10px 30px; /* Espaçamento interno para um botão maior e mais confortável */
+  border: none; /* Remove a borda padrão */
+  border-radius: 10px; /* Bordas arredondadas para um visual mais moderno */
+  cursor: pointer; /* Muda o cursor para indicar que o botão é clicável */
+  transition: 0.3s; /* Suaviza a transição ao passar o mouse */
+  margin-block-start: 20px; /* Adiciona espaço entre o texto e o botão */
+}
+
+/* Efeito ao passar o mouse no botão */
+.btn:hover {
+  background: #e66a00; /* Cor um pouco mais escura para efeito de hover */
+  transform: scale(1.1); /* Aumenta ligeiramente o botão para dar um efeito interativo */
+}
+
+
+:root {
+  --color-bg1: rgb(108, 0, 162);
+  --color-bg2: rgb(0, 17, 82);
+  --color1: 18, 113, 255;
+  --color2: 221, 74, 255;
+  --color3: 100, 220, 255;
+  --color4: 200, 50, 50;
+  --color5: 180, 180, 50;
+  --color-interactive: 140, 100, 255;
+  --circle-size: 80%;
+  --blending: hard-light;
+}
+
+@keyframes moveInCircle {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes moveVertical {
+  0% {
+    transform: translateY(-50%);
+  }
+  50% {
+    transform: translateY(50%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+@keyframes moveHorizontal {
+  0% {
+    transform: translateX(-50%) translateY(-10%);
+  }
+  50% {
+    transform: translateX(50%) translateY(10%);
+  }
+  100% {
+    transform: translateX(-50%) translateY(-10%);
+  }
+}
+.gradient-bg {
+  inline-size: 100vw;
+  block-size: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(40deg, var(--color-bg1), var(--color-bg2));
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+.gradient-bg svg {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 0;
+  block-size: 0;
+}
+.gradient-bg .gradients-container {
+  filter: url(#goo) blur(40px);
+  inline-size: 100%;
+  block-size: 100%;
+}
+.gradient-bg .g1 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color1), 0.8) 0, rgba(var(--color1), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: var(--circle-size);
+  block-size: var(--circle-size);
+  inset-block-start: calc(50% - var(--circle-size) / 2);
+  inset-inline-start: calc(50% - var(--circle-size) / 2);
+  transform-origin: center center;
+  animation: moveVertical 30s ease infinite;
+  opacity: 1;
+}
+.gradient-bg .g2 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color2), 0.8) 0, rgba(var(--color2), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: var(--circle-size);
+  block-size: var(--circle-size);
+  inset-block-start: calc(50% - var(--circle-size) / 2);
+  inset-inline-start: calc(50% - var(--circle-size) / 2);
+  transform-origin: calc(50% - 400px);
+  animation: moveInCircle 20s reverse infinite;
+  opacity: 1;
+}
+.gradient-bg .g3 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color3), 0.8) 0, rgba(var(--color3), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: var(--circle-size);
+  block-size: var(--circle-size);
+  inset-block-start: calc(50% - var(--circle-size) / 2 + 200px);
+  inset-inline-start: calc(50% - var(--circle-size) / 2 - 500px);
+  transform-origin: calc(50% + 400px);
+  animation: moveInCircle 40s linear infinite;
+  opacity: 1;
+}
+.gradient-bg .g4 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color4), 0.8) 0, rgba(var(--color4), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: var(--circle-size);
+  block-size: var(--circle-size);
+  inset-block-start: calc(50% - var(--circle-size) / 2);
+  inset-inline-start: calc(50% - var(--circle-size) / 2);
+  transform-origin: calc(50% - 200px);
+  animation: moveHorizontal 40s ease infinite;
+  opacity: 0.7;
+}
+.gradient-bg .g5 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color5), 0.8) 0, rgba(var(--color5), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: calc(var(--circle-size) * 2);
+  block-size: calc(var(--circle-size) * 2);
+  inset-block-start: calc(50% - var(--circle-size));
+  inset-inline-start: calc(50% - var(--circle-size));
+  transform-origin: calc(50% - 800px) calc(50% + 200px);
+  animation: moveInCircle 20s ease infinite;
+  opacity: 1;
+}
+.gradient-bg .interactive {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color-interactive), 0.8) 0, rgba(var(--color-interactive), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  inline-size: 100%;
+  block-size: 100%;
+  inset-block-start: -50%;
+  inset-inline-start: -50%;
+  opacity: 0.7;
+}
