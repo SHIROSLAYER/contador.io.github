@@ -7,360 +7,393 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;300;400&family=Great+Vibes&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!--
   ╔══════════════════════════════════════════════════════════════╗
   ║            LINHA DO TEMPO — GUIA DE PERSONALIZAÇÃO          ║
   ╠══════════════════════════════════════════════════════════════╣
-  ║                                                              ║
-  ║  🖼️  FOTOS DOS CARDS (seletor de capítulos):                 ║
-  ║      Procure por "FOTO DO CARD" no HTML abaixo              ║
-  ║                                                              ║
-  ║  🖼️  GALERIA DE FOTOS (página Namoro):                       ║
-  ║      Procure por "GALERIA DE FOTOS" no HTML abaixo          ║
-  ║                                                              ║
-  ║  🎵  MÚSICA DE FUNDO:                                        ║
-  ║      Procure por "MÚSICA DE FUNDO" no HTML abaixo           ║
-  ║                                                              ║
-  ║  📅  DATA DE INÍCIO DO NAMORO:                               ║
-  ║      Procure por "DATA DE INÍCIO" no JavaScript abaixo      ║
-  ║                                                              ║
+  ║  🖼️  FOTO DO CARD (seletor):  procure "FOTO DO CARD"        ║
+  ║  🖼️  FOTO DA INTRO NOIVADO:   procure "FOTO DA INTRO"       ║
+  ║  🖼️  GALERIA NAMORO:          procure "GALERIA NAMORO"       ║
+  ║  🖼️  GALERIA NOIVADO:         procure "GALERIA NOIVADO"      ║
+  ║  🎵  MÚSICA NAMORO:           procure "MÚSICA NAMORO"        ║
+  ║  🎵  MÚSICA NOIVADO:          procure "MÚSICA NOIVADO"       ║
+  ║  📅  DATA NAMORO:             procure "DATA NAMORO"          ║
+  ║  📅  DATA NOIVADO:            procure "DATA NOIVADO"         ║
   ╚══════════════════════════════════════════════════════════════╝
   -->
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
     :root {
-      --rose:         #e8a0b0;
-      --blush:        #f5c6d4;
-      --night:        #0d0015;
-      --gold:         #c9a96e;
-      --gold-light:   #e8c98a;
-      --white:        #fff8f5;
-      --glass:        rgba(255,255,255,0.07);
-      --glass-border: rgba(255,255,255,0.15);
+      --rose:      #e8a0b0;
+      --blush:     #f5c6d4;
+      --night:     #0d0015;
+      --star-blue: #c4aaff;
+      --gold:      #c9a96e;
+      --gold-lt:   #e8c98a;
+      --white:     #fff8f5;
+      --glass:     rgba(255,255,255,0.07);
+      --glass-b:   rgba(255,255,255,0.15);
+      --ng:        rgba(80,40,160,0.12);
+      --ng-b:      rgba(160,120,255,0.18);
     }
 
     html, body { width:100%; height:100%; overflow:hidden; font-family:'Josefin Sans',sans-serif; background:var(--night); color:var(--white); }
 
-    /* ══ SISTEMA DE PÁGINAS ══ */
+    /* ══ PÁGINAS ══ */
     .page { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.7s ease; z-index:1; overflow:hidden; }
     .page.active { opacity:1; pointer-events:all; z-index:10; }
 
     /* ══ FUNDO ANIMADO ══ */
-    .bg-canvas { position:fixed; inset:0; z-index:0; background:radial-gradient(ellipse at 30% 20%,#3d0050 0%,#0d0015 60%); overflow:hidden; }
+    .bg-canvas { position:fixed; inset:0; z-index:0; background:radial-gradient(ellipse at 30% 20%,#3d0050,#0d0015 60%); }
     .orb { position:absolute; border-radius:50%; filter:blur(60px); mix-blend-mode:screen; }
-    .orb1 { width:70vw; height:70vw; background:radial-gradient(circle,rgba(200,50,120,0.5),transparent 70%); top:-10%; left:-15%; animation:orb1 18s ease-in-out infinite alternate; }
-    .orb2 { width:60vw; height:60vw; background:radial-gradient(circle,rgba(100,30,180,0.5),transparent 70%); bottom:-10%; right:-10%; animation:orb2 22s ease-in-out infinite alternate; }
-    .orb3 { width:40vw; height:40vw; background:radial-gradient(circle,rgba(230,150,50,0.3),transparent 70%); top:30%; left:40%; animation:orb3 15s ease-in-out infinite alternate; }
-    @keyframes orb1 { from{transform:translate(0,0) scale(1)} to{transform:translate(8vw,6vh) scale(1.1)} }
-    @keyframes orb2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-6vw,-8vh) scale(0.9)} }
-    @keyframes orb3 { from{transform:translate(0,0) scale(1)} to{transform:translate(4vw,-5vh) scale(1.2)} }
+    .orb1 { width:70vw;height:70vw; background:radial-gradient(circle,rgba(200,50,120,.5),transparent 70%); top:-10%;left:-15%; animation:ob1 18s ease-in-out infinite alternate; }
+    .orb2 { width:60vw;height:60vw; background:radial-gradient(circle,rgba(100,30,180,.5),transparent 70%); bottom:-10%;right:-10%; animation:ob2 22s ease-in-out infinite alternate; }
+    .orb3 { width:40vw;height:40vw; background:radial-gradient(circle,rgba(230,150,50,.3),transparent 70%); top:30%;left:40%; animation:ob3 15s ease-in-out infinite alternate; }
+    @keyframes ob1 { from{transform:translate(0,0) scale(1)} to{transform:translate(8vw,6vh) scale(1.1)} }
+    @keyframes ob2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-6vw,-8vh) scale(.9)} }
+    @keyframes ob3 { from{transform:translate(0,0) scale(1)} to{transform:translate(4vw,-5vh) scale(1.2)} }
 
-    /* ══ CORAÇÕES ══ */
+    /* ══ CORAÇÕES CAINDO ══ */
     .heart-rain { position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
     .hr { position:absolute; top:-5%; opacity:0; animation:hr-fall linear infinite; }
-    @keyframes hr-fall { 0%{transform:translateY(0) rotate(0deg);opacity:.9} 100%{transform:translateY(110vh) rotate(30deg);opacity:0} }
+    @keyframes hr-fall { 0%{transform:translateY(0) rotate(0);opacity:.9} 100%{transform:translateY(110vh) rotate(30deg);opacity:0} }
 
     /* ══ BOTÃO VOLTAR ══ */
-    .page-back { position:fixed; top:1.2rem; left:1.2rem; z-index:100; background:var(--glass); border:1px solid var(--glass-border); backdrop-filter:blur(8px); color:rgba(255,255,255,0.7); font-family:'Josefin Sans',sans-serif; font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; padding:0.5rem 1rem; cursor:pointer; transition:color .3s,border-color .3s; }
-    .page-back:hover { color:white; border-color:var(--rose); }
+    .page-back { position:fixed; top:1.2rem; left:1.2rem; z-index:200; background:var(--glass); border:1px solid var(--glass-b); backdrop-filter:blur(8px); color:rgba(255,255,255,.7); font-family:'Josefin Sans',sans-serif; font-size:.65rem; letter-spacing:.3em; text-transform:uppercase; padding:.5rem 1rem; cursor:pointer; transition:color .3s,border-color .3s; }
+    .page-back:hover { color:#fff; border-color:var(--rose); }
 
     @keyframes fade-up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ══════════════════════
-       PÁGINA 1 — BEM-VINDO
-    ══════════════════════ */
+    /* ══════════════════════════════
+       PG 1 — WELCOME
+    ══════════════════════════════ */
     #pg-welcome { text-align:center; gap:2rem; }
-    .welcome-eyebrow { font-size:clamp(.65rem,2vw,.85rem); letter-spacing:.4em; text-transform:uppercase; color:var(--rose); opacity:0; animation:fade-up 1s .3s forwards; }
-    .welcome-title { font-family:'Great Vibes',cursive; font-size:clamp(3.5rem,10vw,7rem); line-height:1.1; text-shadow:0 0 60px rgba(232,160,176,.5); opacity:0; animation:fade-up 1s .6s forwards; }
-    .welcome-sub { font-size:clamp(.7rem,2vw,.9rem); letter-spacing:.2em; color:rgba(255,248,245,.5); opacity:0; animation:fade-up 1s .9s forwards; }
-    .welcome-btn { margin-top:1rem; padding:.9rem 3rem; background:transparent; border:1px solid var(--rose); color:var(--rose); font-family:'Josefin Sans',sans-serif; font-size:.8rem; letter-spacing:.3em; text-transform:uppercase; cursor:pointer; position:relative; overflow:hidden; transition:color .3s,transform .2s,box-shadow .3s; opacity:0; animation:fade-up 1s 1.2s forwards; }
-    .welcome-btn::before { content:''; position:absolute; inset:0; background:var(--rose); transform:scaleX(0); transform-origin:left; transition:transform .3s ease; z-index:-1; }
-    .welcome-btn:hover::before { transform:scaleX(1); }
-    .welcome-btn:hover { color:var(--night); box-shadow:0 0 30px rgba(232,160,176,.4); }
-    .welcome-btn:active { transform:scale(.97); }
+    .w-eyebrow { font-size:clamp(.65rem,2vw,.85rem); letter-spacing:.4em; text-transform:uppercase; color:var(--rose); opacity:0; animation:fade-up 1s .3s forwards; }
+    .w-title   { font-family:'Great Vibes',cursive; font-size:clamp(3.5rem,10vw,7rem); line-height:1.1; text-shadow:0 0 60px rgba(232,160,176,.5); opacity:0; animation:fade-up 1s .6s forwards; }
+    .w-sub     { font-size:clamp(.7rem,2vw,.9rem); letter-spacing:.2em; color:rgba(255,248,245,.5); opacity:0; animation:fade-up 1s .9s forwards; }
+    .w-btn {
+      margin-top:1rem; padding:.9rem 3rem;
+      background:transparent; border:1px solid var(--rose); color:var(--rose);
+      font-family:'Josefin Sans',sans-serif; font-size:.8rem; letter-spacing:.3em; text-transform:uppercase;
+      cursor:pointer; position:relative; overflow:hidden;
+      transition:color .3s,transform .2s,box-shadow .3s;
+      opacity:0; animation:fade-up 1s 1.2s forwards;
+    }
+    .w-btn::before { content:''; position:absolute; inset:0; background:var(--rose); transform:scaleX(0); transform-origin:left; transition:transform .3s; z-index:-1; }
+    .w-btn:hover::before { transform:scaleX(1); }
+    .w-btn:hover { color:var(--night); box-shadow:0 0 30px rgba(232,160,176,.4); }
+    .w-btn:active { transform:scale(.97); }
 
-    /* ══════════════════════
-       PÁGINA 2 — SELETOR
-    ══════════════════════ */
+    /* ══════════════════════════════
+       PG 2 — SELETOR
+    ══════════════════════════════ */
     #pg-selector { gap:0; }
-    .selector-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1rem,3vw,1.4rem); letter-spacing:.15em; color:rgba(255,248,245,.45); margin-bottom:2.5rem; }
-
+    .sel-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1rem,3vw,1.4rem); letter-spacing:.15em; color:rgba(255,248,245,.45); margin-bottom:2.5rem; }
     .cards-stage { position:relative; width:min(92vw,900px); height:clamp(340px,56vh,480px); perspective:1400px; }
-
     .sel-card { position:absolute; width:clamp(180px,28vw,260px); height:clamp(250px,40vw,370px); border-radius:3px; overflow:hidden; cursor:pointer; transition:transform .65s cubic-bezier(.22,.68,0,1.2),opacity .5s,box-shadow .4s; box-shadow:0 12px 50px rgba(0,0,0,.7); user-select:none; }
-
-    /* foto cobre o card inteiro */
-    .sel-card .card-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s ease; }
+    .sel-card .card-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s; }
     .sel-card.pos-center:hover .card-photo { transform:scale(1.05); }
-
-    /* overlay escuro para legibilidade */
     .sel-card .card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.1) 55%,transparent 100%); z-index:1; }
-
-    /* fallback de cor quando não há foto */
     .card-namoro    { background:linear-gradient(160deg,#6b0030,#1a0030); }
-    .card-noivado   { background:linear-gradient(160deg,#2a0060,#0d001a); }
+    .card-noivado   { background:linear-gradient(160deg,#08002a,#001040); }
     .card-casamento { background:linear-gradient(160deg,#3a2000,#1a0c00); }
-
     .sel-card .card-content { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 1.2rem 1.2rem; z-index:2; text-align:center; }
     .sel-card .card-icon { font-size:2rem; margin-bottom:.5rem; display:block; }
     .sel-card .card-content h2 { font-family:'Great Vibes',cursive; font-size:clamp(1.8rem,4vw,2.4rem); color:#fff; text-shadow:0 2px 15px rgba(0,0,0,.6); line-height:1; }
     .sel-card .card-content p { font-size:.6rem; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-top:.3rem; }
     .sel-card .card-shimmer { position:absolute; inset:0; z-index:3; background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.08) 50%,transparent 60%); background-size:200% 200%; transition:background-position .6s; }
     .sel-card.pos-center:hover .card-shimmer { background-position:100% 100%; }
-
-    /* posições */
     .sel-card.pos-center { left:50%; top:50%; transform:translate(-50%,-50%) scale(1.05); z-index:10; }
     .sel-card.pos-left   { left:50%; top:50%; transform:translate(calc(-50% - clamp(160px,22vw,240px)),-50%) scale(.83) rotateY(15deg); z-index:5; opacity:.65; }
     .sel-card.pos-right  { left:50%; top:50%; transform:translate(calc(-50% + clamp(160px,22vw,240px)),-50%) scale(.83) rotateY(-15deg); z-index:5; opacity:.65; }
     .sel-card.pos-center:hover { transform:translate(-50%,-50%) scale(1.09); z-index:11; }
-
     .nav-arrows { display:flex; gap:1.5rem; margin-top:2rem; }
-    .nav-arr { width:48px; height:48px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:transparent; color:white; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .3s,background .3s,transform .2s; }
+    .nav-arr { width:48px; height:48px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:transparent; color:#fff; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .3s,background .3s,transform .2s; }
     .nav-arr:hover { border-color:var(--rose); background:rgba(232,160,176,.1); transform:scale(1.1); }
     .nav-arr:active { transform:scale(.92); }
-    .card-open-hint { font-size:.62rem; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.25); margin-top:1rem; }
+    .card-hint { font-size:.62rem; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.25); margin-top:1rem; }
 
-    /* ══════════════════════
-       PÁGINA 3 — NAMORO
-    ══════════════════════ */
+    /* ══════════════════════════════
+       PG 3 — NAMORO
+    ══════════════════════════════ */
     #pg-namoro { overflow-y:auto; overflow-x:hidden; align-items:stretch; justify-content:flex-start; padding-bottom:4rem; }
     #pg-namoro::-webkit-scrollbar { width:4px; }
     #pg-namoro::-webkit-scrollbar-thumb { background:rgba(232,160,176,.3); }
-
-    .namoro-hero { width:100%; min-height:38vh; background:linear-gradient(160deg,#6b0030 0%,#1a0030 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem 2rem 3rem; position:relative; overflow:hidden; }
-    .namoro-hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to bottom,transparent,var(--night)); }
+    .n-hero { width:100%; min-height:38vh; background:linear-gradient(160deg,#6b0030,#1a0030); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem 2rem 3rem; position:relative; overflow:hidden; }
+    .n-hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to bottom,transparent,var(--night)); }
     .hero-eyebrow { font-size:.7rem; letter-spacing:.35em; text-transform:uppercase; color:var(--rose); margin-bottom:.8rem; position:relative; z-index:1; }
-    .hero-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,8vw,5.5rem); text-shadow:0 0 40px rgba(232,160,176,.6); position:relative; z-index:1; }
-
-    .music-player { display:flex; align-items:center; gap:.8rem; background:var(--glass); border:1px solid var(--glass-border); backdrop-filter:blur(8px); border-radius:30px; padding:.6rem 1.2rem; margin:1.5rem auto 0; position:relative; z-index:1; cursor:pointer; transition:background .3s; }
-    .music-player:hover { background:rgba(255,255,255,.12); }
-    .music-note { font-size:1.1rem; animation:note-bounce 1.5s ease-in-out infinite; }
-    @keyframes note-bounce { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
-    .music-label { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.5); }
-    .music-status { font-size:.7rem; color:var(--rose); }
-
-    .countdown-wrap { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin:2rem auto; padding:0 1.5rem; max-width:700px; }
-    .cd-unit { background:var(--glass); border:1px solid var(--glass-border); backdrop-filter:blur(8px); border-radius:3px; padding:.9rem 1.2rem; text-align:center; min-width:72px; }
-    .cd-num { font-family:'Cormorant Garamond',serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:300; color:var(--rose); line-height:1; }
-    .cd-label { font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-top:.3rem; }
-
-    .love-message { max-width:680px; margin:0 auto; padding:0 1.5rem; }
-    .love-message p { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2.5vw,1.15rem); font-weight:300; line-height:1.9; color:rgba(255,248,245,.8); margin-bottom:1.2rem; padding:1.4rem 1.6rem; background:var(--glass); border:1px solid var(--glass-border); border-radius:3px; }
-
-    .gallery-section { width:100%; max-width:800px; margin:2rem auto; padding:0 1.5rem; }
-    .gallery-section h3 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:rgba(255,255,255,.35); letter-spacing:.1em; margin-bottom:1rem; text-align:center; }
-    .gallery-viewer { position:relative; width:100%; aspect-ratio:4/3; background:#050010; border-radius:3px; overflow:hidden; border:1px solid var(--glass-border); }
-    .gallery-viewer img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity .6s ease; }
-    .gallery-viewer img.active { opacity:1; }
-    .gallery-placeholder { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.8rem; color:rgba(255,255,255,.2); font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.05rem; }
-    .gallery-controls { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:.8rem; }
-    .g-btn { background:var(--glass); border:1px solid var(--glass-border); color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .3s,border-color .3s; }
+    .hero-title   { font-family:'Great Vibes',cursive; font-size:clamp(3rem,8vw,5.5rem); text-shadow:0 0 40px rgba(232,160,176,.6); position:relative; z-index:1; }
+    .music-btn { display:flex; align-items:center; gap:.8rem; background:var(--glass); border:1px solid var(--glass-b); backdrop-filter:blur(8px); border-radius:30px; padding:.6rem 1.2rem; margin:1.5rem auto 0; position:relative; z-index:1; cursor:pointer; transition:background .3s; }
+    .music-btn:hover { background:rgba(255,255,255,.12); }
+    .music-note { font-size:1.1rem; animation:note-b 1.5s ease-in-out infinite; }
+    @keyframes note-b { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+    .music-lbl { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.5); }
+    .music-st  { font-size:.7rem; color:var(--rose); }
+    /* noivado music btn */
+    .n-music-btn { display:flex; align-items:center; gap:.8rem; background:rgba(80,40,160,.2); border:1px solid rgba(160,120,255,.3); backdrop-filter:blur(8px); border-radius:30px; padding:.6rem 1.2rem; margin:1.5rem auto 0; position:relative; z-index:1; cursor:pointer; transition:background .3s; }
+    .n-music-btn:hover { background:rgba(120,80,220,.3); }
+    .n-music-btn .music-st { color:var(--star-blue); }
+    /* countdown */
+    .cd-wrap { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin:2rem auto; padding:0 1.5rem; max-width:700px; }
+    .cd-unit { background:var(--glass); border:1px solid var(--glass-b); backdrop-filter:blur(8px); border-radius:3px; padding:.9rem 1.2rem; text-align:center; min-width:72px; }
+    .cd-num  { font-family:'Cormorant Garamond',serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:300; color:var(--rose); line-height:1; }
+    .cd-lbl  { font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-top:.3rem; }
+    /* noivado countdown */
+    .ncd-wrap { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin:2rem auto; padding:0 1.5rem; max-width:700px; position:relative; z-index:2; }
+    .ncd-unit { background:var(--ng); border:1px solid var(--ng-b); backdrop-filter:blur(8px); border-radius:3px; padding:.9rem 1.2rem; text-align:center; min-width:72px; }
+    .ncd-num  { font-family:'Cormorant Garamond',serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:300; color:var(--star-blue); line-height:1; }
+    .ncd-lbl  { font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:rgba(196,170,255,.4); margin-top:.3rem; }
+    /* mensagem */
+    .love-msg { max-width:680px; margin:0 auto; padding:0 1.5rem; }
+    .love-msg p { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2.5vw,1.15rem); font-weight:300; line-height:1.9; color:rgba(255,248,245,.8); margin-bottom:1.2rem; padding:1.4rem 1.6rem; background:var(--glass); border:1px solid var(--glass-b); border-radius:3px; }
+    /* mensagem noivado */
+    .n-love-msg { max-width:680px; margin:0 auto; padding:0 1.5rem; position:relative; z-index:2; }
+    .n-love-msg p { font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2.5vw,1.15rem); font-weight:300; line-height:1.9; color:rgba(230,220,255,.85); margin-bottom:1.2rem; padding:1.4rem 1.6rem; background:var(--ng); border:1px solid var(--ng-b); border-radius:3px; }
+    /* galeria */
+    .gal-sec { width:100%; max-width:800px; margin:2rem auto; padding:0 1.5rem; }
+    .gal-sec h3 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:rgba(255,255,255,.35); letter-spacing:.1em; margin-bottom:1rem; text-align:center; }
+    .gal-view { position:relative; width:100%; aspect-ratio:4/3; background:#050010; border-radius:3px; overflow:hidden; border:1px solid var(--glass-b); }
+    .gal-view img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity .6s; }
+    .gal-view img.active { opacity:1; }
+    .gal-ph { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.8rem; color:rgba(255,255,255,.2); font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.05rem; }
+    .gal-ctrl { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:.8rem; }
+    .g-btn { background:var(--glass); border:1px solid var(--glass-b); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .3s,border-color .3s; }
     .g-btn:hover { background:rgba(232,160,176,.2); border-color:var(--rose); }
-    .g-counter { font-size:.65rem; letter-spacing:.2em; color:rgba(255,255,255,.3); min-width:60px; text-align:center; }
+    .ng-btn { background:var(--ng); border:1px solid var(--ng-b); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .3s,border-color .3s; }
+    .ng-btn:hover { background:rgba(160,120,255,.25); border-color:#b48aff; }
+    .g-ctr { font-size:.65rem; letter-spacing:.2em; color:rgba(255,255,255,.3); min-width:60px; text-align:center; }
+    /* noivado gallery section */
+    .n-gal-sec { width:100%; max-width:800px; margin:2rem auto; padding:0 1.5rem; position:relative; z-index:2; }
+    .n-gal-sec h3 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:rgba(200,180,255,.35); letter-spacing:.1em; margin-bottom:1rem; text-align:center; }
+    .n-gal-view { position:relative; width:100%; aspect-ratio:4/3; background:#03001a; border-radius:3px; overflow:hidden; border:1px solid rgba(160,120,255,.2); }
+    .n-gal-view img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity .6s; }
+    .n-gal-view img.active { opacity:1; }
+    .n-gal-ph { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.8rem; color:rgba(200,180,255,.2); font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.05rem; }
+    .n-gal-ctrl { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:.8rem; }
 
-    /* ══════════════════════
-       PÁGINA 4 — NOIVADO
-    ══════════════════════ */
-    #pg-noivado { background:linear-gradient(135deg,#12002a,#000820); overflow:hidden; }
-    .noivado-particles { position:absolute; inset:0; pointer-events:none; z-index:0; }
-    .n-particle { position:absolute; border-radius:50%; background:rgba(180,100,255,.3); animation:n-float linear infinite; }
-    @keyframes n-float { 0%{transform:translateY(110vh) scale(0);opacity:0} 10%{opacity:1} 90%{opacity:.6} 100%{transform:translateY(-10vh) scale(1.5);opacity:0} }
+    /* ══════════════════════════════════════════
+       PG 4 — NOIVADO
+    ══════════════════════════════════════════ */
+    #pg-noivado {
+      overflow-y:auto; overflow-x:hidden;
+      align-items:stretch; justify-content:flex-start;
+      background: radial-gradient(ellipse at 50% 0%, #0d0035, #020010 60%);
+      padding-bottom:4rem;
+    }
+    #pg-noivado::-webkit-scrollbar { width:4px; }
+    #pg-noivado::-webkit-scrollbar-thumb { background:rgba(196,170,255,.3); }
 
-    .noivado-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.4rem; text-align:center; padding:2rem; }
-    .noivado-ring { font-size:4.5rem; animation:ring-spin 6s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(160,80,255,.7)); }
-    @keyframes ring-spin { 0%,100%{transform:rotate(-5deg) scale(1)} 50%{transform:rotate(5deg) scale(1.08)} }
-    .noivado-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:var(--blush); text-shadow:0 0 50px rgba(160,80,255,.7),0 0 100px rgba(160,80,255,.3); animation:title-glow 3s ease-in-out infinite alternate; }
-    @keyframes title-glow { from{text-shadow:0 0 30px rgba(160,80,255,.5),0 0 60px rgba(160,80,255,.2)} to{text-shadow:0 0 60px rgba(160,80,255,.9),0 0 120px rgba(160,80,255,.5)} }
-    .noivado-badge { padding:.45rem 1.4rem; border:1px solid rgba(180,100,255,.4); color:rgba(255,255,255,.4); font-size:.65rem; letter-spacing:.35em; text-transform:uppercase; }
-    .noivado-desc { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3vw,1.5rem); color:rgba(255,248,245,.55); max-width:380px; line-height:1.7; }
-    .noivado-divider { display:flex; align-items:center; gap:.8rem; width:220px; }
-    .noivado-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
+    /* ── TELA DE INTRO (zoom GSAP) ── */
+    #nv-intro-screen {
+      position:fixed; inset:0; z-index:50;
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    #nv-zoom-img {
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      transform-origin:center center;
+      /* começa normal, GSAP anima o scale */
+    }
+    #nv-intro-text {
+      position:relative; z-index:2;
+      display:flex; flex-direction:column;
+      align-items:center; text-align:center;
+      gap:1.2rem; padding:2rem;
+      /* começa invisível, GSAP faz fade-in */
+      opacity:0;
+    }
+    #nv-intro-eyebrow {
+      font-size:.75rem; letter-spacing:.4em; text-transform:uppercase;
+      color:rgba(196,170,255,.85);
+    }
+    #nv-intro-title {
+      font-family:'Great Vibes',cursive;
+      font-size:clamp(3.5rem,11vw,7rem);
+      color:#fff;
+      text-shadow:0 0 60px rgba(196,170,255,.9), 0 0 120px rgba(140,80,255,.6);
+      line-height:1.1;
+    }
+    #nv-intro-btn {
+      margin-top:.5rem;
+      padding:.8rem 2.5rem;
+      background:transparent;
+      border:1px solid rgba(196,170,255,.5);
+      color:rgba(196,170,255,.9);
+      font-family:'Josefin Sans',sans-serif;
+      font-size:.75rem; letter-spacing:.3em; text-transform:uppercase;
+      cursor:pointer; position:relative; overflow:hidden;
+      transition:color .3s, border-color .3s;
+      display:flex; align-items:center; gap:.8rem;
+    }
+    #nv-intro-btn::before { content:''; position:absolute; inset:0; background:rgba(196,170,255,.15); transform:scaleX(0); transform-origin:left; transition:transform .3s; z-index:-1; }
+    #nv-intro-btn:hover::before { transform:scaleX(1); }
+    #nv-intro-btn:hover { border-color:rgba(196,170,255,.9); color:#fff; }
+    #nv-btn-arrow { animation:arr-bounce 1.4s ease-in-out infinite; display:inline-block; }
+    @keyframes arr-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
 
-    /* ══════════════════════
-       PÁGINA 5 — CASAMENTO
-    ══════════════════════ */
+    /* canvas de estrelas */
+    #starCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; transition:opacity 1s; }
+
+    /* shooting stars */
+    .shooting-star { position:fixed; z-index:1; pointer-events:none; width:2px; height:2px; border-radius:50%; background:#fff; box-shadow:0 0 6px 2px rgba(255,255,255,.8); animation:shoot linear forwards; }
+    @keyframes shoot { 0%{transform:translate(0,0) scaleX(1);opacity:1} 100%{transform:translate(300px,200px) scaleX(40);opacity:0} }
+
+    /* hero noivado */
+    .nv-hero { width:100%; min-height:40vh; background:linear-gradient(160deg,rgba(20,0,60,.9),rgba(5,0,25,.95)); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem 2rem 3rem; position:relative; overflow:hidden; z-index:2; }
+    .nv-hero::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to bottom,transparent,#020010); }
+    .nv-eyebrow { font-size:.7rem; letter-spacing:.35em; text-transform:uppercase; color:var(--star-blue); margin-bottom:.8rem; position:relative; z-index:1; }
+    .nv-title {
+      font-family:'Great Vibes',cursive; font-size:clamp(3rem,8vw,5.5rem); color:#e8e0ff;
+      text-shadow:0 0 40px rgba(196,170,255,.7),0 0 80px rgba(140,100,255,.4);
+      position:relative; z-index:1;
+      animation:star-glow 4s ease-in-out infinite alternate;
+    }
+    @keyframes star-glow {
+      from { text-shadow:0 0 30px rgba(196,170,255,.5),0 0 60px rgba(140,100,255,.3); }
+      to   { text-shadow:0 0 60px rgba(196,170,255,.9),0 0 120px rgba(140,100,255,.6),0 0 180px rgba(100,60,255,.3); }
+    }
+    /* constelação */
+    .const-wrap { position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto .5rem; }
+    #constSvg   { width:100%; height:100px; }
+    .const-div  { width:100%; max-width:500px; margin:.5rem auto 1.5rem; display:flex; justify-content:center; position:relative; z-index:2; }
+    #constDivSvg { width:100%; max-width:500px; height:80px; }
+
+    /* ══════════════════════════════
+       PG 5 — CASAMENTO
+    ══════════════════════════════ */
     #pg-casamento { background:linear-gradient(135deg,#1a0f00,#0a0018); overflow:hidden; }
-
-    /* velas */
     .candles { position:absolute; bottom:0; left:0; right:0; z-index:0; display:flex; justify-content:space-around; padding:0 5vw; pointer-events:none; }
-    .candle { position:relative; display:flex; flex-direction:column; align-items:center; }
-    .candle-body { width:12px; background:linear-gradient(to right,#e8c98a,#c9a96e,#a07840); border-radius:2px; }
+    .candle  { display:flex; flex-direction:column; align-items:center; }
+    .candle-body  { width:12px; background:linear-gradient(to right,#e8c98a,#c9a96e,#a07840); border-radius:2px; }
     .candle-flame { width:10px; height:18px; margin-bottom:-2px; background:radial-gradient(ellipse at 50% 100%,#fff 0%,#ffe080 30%,#ff9500 70%,transparent 100%); border-radius:50% 50% 30% 30%; filter:blur(.5px); box-shadow:0 0 8px 3px rgba(255,180,0,.4); animation:flicker 1.5s ease-in-out infinite; }
     @keyframes flicker { 0%,100%{transform:scaleX(1) scaleY(1) translateY(0);opacity:1} 25%{transform:scaleX(.85) scaleY(1.08) translateY(-1px);opacity:.95} 75%{transform:scaleX(1.1) scaleY(.95) translateY(1px);opacity:.9} }
-
     .wed-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.2rem; text-align:center; padding:2rem; }
-    .wed-rings { font-size:3.5rem; animation:float-rings 3s ease-in-out infinite; filter:drop-shadow(0 0 15px rgba(200,160,60,.5)); }
-    @keyframes float-rings { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-
-    /* water wave effect no título */
+    .wed-rings { font-size:3.5rem; animation:float-r 3s ease-in-out infinite; filter:drop-shadow(0 0 15px rgba(200,160,60,.5)); }
+    @keyframes float-r { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
     .wed-title-wrap { position:relative; }
-    .wed-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:var(--gold-light); text-shadow:0 0 40px rgba(200,160,60,.6),0 4px 20px rgba(200,120,0,.3); animation:water-wave 4s ease-in-out infinite; display:block; position:relative; z-index:1; }
-    @keyframes water-wave { 0%,100%{transform:translateY(0);text-shadow:0 0 40px rgba(200,160,60,.6),0 4px 20px rgba(200,120,0,.3)} 33%{transform:translateY(-4px);text-shadow:0 8px 40px rgba(200,160,60,.8),0 0 60px rgba(200,120,0,.5)} 66%{transform:translateY(2px);text-shadow:0 0 20px rgba(200,160,60,.4),0 2px 10px rgba(200,120,0,.2)} }
-    .wed-title-reflect { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:transparent; -webkit-text-stroke:1px rgba(200,160,60,.2); position:absolute; top:80%; left:0; right:0; transform:scaleY(-0.3); filter:blur(2px); animation:water-wave 4s ease-in-out infinite reverse; mask-image:linear-gradient(to bottom,rgba(0,0,0,.3),transparent 80%); -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.3),transparent 80%); }
-
-    .wed-divider { width:80px; height:1px; background:linear-gradient(to right,transparent,var(--gold),transparent); }
-    .wed-badge { padding:.45rem 1.4rem; border:1px solid rgba(200,160,60,.4); color:rgba(255,255,255,.35); font-size:.65rem; letter-spacing:.35em; text-transform:uppercase; }
+    .wed-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:var(--gold-lt); text-shadow:0 0 40px rgba(200,160,60,.6),0 4px 20px rgba(200,120,0,.3); animation:water-w 4s ease-in-out infinite; display:block; position:relative; z-index:1; }
+    @keyframes water-w { 0%,100%{transform:translateY(0);text-shadow:0 0 40px rgba(200,160,60,.6),0 4px 20px rgba(200,120,0,.3)} 33%{transform:translateY(-4px);text-shadow:0 8px 40px rgba(200,160,60,.8),0 0 60px rgba(200,120,0,.5)} 66%{transform:translateY(2px);text-shadow:0 0 20px rgba(200,160,60,.4),0 2px 10px rgba(200,120,0,.2)} }
+    .wed-reflect { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:transparent; -webkit-text-stroke:1px rgba(200,160,60,.2); position:absolute; top:80%; left:0; right:0; transform:scaleY(-.3); filter:blur(2px); animation:water-w 4s ease-in-out infinite reverse; mask-image:linear-gradient(to bottom,rgba(0,0,0,.3),transparent 80%); -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.3),transparent 80%); }
+    .wed-div  { width:80px; height:1px; background:linear-gradient(to right,transparent,var(--gold),transparent); }
+    .wed-badge{ padding:.45rem 1.4rem; border:1px solid rgba(200,160,60,.4); color:rgba(255,255,255,.35); font-size:.65rem; letter-spacing:.35em; text-transform:uppercase; }
     .wed-desc { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3vw,1.5rem); color:rgba(255,248,245,.5); max-width:400px; line-height:1.7; }
-
-    .gold-particle { position:absolute; pointer-events:none; z-index:0; animation:petal-fall linear infinite; opacity:0; }
-    @keyframes petal-fall { 0%{transform:translateY(-5vh) rotate(0deg);opacity:0} 10%{opacity:.7} 90%{opacity:.3} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+    .gold-p { position:absolute; pointer-events:none; z-index:0; animation:petal-f linear infinite; opacity:0; }
+    @keyframes petal-f { 0%{transform:translateY(-5vh) rotate(0);opacity:0} 10%{opacity:.7} 90%{opacity:.3} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 
     @media(max-width:500px) {
       .sel-card.pos-left  { transform:translate(calc(-50% - 145px),-50%) scale(.8) rotateY(15deg); }
       .sel-card.pos-right { transform:translate(calc(-50% + 145px),-50%) scale(.8) rotateY(-15deg); }
-      .countdown-wrap { gap:.6rem; }
-      .cd-unit { min-width:58px; padding:.7rem .8rem; }
+      .cd-wrap,.ncd-wrap  { gap:.6rem; }
+      .cd-unit,.ncd-unit  { min-width:58px; padding:.7rem .8rem; }
     }
   </style>
 </head>
 <body>
 
+<!-- Fundo animado -->
 <div class="bg-canvas">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
+  <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
 </div>
 <div class="heart-rain" id="heartRain"></div>
+<canvas id="starCanvas"></canvas>
 
-<!-- ════════════════════════════════════════
-     PÁGINA 1 — BEM-VINDO
-════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     PG 1 — WELCOME
+══════════════════════════════════════ -->
 <div class="page active" id="pg-welcome">
-  <p class="welcome-eyebrow">Uma história de amor</p>
-  <h1 class="welcome-title">Nossa Linha<br>do Tempo</h1>
-  <p class="welcome-sub">Cada momento, eternamente guardado</p>
-  <button class="welcome-btn" onclick="goTo('pg-selector')">Explorar ❤</button>
+  <p class="w-eyebrow">Uma história de amor</p>
+  <h1 class="w-title">Nossa Linha<br>do Tempo</h1>
+  <p class="w-sub">Cada momento, eternamente guardado</p>
+  <button class="w-btn" onclick="goTo('pg-selector')">Explorar ❤</button>
 </div>
 
-<!-- ════════════════════════════════════════
-     PÁGINA 2 — SELETOR DE CAPÍTULOS
-     Namoro já vem na frente ao entrar
-════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     PG 2 — SELETOR
+══════════════════════════════════════ -->
 <div class="page" id="pg-selector">
-  <p class="selector-title">Escolha um capítulo</p>
-
+  <p class="sel-title">Escolha um capítulo</p>
   <div class="cards-stage" id="cardsStage">
 
-    <!--
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     FOTO DO CARD — NAMORO
-    Troque o "src" abaixo pelo caminho da sua foto.
-    Exemplo: src="segundapagina/arquivosimagens/unidade00015.jpeg"
-    Se a foto não existir, aparece o fundo rosa escuro.
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    -->
+    Troque o src pelo caminho da sua foto.
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
     <div class="sel-card card-namoro pos-center" id="card-0" onclick="handleCardClick(0)">
-      <img class="card-photo"
-           src="segundapagina/arquivosimagens/unidade00015.jpeg"
-           alt="Namoro"
-           onerror="this.style.display='none'">
-      <div class="card-overlay"></div>
-      <div class="card-shimmer"></div>
-      <div class="card-content">
-        <span class="card-icon">💑</span>
-        <h2>Namoro</h2>
-        <p>O começo de tudo</p>
-      </div>
+      <img class="card-photo" src="segundapagina/arquivosimagens/unidade00015.jpeg" alt="Namoro" onerror="this.style.display='none'">
+      <div class="card-overlay"></div><div class="card-shimmer"></div>
+      <div class="card-content"><span class="card-icon">💑</span><h2>Namoro</h2><p>O começo de tudo</p></div>
     </div>
 
-    <!--
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     FOTO DO CARD — NOIVADO
-    Troque o "src" abaixo pelo caminho da sua foto.
-    Exemplo: src="segundapagina/arquivosimagens/unidade00016.jpeg"
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    -->
+    Troque o src pelo caminho da sua foto.
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
     <div class="sel-card card-noivado pos-right" id="card-1" onclick="handleCardClick(1)">
-      <img class="card-photo"
-           src="segundapagina/arquivosimagens/unidade00016.jpeg"
-           alt="Noivado"
-           onerror="this.style.display='none'">
-      <div class="card-overlay"></div>
-      <div class="card-shimmer"></div>
-      <div class="card-content">
-        <span class="card-icon">💍</span>
-        <h2>Noivado</h2>
-        <p>A promessa eterna</p>
-      </div>
+      <img class="card-photo" src="segundapagina/arquivosimagens/unidade00016.jpeg" alt="Noivado" onerror="this.style.display='none'">
+      <div class="card-overlay"></div><div class="card-shimmer"></div>
+      <div class="card-content"><span class="card-icon">💍</span><h2>Noivado</h2><p>A promessa eterna</p></div>
     </div>
 
-    <!--
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     FOTO DO CARD — CASAMENTO
-    Troque o "src" abaixo pelo caminho da sua foto.
-    Exemplo: src="segundapagina/arquivosimagens/unidade00014.jpeg"
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    -->
+    Troque o src pelo caminho da sua foto.
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
     <div class="sel-card card-casamento pos-left" id="card-2" onclick="handleCardClick(2)">
-      <img class="card-photo"
-           src="segundapagina/arquivosimagens/unidade00014.jpeg"
-           alt="Casamento"
-           onerror="this.style.display='none'">
-      <div class="card-overlay"></div>
-      <div class="card-shimmer"></div>
-      <div class="card-content">
-        <span class="card-icon">👰</span>
-        <h2>Casamento</h2>
-        <p>Para sempre</p>
-      </div>
+      <img class="card-photo" src="segundapagina/arquivosimagens/unidade00014.jpeg" alt="Casamento" onerror="this.style.display='none'">
+      <div class="card-overlay"></div><div class="card-shimmer"></div>
+      <div class="card-content"><span class="card-icon">👰</span><h2>Casamento</h2><p>Para sempre</p></div>
     </div>
 
   </div>
-
   <div class="nav-arrows">
     <button class="nav-arr" onclick="shiftCards(-1)">&#8592;</button>
     <button class="nav-arr" onclick="shiftCards(1)">&#8594;</button>
   </div>
-  <p class="card-open-hint">Toque no cartão central para abrir · arraste para navegar</p>
+  <p class="card-hint">Toque no cartão central para abrir · arraste para navegar</p>
 </div>
 
-<!-- ════════════════════════════════════════
-     PÁGINA 3 — NAMORO
-════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     PG 3 — NAMORO
+══════════════════════════════════════ -->
 <div class="page" id="pg-namoro">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
 
-  <!--
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  MÚSICA DE FUNDO
-  Troque o "src" das tags <source> abaixo pelo
-  caminho do seu arquivo de áudio (MP3 ou WAV).
-
-  Exemplo:
-  src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.mp3"
-
-  A música toca automaticamente ao entrar nesta
-  página. O botão 🎵 permite pausar e retomar.
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  -->
+  <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MÚSICA NAMORO
+  Troque o src pelo caminho do seu arquivo de áudio.
+  Exemplo: src="terceirapaginanamoro/audiomusic/musica.mp3"
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
   <audio id="bgMusic" loop>
     <source src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.mp3" type="audio/mpeg">
     <source src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.wav" type="audio/wav">
   </audio>
 
-  <div class="namoro-hero">
+  <div class="n-hero">
     <p class="hero-eyebrow">Capítulo I</p>
     <h1 class="hero-title">Nosso Namoro ❤️</h1>
-    <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
+    <div class="music-btn" onclick="toggleMusic('bgMusic','mst-namoro')">
       <span class="music-note">🎵</span>
-      <span class="music-label">Música</span>
-      <span class="music-status" id="musicStatus">tocando…</span>
+      <span class="music-lbl">Música</span>
+      <span class="music-st" id="mst-namoro">tocando…</span>
     </div>
   </div>
 
-  <div class="countdown-wrap">
-    <div class="cd-unit"><div class="cd-num" id="cd-anos">0</div><div class="cd-label">Anos</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-meses">0</div><div class="cd-label">Meses</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-dias">0</div><div class="cd-label">Dias</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-horas">0</div><div class="cd-label">Horas</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-min">0</div><div class="cd-label">Min</div></div>
-    <div class="cd-unit"><div class="cd-num" id="cd-seg">0</div><div class="cd-label">Seg</div></div>
+  <div class="cd-wrap">
+    <div class="cd-unit"><div class="cd-num" id="cd-anos">0</div><div class="cd-lbl">Anos</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-meses">0</div><div class="cd-lbl">Meses</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-dias">0</div><div class="cd-lbl">Dias</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-horas">0</div><div class="cd-lbl">Horas</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-min">0</div><div class="cd-lbl">Min</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-seg">0</div><div class="cd-lbl">Seg</div></div>
   </div>
 
-  <div class="love-message">
+  <div class="love-msg">
     <p>Desde o dia em que você entrou na minha vida, tudo mudou. Não apenas em pequenos detalhes, mas em todas as cores, sentidos e direções. Você trouxe luz aos meus dias mais nublados, trouxe música aos momentos de silêncio e fez meu coração bater em um ritmo que eu nunca tinha sentido antes.</p>
     <p>Você é muito mais do que um amor. Você é minha inspiração, minha força, minha razão de acreditar em tudo o que é bom e possível. Cada sorriso seu ilumina meu mundo, cada palavra sua acalma minha alma — mesmo estressada, teve paciência para conversar comigo. Isso me cativou muito.</p>
     <p>Eu olho para nós dois e vejo mais do que apenas um casal. Vejo parceiros, amigos, cúmplices. Vejo duas almas que se encontraram e se reconheceram, como se o universo já soubesse que éramos destinados a ficar juntos.</p>
@@ -369,23 +402,15 @@
     <p>Obrigado por tudo até hoje meu amor. Sou imensamente grato a tudo o que você fez por mim. Tive o prazer de estar ao seu lado em momentos únicos — como sua formatura de psicóloga. Desejo que conquiste mais e mais, pois você merece. Sua resiliência é exemplar. Mesmo em momentos tão difíceis, você olhava com esses lindos olhos e um belo sorriso e dizia que vai dar certo. ❤️</p>
   </div>
 
-  <div class="gallery-section">
+  <div class="gal-sec">
     <h3>Nossas memórias</h3>
-    <div class="gallery-viewer" id="galleryViewer">
-
-      <!--
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      GALERIA DE FOTOS — NAMORO
-      Adicione ou remova tags <img> abaixo.
+    <div class="gal-view" id="galN">
+      <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      GALERIA NAMORO
       A PRIMEIRA imagem deve ter class="active".
-
-      Para adicionar mais fotos, copie este modelo:
-      <img src="SEU_CAMINHO/foto.jpeg" alt="Descrição">
-
-      Para remover uma foto, apague a linha <img> dela.
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      -->
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00001.jpeg" alt="Foto 1"  class="active" onerror="this.remove();checkGalleryEmpty()">
+      Para adicionar mais fotos, copie a linha <img>.
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
+      <img src="terceirapaginanamoro/arquivoscontador/unidade00001.jpeg" alt="Foto 1"  class="active" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00002.jpeg" alt="Foto 2"  onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00003.jpeg" alt="Foto 3"  onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00004.jpeg" alt="Foto 4"  onerror="this.remove()">
@@ -401,46 +426,125 @@
       <img src="terceirapaginanamoro/arquivoscontador/unidade00014.jpeg" alt="Foto 14" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00015.jpeg" alt="Foto 15" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00016.jpeg" alt="Foto 16" onerror="this.remove()">
+      <div class="gal-ph" id="galN-ph"><span style="font-size:2rem">📷</span>Adicione suas fotos — GALERIA NAMORO</div>
+    </div>
+    <div class="gal-ctrl">
+      <button class="g-btn" onclick="galNav('galN','galN-ct',galNState,-1)">&#8592;</button>
+      <span class="g-ctr" id="galN-ct">1 / 1</span>
+      <button class="g-btn" onclick="galNav('galN','galN-ct',galNState,1)">&#8594;</button>
+    </div>
+  </div>
+</div>
 
-      <div class="gallery-placeholder" id="galleryPlaceholder">
-        <span style="font-size:2rem">📷</span>
-        Adicione suas fotos na seção "GALERIA DE FOTOS" do código
+<!-- ══════════════════════════════════════
+     PG 4 — NOIVADO
+     Estrutura:
+     • #nv-intro  → tela fullscreen com foto + zoom GSAP + botão "Continuar"
+     • #nv-content → conteúdo real (oculto até clicar em Continuar)
+══════════════════════════════════════ -->
+<div class="page" id="pg-noivado">
+  <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
+
+  <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MÚSICA NOIVADO
+  Troque o src pelo caminho do seu arquivo de áudio.
+  Exemplo: src="suapasta/suamusica.mp3"
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
+  <audio id="bgMusicN" loop>
+    <source src="SUA_MUSICA_NOIVADO.mp3" type="audio/mpeg">
+    <source src="SUA_MUSICA_NOIVADO.wav" type="audio/wav">
+  </audio>
+
+  <!-- ── TELA DE INTRO COM ZOOM GSAP ── -->
+  <div id="nv-intro">
+    <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    FOTO DA INTRO — NOIVADO
+    Esta é a foto que aparece no efeito de zoom ao entrar.
+    Troque o src pelo caminho da sua foto principal.
+    Exemplo: src="paginanoivado/foto-principal.jpeg"
+    Se a foto não carregar, usa uma imagem de anéis online.
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
+    <img id="nv-zoom-img"
+         src="segundapagina/arquivosimagens/unidade00016.jpeg"
+         alt="Noivado"
+         onerror="this.src='https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&auto=format&fit=crop&q=80'">
+
+    <div id="nv-intro-text">
+      <p id="nv-intro-eyebrow">Capítulo II</p>
+      <h1 id="nv-intro-title">Nosso Noivado</h1>
+      <button id="nv-intro-btn" onclick="showNvContent()">
+        <span>Continuar</span>
+        <span id="nv-btn-arrow">↓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CONTEÚDO REAL (oculto até clicar em Continuar) ── -->
+  <div id="nv-content">
+
+    <div class="nv-hero">
+      <div class="const-wrap">
+        <svg id="constSvg" viewBox="0 0 480 100" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <p class="nv-eyebrow">Capítulo II</p>
+      <h1 class="nv-title">Nosso Noivado 💍</h1>
+      <div class="n-music-btn" onclick="toggleMusic('bgMusicN','mst-noivado')">
+        <span class="music-note">🎵</span>
+        <span class="music-lbl">Música</span>
+        <span class="music-st" id="mst-noivado">toque ▶ para tocar</span>
       </div>
     </div>
 
-    <div class="gallery-controls">
-      <button class="g-btn" onclick="galleryNav(-1)">&#8592;</button>
-      <span class="g-counter" id="galleryCounter">1 / 1</span>
-      <button class="g-btn" onclick="galleryNav(1)">&#8594;</button>
+    <div class="ncd-wrap">
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-anos">0</div><div class="ncd-lbl">Anos</div></div>
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-meses">0</div><div class="ncd-lbl">Meses</div></div>
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-dias">0</div><div class="ncd-lbl">Dias</div></div>
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-horas">0</div><div class="ncd-lbl">Horas</div></div>
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-min">0</div><div class="ncd-lbl">Min</div></div>
+      <div class="ncd-unit"><div class="ncd-num" id="ncd-seg">0</div><div class="ncd-lbl">Seg</div></div>
     </div>
-  </div>
 
+    <div class="const-div">
+      <svg id="constDivSvg" viewBox="0 0 500 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="n-love-msg">
+      <p> </p>
+      <p> </p>
+      <p> </p>
+      <p> </p>
+      <p> </p>
+    </div>
+
+    <div class="n-gal-sec">
+      <h3>Momentos do nosso noivado</h3>
+      <div class="n-gal-view" id="galNV">
+        <!--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        GALERIA NOIVADO
+        A PRIMEIRA imagem deve ter class="active".
+        Para adicionar fotos, copie a linha <img>.
+        Exemplo:
+        <img src="paginanoivado/foto01.jpeg" alt="Foto 1" class="active">
+        <img src="paginanoivado/foto02.jpeg" alt="Foto 2">
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━-->
+        <div class="n-gal-ph" id="galNV-ph" style="display:flex">
+          <span style="font-size:2rem">📷</span>
+          Adicione suas fotos — GALERIA NOIVADO
+        </div>
+      </div>
+      <div class="n-gal-ctrl">
+        <button class="ng-btn" onclick="galNav('galNV','galNV-ct',galNVState,-1)">&#8592;</button>
+        <span class="g-ctr" id="galNV-ct">0 / 0</span>
+        <button class="ng-btn" onclick="galNav('galNV','galNV-ct',galNVState,1)">&#8594;</button>
+      </div>
+    </div>
+
+  </div><!-- /nv-content -->
 </div>
 
-<!-- ════════════════════════════════════════
-     PÁGINA 4 — NOIVADO
-     Animação: partículas flutuantes roxas + brilho pulsante no título
-════════════════════════════════════════ -->
-<div class="page" id="pg-noivado">
-  <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
-  <div class="noivado-particles" id="noivadoParticles"></div>
-  <div class="noivado-content">
-    <div class="noivado-ring">💍</div>
-    <h1 class="noivado-title">Noivado</h1>
-    <div class="noivado-divider">
-      <span></span>
-      <span style="font-size:.8rem;color:rgba(180,100,255,.6)">✦</span>
-      <span></span>
-    </div>
-    <div class="noivado-badge">Em breve</div>
-    <p class="noivado-desc">Do "sim" ao "para sempre" —<br>um passo de cada vez.</p>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PÁGINA 5 — CASAMENTO
-     Animação: velas + water wave no título + pétalas douradas
-════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     PG 5 — CASAMENTO
+══════════════════════════════════════ -->
 <div class="page" id="pg-casamento">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
   <div class="candles" id="candlesRow"></div>
@@ -448,9 +552,9 @@
     <div class="wed-rings">💒</div>
     <div class="wed-title-wrap">
       <span class="wed-title">Casamento</span>
-      <span class="wed-title-reflect" aria-hidden="true">Casamento</span>
+      <span class="wed-reflect" aria-hidden="true">Casamento</span>
     </div>
-    <div class="wed-divider"></div>
+    <div class="wed-div"></div>
     <div class="wed-badge">Em breve</div>
     <p class="wed-desc">A união de dois corações<br>que se escolheram para sempre.</p>
   </div>
@@ -463,197 +567,408 @@
 let currentPage = 'pg-welcome';
 
 function goTo(id) {
-  // Para música ao sair do namoro
-  if (currentPage === 'pg-namoro' && id !== 'pg-namoro') {
-    const m = document.getElementById('bgMusic');
-    m.pause(); m.currentTime = 0;
-    document.getElementById('musicStatus').textContent = 'pausado';
+  // Para músicas ao sair
+  if (currentPage === 'pg-namoro')  { stopMusic('bgMusic','mst-namoro'); }
+  if (currentPage === 'pg-noivado') { stopMusic('bgMusicN','mst-noivado'); }
+
+  // Esconde canvas de estrelas ao sair do noivado
+  if (currentPage === 'pg-noivado') {
+    document.getElementById('starCanvas').style.opacity = '0';
+    stopShootingStars();
   }
+
   document.getElementById(currentPage).classList.remove('active');
   document.getElementById(id).classList.add('active');
+
   if (id === 'pg-namoro') {
     document.getElementById('pg-namoro').scrollTop = 0;
-    // Toca música com pequeno delay (aguarda animação da página)
-    setTimeout(() => {
-      const m = document.getElementById('bgMusic');
-      m.play()
-        .then(() => { document.getElementById('musicStatus').textContent = 'tocando…'; })
-        .catch(() => { document.getElementById('musicStatus').textContent = 'toque ▶ para tocar'; });
-    }, 500);
+    setTimeout(() => playMusic('bgMusic','mst-namoro'), 500);
   }
+
+  if (id === 'pg-noivado') {
+    startNvIntro(); // ← inicia o efeito de zoom GSAP
+  }
+
   currentPage = id;
 }
 
 /* ══════════════════════════════════════════════
    CARROSSEL DE CARDS
-   cardOrder = [posição esquerda, centro, direita]
-   índices: 0=Namoro, 1=Noivado, 2=Casamento
-   Namoro (0) começa no CENTRO
+   Namoro (0) começa no centro
 ══════════════════════════════════════════════ */
-let cardOrder = [2, 0, 1]; // Casamento esq | Namoro centro | Noivado dir
-const posClasses = ['pos-left', 'pos-center', 'pos-right'];
-const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento'];
+let cardOrder = [2, 0, 1]; // esq=Casamento | centro=Namoro | dir=Noivado
+const posClasses = ['pos-left','pos-center','pos-right'];
+const cardDest   = ['pg-namoro','pg-noivado','pg-casamento'];
 
 function renderCards() {
-  cardOrder.forEach((cardIdx, posIdx) => {
-    const el = document.getElementById('card-' + cardIdx);
-    el.className = el.className.replace(/\bpos-\w+\b/g, '').trim() + ' ' + posClasses[posIdx];
+  cardOrder.forEach((ci,pi) => {
+    const el = document.getElementById('card-'+ci);
+    el.className = el.className.replace(/\bpos-\w+\b/g,'').trim() + ' ' + posClasses[pi];
   });
 }
-
 function shiftCards(dir) {
-  // dir=1 → gira para frente (seta direita), dir=-1 → seta esquerda
-  cardOrder = dir === 1
-    ? [cardOrder[1], cardOrder[2], cardOrder[0]]
-    : [cardOrder[2], cardOrder[0], cardOrder[1]];
+  cardOrder = dir===1
+    ? [cardOrder[1],cardOrder[2],cardOrder[0]]
+    : [cardOrder[2],cardOrder[0],cardOrder[1]];
   renderCards();
 }
-
-function handleCardClick(cardIdx) {
-  const posIdx = cardOrder.indexOf(cardIdx);
-  if (posIdx === 1) goTo(cardDest[cardIdx]); // centro → abre
-  else if (posIdx === 0) shiftCards(-1);      // esquerda → traz pra frente
-  else shiftCards(1);                         // direita → traz pra frente
+function handleCardClick(ci) {
+  const pi = cardOrder.indexOf(ci);
+  if (pi===1) goTo(cardDest[ci]);
+  else if (pi===0) shiftCards(-1);
+  else shiftCards(1);
 }
-
-// Swipe no carrossel (mobile)
-let touchX0 = 0;
-document.getElementById('cardsStage').addEventListener('touchstart', e => { touchX0 = e.touches[0].clientX; }, {passive:true});
-document.getElementById('cardsStage').addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchX0;
-  if (Math.abs(dx) > 40) shiftCards(dx < 0 ? 1 : -1);
-}, {passive:true});
+// Swipe carrossel
+let tcX=0;
+document.getElementById('cardsStage').addEventListener('touchstart',e=>{tcX=e.touches[0].clientX;},{passive:true});
+document.getElementById('cardsStage').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tcX;
+  if(Math.abs(dx)>40) shiftCards(dx<0?1:-1);
+},{passive:true});
 
 /* ══════════════════════════════════════════════
    MÚSICA
 ══════════════════════════════════════════════ */
-function toggleMusic() {
-  const m = document.getElementById('bgMusic');
-  const s = document.getElementById('musicStatus');
-  if (m.paused) { m.play(); s.textContent = 'tocando…'; }
-  else          { m.pause(); s.textContent = 'pausado'; }
+function playMusic(id, stId) {
+  const m=document.getElementById(id), s=document.getElementById(stId);
+  if(!m) return;
+  m.play().then(()=>{ if(s) s.textContent='tocando…'; }).catch(()=>{ if(s) s.textContent='toque ▶'; });
+}
+function stopMusic(id, stId) {
+  const m=document.getElementById(id), s=document.getElementById(stId);
+  if(!m) return;
+  m.pause(); m.currentTime=0;
+  if(s) s.textContent='pausado';
+}
+function toggleMusic(id, stId) {
+  const m=document.getElementById(id), s=document.getElementById(stId);
+  if(!m) return;
+  if(m.paused){ m.play(); if(s) s.textContent='tocando…'; }
+  else        { m.pause(); if(s) s.textContent='pausado'; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTADOR — NAMORO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📅 DATA NAMORO — troque a data abaixo pelo início do namoro.
+   Formato: "AAAA-MM-DD"   Exemplo: "2024-09-04"
+
+   ▶ COMO PARAR ESTE CONTADOR:
+      Coloque "//" na frente das 2 linhas marcadas abaixo.
+
+   ▶ QUANDO USAR: enquanto o casal está namorando.
+      Quando noivarem, pare este e ative o do Noivado.
+══════════════════════════════════════════════════════════════ */
+const START_NAMORO = new Date("2024-09-04T00:00:00"); // ← DATA NAMORO
+
+function updateCdNamoro() {
+  const diff = Math.floor((new Date()-START_NAMORO)/1000);
+  if(diff<0) return;
+  const p = n=>String(n).padStart(2,'0');
+  document.getElementById('cd-anos').textContent  = p(Math.floor(diff/(365.25*24*3600)));
+  document.getElementById('cd-meses').textContent = p(Math.floor(diff/(30.44*24*3600))%12);
+  document.getElementById('cd-dias').textContent  = p(Math.floor(diff/(24*3600))%30);
+  document.getElementById('cd-horas').textContent = p(Math.floor(diff/3600)%24);
+  document.getElementById('cd-min').textContent   = p(Math.floor(diff/60)%60);
+  document.getElementById('cd-seg').textContent   = p(diff%60);
+}
+setInterval(updateCdNamoro,1000); // ← coloque "//" aqui para PARAR o contador do Namoro
+updateCdNamoro();                 // ← e aqui também
+
+/* ══════════════════════════════════════════════════════════════
+   CONTADOR — NOIVADO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📅 DATA NOIVADO — troque a data abaixo pelo dia do noivado.
+   Formato: "AAAA-MM-DD"   Exemplo: "2025-06-15"
+
+   ▶ ESTE CONTADOR COMEÇA PARADO POR PADRÃO.
+      Para ativá-lo, REMOVA as "//" das 2 linhas abaixo.
+
+   ▶ PASSO A PASSO para trocar do Namoro para o Noivado:
+      1. Coloque "//" nas 2 linhas do contador do Namoro acima
+      2. Troque a DATA NOIVADO abaixo pela data real
+      3. Remova as "//" das 2 linhas abaixo para ativar
+══════════════════════════════════════════════════════════════ */
+const START_NOIVADO = new Date("2025-01-01T00:00:00"); // ← DATA NOIVADO
+
+function updateCdNoivado() {
+  const diff = Math.floor((new Date()-START_NOIVADO)/1000);
+  if(diff<0) return;
+  const p = n=>String(n).padStart(2,'0');
+  document.getElementById('ncd-anos').textContent  = p(Math.floor(diff/(365.25*24*3600)));
+  document.getElementById('ncd-meses').textContent = p(Math.floor(diff/(30.44*24*3600))%12);
+  document.getElementById('ncd-dias').textContent  = p(Math.floor(diff/(24*3600))%30);
+  document.getElementById('ncd-horas').textContent = p(Math.floor(diff/3600)%24);
+  document.getElementById('ncd-min').textContent   = p(Math.floor(diff/60)%60);
+  document.getElementById('ncd-seg').textContent   = p(diff%60);
+}
+// ↓ Para ATIVAR: remova o "//" da frente das 2 linhas abaixo
+// setInterval(updateCdNoivado,1000); // ← remova "//" para ativar
+// updateCdNoivado();                 // ← e esta também
+
+/* ══════════════════════════════════════════════
+   GALERIAS
+══════════════════════════════════════════════ */
+const galNState  = { idx:0 };
+const galNVState = { idx:0 };
+
+function galNav(viewId, ctId, state, dir) {
+  const imgs = Array.from(document.querySelectorAll('#'+viewId+' img'));
+  if(!imgs.length) return;
+  imgs[state.idx].classList.remove('active');
+  state.idx = (state.idx+dir+imgs.length)%imgs.length;
+  imgs[state.idx].classList.add('active');
+  document.getElementById(ctId).textContent = `${state.idx+1} / ${imgs.length}`;
+}
+function initGallery(viewId, phId, ctId, state) {
+  const imgs = Array.from(document.querySelectorAll('#'+viewId+' img'));
+  const ph   = document.getElementById(phId);
+  if(!imgs.length) { ph.style.display='flex'; return; }
+  ph.style.display='none'; state.idx=0;
+  if(!imgs.find(i=>i.classList.contains('active'))) imgs[0].classList.add('active');
+  document.getElementById(ctId).textContent = `1 / ${imgs.length}`;
+}
+// Swipe galeria namoro
+let gNtx=0;
+document.getElementById('galN').addEventListener('touchstart',e=>{gNtx=e.touches[0].clientX;},{passive:true});
+document.getElementById('galN').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-gNtx;
+  if(Math.abs(dx)>30) galNav('galN','galN-ct',galNState,dx<0?1:-1);
+},{passive:true});
+// Swipe galeria noivado
+let gNVtx=0;
+document.getElementById('galNV').addEventListener('touchstart',e=>{gNVtx=e.touches[0].clientX;},{passive:true});
+document.getElementById('galNV').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-gNVtx;
+  if(Math.abs(dx)>30) galNav('galNV','galNV-ct',galNVState,dx<0?1:-1);
+},{passive:true});
+window.addEventListener('load',()=>setTimeout(()=>{
+  initGallery('galN','galN-ph','galN-ct',galNState);
+  initGallery('galNV','galNV-ph','galNV-ct',galNVState);
+},600));
+
+/* ══════════════════════════════════════════════
+   GSAP INTRO — NOIVADO
+   ──────────────────────────────────────────────
+   Ao entrar na página do noivado:
+   1. A tela de intro (#nv-intro) aparece com a foto em fullscreen
+   2. GSAP anima um leve zoom da foto (scale 1 → 1.12) + fade-in do título
+   3. O botão "Continuar" fica visível e aguarda o clique
+   4. Ao clicar: GSAP faz zoom dramático (scale → 2.2 + escurece)
+      e ao terminar revela o conteúdo real (#nv-content)
+══════════════════════════════════════════════ */
+function startNvIntro() {
+  const intro   = document.getElementById('nv-intro');
+  const content = document.getElementById('nv-content');
+  const img     = document.getElementById('nv-zoom-img');
+  const text    = document.getElementById('nv-intro-text');
+
+  // Garante que o intro está visível e o conteúdo oculto
+  content.style.display  = 'none';
+  intro.style.display    = 'flex';
+  intro.style.opacity    = '1';
+  // Reset da imagem e texto
+  gsap.set(img,  { scale:1, filter:'brightness(0.6)' });
+  gsap.set(text, { opacity:0, y:30 });
+
+  // Animação de entrada: leve zoom + fade do texto
+  const tl = gsap.timeline();
+  tl.to(img,  { scale:1.08, duration:2.5, ease:'power2.out' })
+    .to(text,  { opacity:1, y:0, duration:1, ease:'power2.out' }, '-=1.8');
+}
+
+function showNvContent() {
+  const intro   = document.getElementById('nv-intro');
+  const content = document.getElementById('nv-content');
+  const img     = document.getElementById('nv-zoom-img');
+  const text    = document.getElementById('nv-intro-text');
+
+  // Desabilita o botão para não disparar duas vezes
+  document.getElementById('nv-intro-btn').disabled = true;
+
+  // Zoom dramático na foto + escurece + some o texto
+  const tl = gsap.timeline({ onComplete: () => {
+    // Esconde intro e mostra conteúdo
+    intro.style.display   = 'none';
+    content.style.display = 'block';
+    content.scrollTop = 0;
+    // Fade-in do conteúdo
+    gsap.fromTo(content, { opacity:0 }, { opacity:1, duration:0.8, ease:'power2.out' });
+    // Liga estrelas e constelações
+    document.getElementById('starCanvas').style.opacity = '1';
+    drawConstHeart();
+    drawConstDiv();
+    startShootingStars();
+    // Re-habilita o botão para a próxima vez
+    document.getElementById('nv-intro-btn').disabled = false;
+  }});
+
+  tl.to(text, { opacity:0, y:-20, duration:0.4, ease:'power2.in' })
+    .to(img,   { scale:2.4, filter:'brightness(0.08)', duration:1.0, ease:'power2.inOut' }, '-=0.2');
 }
 
 /* ══════════════════════════════════════════════
-   CONTADOR — DATA DE INÍCIO DO NAMORO
-   ↓↓↓ ALTERE A DATA ABAIXO ↓↓↓
-   Formato: "AAAA-MM-DD"
+   CANVAS DE ESTRELAS
 ══════════════════════════════════════════════ */
-const START_DATE = new Date("2024-09-04T00:00:00"); // ← ALTERE AQUI
+const canvas = document.getElementById('starCanvas');
+const ctx    = canvas.getContext('2d');
+let stars=[], starsOk=false, starTime=0, starAnimId=null;
 
-function updateCountdown() {
-  const diff = Math.floor((new Date() - START_DATE) / 1000);
-  if (diff < 0) return;
-  const p = n => String(n).padStart(2, '0');
-  document.getElementById('cd-anos').textContent  = p(Math.floor(diff / (365.25*24*3600)));
-  document.getElementById('cd-meses').textContent = p(Math.floor(diff / (30.44*24*3600)) % 12);
-  document.getElementById('cd-dias').textContent  = p(Math.floor(diff / (24*3600)) % 30);
-  document.getElementById('cd-horas').textContent = p(Math.floor(diff / 3600) % 24);
-  document.getElementById('cd-min').textContent   = p(Math.floor(diff / 60) % 60);
-  document.getElementById('cd-seg').textContent   = p(diff % 60);
+function resizeCanvas() {
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  if(starsOk) drawStars();
 }
-setInterval(updateCountdown, 1000);
-updateCountdown();
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
 
-/* ══════════════════════════════════════════════
-   GALERIA
-══════════════════════════════════════════════ */
-let galleryIdx = 0;
-
-function getGalleryImgs() {
-  return Array.from(document.querySelectorAll('#galleryViewer img'));
-}
-
-function checkGalleryEmpty() {
-  const imgs = getGalleryImgs();
-  const ph = document.getElementById('galleryPlaceholder');
-  if (imgs.length === 0) {
-    ph.style.display = 'flex';
-  } else {
-    ph.style.display = 'none';
-    if (!imgs.find(i => i.classList.contains('active'))) imgs[0].classList.add('active');
-    galleryIdx = Math.max(0, imgs.indexOf(imgs.find(i => i.classList.contains('active'))));
-    updateGalleryCounter();
+function initStars() {
+  stars=[];
+  const n=Math.floor((canvas.width*canvas.height)/4000);
+  for(let i=0;i<n;i++) {
+    stars.push({
+      x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+      r:Math.random()*1.5+0.3, alpha:Math.random()*0.6+0.2,
+      speed:Math.random()*0.008+0.003, phase:Math.random()*Math.PI*2,
+      color:Math.random()>.7?'rgba(200,180,255,':'rgba(255,255,255,'
+    });
   }
+  starsOk=true;
 }
-
-function galleryNav(dir) {
-  const imgs = getGalleryImgs();
-  if (!imgs.length) return;
-  imgs[galleryIdx].classList.remove('active');
-  galleryIdx = (galleryIdx + dir + imgs.length) % imgs.length;
-  imgs[galleryIdx].classList.add('active');
-  updateGalleryCounter();
+function drawStars() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  starTime+=0.016;
+  stars.forEach(s=>{
+    const a=s.alpha*(0.6+0.4*Math.sin(starTime*s.speed*60+s.phase));
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=s.color+a+')'; ctx.fill();
+  });
 }
-
-function updateGalleryCounter() {
-  const imgs = getGalleryImgs();
-  document.getElementById('galleryCounter').textContent = imgs.length ? `${galleryIdx+1} / ${imgs.length}` : '0 / 0';
+function startStarAnim() {
+  if(!starsOk) initStars();
+  function loop(){ drawStars(); starAnimId=requestAnimationFrame(loop); }
+  loop();
 }
-
-// Swipe na galeria (mobile)
-let galTouchX = 0;
-document.getElementById('galleryViewer').addEventListener('touchstart', e => { galTouchX = e.touches[0].clientX; }, {passive:true});
-document.getElementById('galleryViewer').addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - galTouchX;
-  if (Math.abs(dx) > 30) galleryNav(dx < 0 ? 1 : -1);
-}, {passive:true});
-
-window.addEventListener('load', () => setTimeout(checkGalleryEmpty, 600));
+function stopStarAnim() {
+  if(starAnimId){ cancelAnimationFrame(starAnimId); starAnimId=null; }
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
 
 /* ══════════════════════════════════════════════
-   CHUVA DE CORAÇÕES (global)
+   ESTRELAS CADENTES
 ══════════════════════════════════════════════ */
-const heartEmojis = ['❤️','🩷','💕','💗','💖','✨'];
-function spawnHeart() {
-  const h = document.createElement('div');
-  h.classList.add('hr');
-  h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
-  h.style.left = Math.random() * 100 + 'vw';
-  h.style.fontSize = (0.7 + Math.random() * 1.1) + 'rem';
-  h.style.animationDuration = (4 + Math.random() * 5) + 's';
+let shootInt=null;
+function startShootingStars() {
+  startStarAnim();
+  if(shootInt) return;
+  shootInt=setInterval(launchStar,3000);
+  setTimeout(launchStar,800);
+}
+function stopShootingStars() {
+  stopStarAnim();
+  if(shootInt){ clearInterval(shootInt); shootInt=null; }
+}
+function launchStar() {
+  if(currentPage!=='pg-noivado') return;
+  const el=document.createElement('div');
+  el.classList.add('shooting-star');
+  el.style.left=(Math.random()*80+5)+'vw';
+  el.style.top=(Math.random()*40)+'vh';
+  el.style.transform=`rotate(${25+Math.random()*20}deg)`;
+  el.style.animationDuration=(0.6+Math.random()*0.5)+'s';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+
+/* ══════════════════════════════════════════════
+   CONSTELAÇÃO DE CORAÇÃO
+══════════════════════════════════════════════ */
+function drawConstHeart() {
+  const svg=document.getElementById('constSvg');
+  svg.innerHTML='';
+  const pts=[
+    [240,90],[200,60],[170,30],[150,15],[130,20],[120,38],[130,55],[150,70],[200,85],[240,90],
+    [240,90],[280,85],[330,70],[350,55],[360,38],[350,20],[330,15],[310,30],[280,60],[240,90]
+  ];
+  for(let i=0;i<pts.length-1;i++){
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',pts[i][0]); l.setAttribute('y1',pts[i][1]);
+    l.setAttribute('x2',pts[i+1][0]); l.setAttribute('y2',pts[i+1][1]);
+    l.setAttribute('stroke','rgba(196,170,255,0.35)'); l.setAttribute('stroke-width','1');
+    svg.appendChild(l);
+  }
+  const nodes=[pts[0],pts[3],pts[6],pts[9],pts[12],pts[15]];
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML='<filter id="sg" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  svg.insertBefore(defs,svg.firstChild);
+  nodes.forEach(([x,y],i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r','3');
+    c.setAttribute('fill','rgba(255,255,255,0.9)'); c.setAttribute('filter','url(#sg)');
+    const a=document.createElementNS('http://www.w3.org/2000/svg','animate');
+    a.setAttribute('attributeName','opacity'); a.setAttribute('values','0.4;1;0.4');
+    a.setAttribute('dur',(1.5+i*0.3)+'s'); a.setAttribute('repeatCount','indefinite');
+    c.appendChild(a); svg.appendChild(c);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CONSTELAÇÃO DIVISÓRIA
+══════════════════════════════════════════════ */
+function drawConstDiv() {
+  const svg=document.getElementById('constDivSvg');
+  svg.innerHTML='';
+  const pts=[[30,40],[90,25],[160,50],[230,20],[300,45],[370,22],[440,40],[470,35]];
+  for(let i=0;i<pts.length-1;i++){
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',pts[i][0]); l.setAttribute('y1',pts[i][1]);
+    l.setAttribute('x2',pts[i+1][0]); l.setAttribute('y2',pts[i+1][1]);
+    l.setAttribute('stroke','rgba(196,170,255,0.2)'); l.setAttribute('stroke-width','1');
+    svg.appendChild(l);
+  }
+  pts.forEach(([x,y],i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y);
+    c.setAttribute('r',i===3||i===6?'4':'2.5');
+    c.setAttribute('fill','rgba(220,200,255,0.85)');
+    const a=document.createElementNS('http://www.w3.org/2000/svg','animate');
+    a.setAttribute('attributeName','opacity'); a.setAttribute('values','0.3;1;0.3');
+    a.setAttribute('dur',(1.2+i*0.25)+'s'); a.setAttribute('repeatCount','indefinite');
+    c.appendChild(a); svg.appendChild(c);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CHUVA DE CORAÇÕES
+══════════════════════════════════════════════ */
+const hearts=['❤️','🩷','💕','💗','💖','✨'];
+function spawnHeart(){
+  const h=document.createElement('div'); h.classList.add('hr');
+  h.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+  h.style.left=Math.random()*100+'vw';
+  h.style.fontSize=(0.7+Math.random()*1.1)+'rem';
+  h.style.animationDuration=(4+Math.random()*5)+'s';
   document.getElementById('heartRain').appendChild(h);
-  setTimeout(() => h.remove(), 9500);
+  setTimeout(()=>h.remove(),9500);
 }
-setInterval(spawnHeart, 1100);
+setInterval(spawnHeart,1100);
 
 /* ══════════════════════════════════════════════
-   ANIMAÇÕES — NOIVADO: partículas roxas flutuantes
+   CASAMENTO — VELAS + PÉTALAS
 ══════════════════════════════════════════════ */
-(function() {
-  const c = document.getElementById('noivadoParticles');
-  for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
-    p.classList.add('n-particle');
-    const sz = 6 + Math.random() * 14;
-    p.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
-    c.appendChild(p);
-  }
-})();
-
-/* ══════════════════════════════════════════════
-   ANIMAÇÕES — CASAMENTO: velas + pétalas douradas
-══════════════════════════════════════════════ */
-(function() {
-  // Velas
-  const row = document.getElementById('candlesRow');
-  for (let i = 0; i < 7; i++) {
-    const c = document.createElement('div');
-    c.classList.add('candle');
-    const h = 50 + Math.random() * 65;
-    const dur = 1.2 + Math.random() * 0.8;
-    const delay = Math.random() * 0.5;
-    c.innerHTML = `<div class="candle-flame" style="animation-duration:${dur}s;animation-delay:${delay}s"></div><div class="candle-body" style="height:${h}px"></div>`;
+(function(){
+  const row=document.getElementById('candlesRow');
+  for(let i=0;i<7;i++){
+    const c=document.createElement('div'); c.classList.add('candle');
+    const h=50+Math.random()*65,dur=1.2+Math.random()*.8,del=Math.random()*.5;
+    c.innerHTML=`<div class="candle-flame" style="animation-duration:${dur}s;animation-delay:${del}s"></div><div class="candle-body" style="height:${h}px"></div>`;
     row.appendChild(c);
   }
-  // Pétalas
-  const petals = ['🌸','✨','⭐','💛','🌼'];
-  const pg = document.getElementById('pg-casamento');
-  for (let i = 0; i < 12; i++) {
-    const p = document.createElement('div');
-    p.classList.add('gold-particle');
-    p.textContent = petals[Math.floor(Math.random() * petals.length)];
-    p.style.cssText = `left:${Math.random()*100}%;font-size:${0.6+Math.random()*.8}rem;animation-duration:${7+Math.random()*10}s;animation-delay:${Math.random()*10}s;`;
+  const pt=['🌸','✨','⭐','💛','🌼'];
+  const pg=document.getElementById('pg-casamento');
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div'); p.classList.add('gold-p');
+    p.textContent=pt[Math.floor(Math.random()*pt.length)];
+    p.style.cssText=`left:${Math.random()*100}%;font-size:${0.6+Math.random()*.8}rem;animation-duration:${7+Math.random()*10}s;animation-delay:${Math.random()*10}s;`;
     pg.appendChild(p);
   }
 })();
@@ -661,14 +976,85 @@ setInterval(spawnHeart, 1100);
 /* ══════════════════════════════════════════════
    TECLADO
 ══════════════════════════════════════════════ */
-document.addEventListener('keydown', e => {
-  if (currentPage === 'pg-selector') {
-    if (e.key === 'ArrowLeft')  shiftCards(-1);
-    if (e.key === 'ArrowRight') shiftCards(1);
-    if (e.key === 'Enter') goTo(cardDest[cardOrder[1]]);
+document.addEventListener('keydown',e=>{
+  if(currentPage==='pg-selector'){
+    if(e.key==='ArrowLeft')  shiftCards(-1);
+    if(e.key==='ArrowRight') shiftCards(1);
+    if(e.key==='Enter') goTo(cardDest[cardOrder[1]]);
   }
-  if (e.key === 'Escape' && currentPage !== 'pg-welcome' && currentPage !== 'pg-selector') goTo('pg-selector');
+  if(e.key==='Escape'&&currentPage!=='pg-welcome'&&currentPage!=='pg-selector') goTo('pg-selector');
 });
+
+/* ══════════════════════════════════════════════
+   CSS INLINE DO INTRO NOIVADO
+   (precisa ser no JS para aplicar ao #nv-intro
+    que é filho de .page e precisa de position fixed)
+══════════════════════════════════════════════ */
+(function() {
+  const s = document.createElement('style');
+  s.textContent = `
+    #nv-intro {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; z-index: 30;
+      background: #020010;
+    }
+    #nv-zoom-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+      filter: brightness(0.6);
+    }
+    #nv-intro-text {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      gap: 1.2rem; padding: 2rem;
+      opacity: 0;
+    }
+    #nv-intro-eyebrow {
+      font-size: .75rem; letter-spacing: .4em; text-transform: uppercase;
+      color: rgba(196,170,255,.85);
+    }
+    #nv-intro-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(3.5rem, 11vw, 7rem);
+      color: #fff;
+      text-shadow: 0 0 60px rgba(196,170,255,.9), 0 0 120px rgba(140,80,255,.6);
+      line-height: 1.1;
+    }
+    #nv-intro-btn {
+      margin-top: .5rem; padding: .8rem 2.5rem;
+      background: transparent; border: 1px solid rgba(196,170,255,.5);
+      color: rgba(196,170,255,.9);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .75rem; letter-spacing: .3em; text-transform: uppercase;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: color .3s, border-color .3s;
+      display: flex; align-items: center; gap: .8rem;
+    }
+    #nv-intro-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(196,170,255,.15); transform: scaleX(0);
+      transform-origin: left; transition: transform .3s; z-index: -1;
+    }
+    #nv-intro-btn:hover::before { transform: scaleX(1); }
+    #nv-intro-btn:hover { border-color: rgba(196,170,255,.9); color: #fff; }
+    #nv-intro-btn:disabled { opacity: .5; cursor: not-allowed; }
+    #nv-btn-arrow { animation: arr-b 1.4s ease-in-out infinite; display: inline-block; }
+    @keyframes arr-b { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+    #nv-content {
+      display: none;
+      position: absolute; inset: 0;
+      overflow-y: auto; overflow-x: hidden;
+      z-index: 5;
+    }
+    #nv-content::-webkit-scrollbar { width: 4px; }
+    #nv-content::-webkit-scrollbar-thumb { background: rgba(196,170,255,.3); }
+  `;
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
