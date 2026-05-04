@@ -214,9 +214,101 @@
       .countdown-wrap { gap:.6rem; }
       .cd-unit { min-width:58px; padding:.7rem .8rem; }
     }
+
+    /* ══ CARTA SURPRESA ══ */
+    #carta-wrap {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
+      opacity: 0; pointer-events: none; transition: opacity .5s;
+    }
+    #carta-wrap.visible { opacity: 1; pointer-events: all; }
+    .carta-box {
+      position: relative; max-width: 480px; width: 90vw;
+      background: linear-gradient(160deg, #1a0030, #0a0020);
+      border: 1px solid rgba(232,160,176,.25); border-radius: 4px;
+      padding: 2.5rem 2rem; text-align: center;
+      box-shadow: 0 0 80px rgba(232,160,176,.15);
+      transform: translateY(30px); transition: transform .5s;
+      overflow: hidden; word-break: break-word;
+    }
+    #carta-wrap.visible .carta-box { transform: translateY(0); }
+    .carta-envelope { font-size: 3.5rem; margin-bottom: 1rem; animation: env-float 3s ease-in-out infinite; display: block; }
+    @keyframes env-float { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
+    .carta-eyebrow { font-size: .65rem; letter-spacing: .4em; text-transform: uppercase; color: rgba(232,160,176,.6); margin-bottom: .5rem; }
+    .carta-titulo { font-family: 'Great Vibes', cursive; font-size: clamp(2rem,6vw,3rem); color: #fff; text-shadow: 0 0 40px rgba(232,160,176,.7); margin-bottom: 1.2rem; }
+    .carta-texto { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(1rem,2.5vw,1.2rem); line-height: 1.9; color: rgba(255,248,245,.75); margin-bottom: 1.5rem; }
+    .carta-assinatura { font-family: 'Great Vibes', cursive; font-size: 1.6rem; color: rgba(232,160,176,.8); }
+    .carta-fechar { position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: rgba(255,255,255,.3); font-size: 1.4rem; cursor: pointer; transition: color .3s; }
+    .carta-fechar:hover { color: rgba(232,160,176,.8); }
+    #card-surpresa {
+      position: absolute; bottom: -2rem; left: 50%; transform: translateX(-50%);
+      display: none; align-items: center; gap: .6rem;
+      background: rgba(232,160,176,.12); border: 1px solid rgba(232,160,176,.35);
+      border-radius: 30px; padding: .65rem 1.6rem; cursor: pointer;
+      color: rgba(232,160,176,.85); font-family: 'Josefin Sans', sans-serif;
+      font-size: .72rem; letter-spacing: .25em; text-transform: uppercase;
+      transition: background .3s, border-color .3s; white-space: nowrap;
+      animation: pulse-carta 2.5s ease-in-out infinite;
+    }
+    #card-surpresa.show { display: flex; }
+    #card-surpresa:hover { background: rgba(232,160,176,.22); border-color: rgba(232,160,176,.7); color: #fff; }
+    @keyframes pulse-carta { 0%,100%{box-shadow:0 0 0 0 rgba(232,160,176,0)} 50%{box-shadow:0 0 20px 6px rgba(232,160,176,.25)} }
   </style>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAL0WV45HbQHc04EnAsEfQ9-ZBvqtHWyWc",
+      authDomain: "nosso-time-fe541.firebaseapp.com",
+      databaseURL: "https://nosso-time-fe541-default-rtdb.firebaseio.com",
+      projectId: "nosso-time-fe541",
+      storageBucket: "nosso-time-fe541.firebasestorage.app",
+      messagingSenderId: "488592305783",
+      appId: "1:488592305783:web:b0af880e036c71b6fa2072"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    window._fbSet = (path, data) => set(ref(db, path), data);
+    window._fbGet = (path)       => get(ref(db, path));
+
+    // Verifica carta ao carregar
+    window._fbGet('carta02').then(snap => {
+      if (!snap.exists()) {
+        window._cartaNaoAberta = true;
+        window._verificarExibicaoCarta && window._verificarExibicaoCarta();
+      }
+    }).catch(() => {});
+  </script>
 </head>
 <body>
+
+<!-- ══ CARTA SURPRESA ══ -->
+<div id="carta-wrap">
+  <div class="carta-box">
+    <button class="carta-fechar" onclick="fecharCarta()">✕</button>
+    <span class="carta-envelope">💌</span>
+    <p class="carta-eyebrow">Uma mensagem especial</p>
+    <h2 class="carta-titulo">Para Você</h2>
+    <!--
+    ✏️ PERSONALIZE A CARTA ABAIXO
+    Troque o texto pela sua mensagem especial.
+    -->
+    <p class="carta-texto">
+      ✏️ <em>Personalize esta mensagem no código</em><br><br>
+      Dois anos atrás, sem saber ao certo o que o futuro<br>
+      guardava, dei a mão pra você — e foi a melhor<br>
+      decisão que já tomei na vida.<br><br>
+      Cada dia ao seu lado é uma prova de que<br>
+      o amor verdadeiro existe, e que ele tem o seu nome.
+    </p>
+    <p class="carta-assinatura">Com todo o meu amor 💕</p>
+  </div>
+</div>
 
 <div class="bg-canvas">
   <div class="orb orb1"></div>
@@ -242,7 +334,10 @@
 <div class="page" id="pg-selector">
   <p class="selector-title">Escolha um capítulo</p>
 
-  <div class="cards-stage" id="cardsStage">
+  <div class="cards-stage" id="cardsStage" style="position:relative;">
+
+    <!-- Botão secreto — aparece na data configurada abaixo -->
+    <button id="card-surpresa" onclick="abrirCarta()">💌 uma surpresa para você</button>
 
     <!--
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -400,6 +495,7 @@
       <img src="terceirapaginanamoro/arquivoscontador/unidade00013.jpeg" alt="Foto 13" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00014.jpeg" alt="Foto 14" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00015.jpeg" alt="Foto 15" onerror="this.remove()">
+      <img src="terceirapaginanamoro/arquivoscontador/unidade00016.jpeg" alt="Foto 16" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00016.jpeg" alt="Foto 16" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00017.jpeg" alt="Foto 17" onerror="this.remove()">
       <img src="terceirapaginanamoro/arquivoscontador/unidade00018.jpeg" alt="Foto 18" onerror="this.remove()">
@@ -687,6 +783,77 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Enter') goTo(cardDest[cardOrder[1]]);
   }
   if (e.key === 'Escape' && currentPage !== 'pg-welcome' && currentPage !== 'pg-selector') goTo('pg-selector');
+});
+
+/* ══════════════════════════════════════════════════════════════
+   CARTA SURPRESA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📅 DATA DE LIBERAÇÃO — troque a data abaixo pela data real.
+   Formato: new Date("AAAA-MM-DDTHH:MM:00")
+   Exemplo: new Date("2026-09-04T20:00:00") = 04/09/2026 às 20h
+
+   ▶ PARA TESTAR: coloque uma data/hora já passada
+   ▶ PARA LIMPAR (reabrir): Firebase → Dados → apague o nó "carta"
+══════════════════════════════════════════════════════════════ */
+const DATA_CARTA = new Date("2026-05-04T00:00:00"); // ← MUDE AQUI a data de liberação
+
+function _verificarExibicaoCarta() {
+  const agora = new Date();
+  if (agora >= DATA_CARTA && window._cartaNaoAberta) {
+    document.getElementById('card-surpresa').classList.add('show');
+  }
+}
+window._verificarExibicaoCarta = _verificarExibicaoCarta;
+
+(function() {
+  const agora = new Date();
+  if (agora < DATA_CARTA) {
+    const falta = DATA_CARTA - agora;
+    setTimeout(() => {
+      if (window._cartaNaoAberta) {
+        document.getElementById('card-surpresa').classList.add('show');
+      }
+    }, Math.min(falta, 2147483647));
+  } else {
+    // Data já passou — aguarda Firebase confirmar se foi aberta
+    setTimeout(_verificarExibicaoCarta, 1500);
+  }
+})();
+
+function abrirCarta() {
+  if (!window._fbSet) { mostrarCarta(); return; }
+  window._fbSet('carta02', {
+    abertaEm: new Date().toISOString(),
+    abertaPor: 'primeiro acesso'
+  }).then(() => {
+    window._cartaNaoAberta = false;
+    document.getElementById('card-surpresa').classList.remove('show');
+    mostrarCarta();
+  }).catch(() => mostrarCarta());
+}
+
+function mostrarCarta() {
+  document.getElementById('carta-wrap').classList.add('visible');
+  for (let i = 0; i < 22; i++) {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.classList.add('hr');
+      h.textContent = ['💕','❤️','🩷','✨','💗','💖'][Math.floor(Math.random()*6)];
+      h.style.left = Math.random()*100 + 'vw';
+      h.style.fontSize = (0.8 + Math.random()) + 'rem';
+      h.style.animationDuration = (2 + Math.random()*2) + 's';
+      document.getElementById('heartRain').appendChild(h);
+      setTimeout(() => h.remove(), 4000);
+    }, i * 70);
+  }
+}
+
+function fecharCarta() {
+  document.getElementById('carta-wrap').classList.remove('visible');
+}
+
+document.getElementById('carta-wrap').addEventListener('click', function(e) {
+  if (e.target === this) fecharCarta();
 });
 </script>
 </body>
