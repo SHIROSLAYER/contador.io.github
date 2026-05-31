@@ -411,154 +411,175 @@
     .gold-particle { position:absolute; pointer-events:none; z-index:0; animation:petal-fall linear infinite; opacity:0; }
     @keyframes petal-fall { 0%{transform:translateY(-5vh) rotate(0deg);opacity:0} 10%{opacity:.7} 90%{opacity:.3} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 
-    /* ══════════════════════════════════════════════
-       RESPONSIVIDADE COMPLETA
-    ══════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════
+       RESPONSIVIDADE COMPLETA — preenche qualquer tela
+       Sistema: min(vw, svh) → nunca transborda em nenhuma
+       dimensão, seja paisagem, retrato, mobile ou 4K
+    ══════════════════════════════════════════════════════ */
 
-    /* ── Tablet (≤ 768px) ── */
-    @media (max-width:768px) {
-      /* Seletor — cards menores */
-      .cards-stage    { height:clamp(280px,62vw,430px); width:min(96vw,900px); }
-      .sel-card       { width:clamp(150px,40vw,230px); height:clamp(210px,55vw,330px); }
-      .sel-card.pos-left  { transform:translate(calc(-50% - clamp(130px,19vw,210px)),-50%) scale(.82) rotateY(15deg); }
-      .sel-card.pos-right { transform:translate(calc(-50% + clamp(130px,19vw,210px)),-50%) scale(.82) rotateY(-15deg); }
-      .selector-title { margin-bottom:1.8rem; }
+    /* ── BASE FLUID: cards usam menor entre vw e svh ── */
+    .sel-card {
+      width:  min(clamp(175px,28vw,260px), 38svh);
+      height: min(clamp(245px,40vw,370px), 54svh);
+    }
+    .cards-stage {
+      width:  min(92vw, 900px);
+      height: min(clamp(320px,54svh,500px), 72vw);
+    }
+    .sel-card.pos-left  { transform:translate(calc(-50% - min(clamp(155px,22vw,240px),28svh)),-50%) scale(.82) rotateY(16deg); }
+    .sel-card.pos-right { transform:translate(calc(-50% + min(clamp(155px,22vw,240px),28svh)),-50%) scale(.82) rotateY(-16deg); }
 
-      /* Namoro — countdown */
-      .countdown-wrap { gap:.65rem; padding:0 1.2rem; }
-      .cd-unit        { min-width:58px; padding:.75rem .9rem; }
+    /* Galeria: altura baseada no viewport, não só aspect-ratio */
+    .gallery-viewer { aspect-ratio:unset; height:clamp(220px,min(48vw,44svh),520px); }
 
-      /* Namoro — galeria */
-      .gallery-section { padding:0 1rem; }
-      .gallery-viewer  { aspect-ratio:3/2; }
-
-      /* Namoro — mensagem */
-      .love-message { padding:0 1.2rem; }
-
-      /* Noivado zoom text */
-      .n-zoom-text { max-width:min(90vw,380px); padding:1.2rem 1.8rem 1.4rem; }
-
-      /* Admin bar */
-      #adm-bar { gap:.5rem; padding:.45rem 1rem; max-width:94vw; flex-wrap:wrap; justify-content:center; }
-      .adm-bar-label { width:100%; text-align:center; }
-
-      /* Casamento renda/flores menores */
-      .c-lace    { width:min(38vw,200px); height:min(38vw,200px); }
-      .c-flowers { width:min(34vw,180px); height:min(34vw,180px); }
-
-      /* Lightbox nav */
-      #lb-prev { left:.5rem; }
-      #lb-next { right:.5rem; }
+    /* ── TELAS GRANDES (≥ 1280px desktop) ── */
+    @media (min-width:1280px) {
+      .sel-card       { width:clamp(220px,16vw,290px); height:clamp(310px,23vw,420px); }
+      .cards-stage    { height:clamp(380px,54svh,540px); }
+      .welcome-title  { font-size:clamp(6rem,10vw,9rem); }
+      .gallery-viewer { height:clamp(320px,44svh,580px); }
+      .love-message   { max-width:760px; }
+      .love-message p { font-size:1.12rem; }
     }
 
-    /* ── Mobile (≤ 480px) ── */
+    /* ── TELAS 4K (≥ 2400px) ── */
+    @media (min-width:2400px) {
+      .sel-card       { width:360px; height:520px; }
+      .cards-stage    { height:620px; width:1100px; }
+      .welcome-title  { font-size:11rem; }
+      .gallery-viewer { height:640px; }
+      .cd-num         { font-size:3.8rem !important; }
+      .cd-unit        { min-width:90px; padding:1.4rem 1.6rem; }
+      .selector-title { font-size:1.8rem; }
+      .page-back      { font-size:.75rem; padding:.7rem 1.5rem; }
+    }
+
+    /* ── TABLET (≤ 768px) ── */
+    @media (max-width:768px) {
+      .cards-stage    { width:min(98vw,900px); }
+      .selector-title { margin-bottom:1.6rem; }
+      .countdown-wrap { gap:.65rem; padding:0 1rem; }
+      .cd-unit        { min-width:56px; padding:.7rem .85rem; }
+      .gallery-section { padding:0 1rem; }
+      .love-message   { padding:0 1.1rem; }
+      .n-zoom-text    { max-width:min(90vw,380px); padding:1.2rem 1.8rem 1.4rem; }
+      #adm-bar        { gap:.5rem; padding:.45rem 1rem; max-width:94vw; flex-wrap:wrap; justify-content:center; }
+      .adm-bar-label  { width:100%; text-align:center; }
+      .c-lace         { width:min(36vw,200px); height:min(36vw,200px); }
+      .c-flowers      { width:min(32vw,180px); height:min(32vw,180px); }
+      #lb-prev { left:.5rem; } #lb-next { right:.5rem; }
+    }
+
+    /* ── MOBILE PORTRAIT (≤ 480px) ── */
     @media (max-width:480px) {
-      /* Welcome */
-      .welcome-btn     { padding:.85rem 2.2rem; font-size:.65rem; letter-spacing:.32em; }
-      .welcome-title   { font-size:clamp(3.2rem,13vw,7rem); }
-      .welcome-sub     { font-size:.82rem; letter-spacing:.14em; }
-
-      /* Botão voltar */
-      .page-back { font-size:.52rem; padding:.4rem .8rem; top:.8rem; left:.8rem; letter-spacing:.28em; }
-
-      /* Seletor — cards bem pequenos */
-      .cards-stage    { height:clamp(250px,68vw,360px); }
-      .sel-card       { width:clamp(135px,46vw,195px); height:clamp(190px,63vw,275px); }
-      .sel-card.pos-left  { transform:translate(calc(-50% - 115px),-50%) scale(.77) rotateY(14deg); opacity:.4; }
-      .sel-card.pos-right { transform:translate(calc(-50% + 115px),-50%) scale(.77) rotateY(-14deg); opacity:.4; }
-      .sel-card .card-content h2 { font-size:clamp(1.5rem,5.5vw,2rem); }
-      .sel-card .card-icon       { font-size:1.6rem; }
-      .selector-title  { font-size:.85rem; letter-spacing:.1em; margin-bottom:1.2rem; }
-      .nav-arrows      { gap:.9rem; margin-top:1.2rem; }
+      .welcome-btn     { padding:.85rem 2rem; font-size:.65rem; letter-spacing:.3em; }
+      .welcome-title   { font-size:clamp(3rem,14vw,6rem); }
+      .welcome-sub     { font-size:.8rem; letter-spacing:.12em; }
+      .page-back       { font-size:.52rem; padding:.4rem .8rem; top:.75rem; left:.75rem; }
+      .selector-title  { font-size:.82rem; letter-spacing:.1em; margin-bottom:1rem; }
+      .sel-card .card-content h2 { font-size:clamp(1.4rem,5vw,2rem); }
+      .sel-card .card-icon       { font-size:1.5rem; }
       .nav-arr         { width:42px; height:42px; font-size:1rem; }
-      .card-open-hint  { font-size:.55rem; }
+      .card-open-hint  { font-size:.52rem; }
+      .countdown-wrap  { gap:.4rem; padding:0 .7rem; margin:1.4rem auto; }
+      .cd-unit         { min-width:44px; padding:.55rem .45rem; }
+      .cd-num          { font-size:clamp(1.4rem,5.5vw,2rem) !important; }
+      .cd-label        { font-size:.4rem; letter-spacing:.2em; }
+      .love-message    { padding:0 .7rem; }
+      .love-message p  { font-size:.92rem; line-height:1.8; padding:.9rem .9rem .9rem 1rem; }
+      .love-message p::first-letter { font-size:2.3rem; }
+      .gallery-section { padding:0 .5rem; }
+      .g-btn           { width:40px; height:40px; font-size:.9rem; }
+      .g-counter       { font-size:.66rem; min-width:48px; }
+      .namoro-hero     { padding:2.8rem 1rem 2.2rem; min-height:30svh; }
+      .hero-title      { font-size:clamp(2.2rem,9vw,4rem); }
+      .music-player    { padding:.5rem 1rem; }
+      .music-progress-outer { width:120px; }
+      .n-zoom-text     { top:5%; max-width:90vw; padding:1rem 1.3rem 1.1rem; }
+      .n-zoom-title    { font-size:clamp(2.5rem,9.5vw,4.5rem); }
+      .n-zoom-quote    { font-size:clamp(.95rem,3.5vw,1.35rem); }
+      .noivado-ring    { font-size:3.2rem; }
+      .noivado-title   { font-size:clamp(2.4rem,9vw,4.2rem); }
+      .n-hero-content  { gap:.9rem; padding:1.3rem 1rem; }
+      .wed-content     { padding:1.3rem 1rem; gap:.8rem; }
+      .wed-title       { font-size:clamp(2.3rem,9.5vw,4.2rem); }
+      .wed-title-reflect { font-size:clamp(2.3rem,9.5vw,4.2rem); }
+      .wed-rings       { font-size:2.6rem; }
+      .wed-desc        { font-size:clamp(.9rem,3.5vw,1.15rem); }
+      .c-lace          { width:min(46vw,155px); height:min(46vw,155px); }
+      .c-flowers       { width:min(42vw,140px); height:min(42vw,140px); }
+      #adm-bar         { bottom:.5rem; padding:.35rem .65rem; gap:.3rem; max-width:97vw; }
+      .adm-bar-btn     { padding:.26rem .65rem; font-size:.54rem; }
+      #lb-prev { left:.15rem; } #lb-next { right:.15rem; }
+      .lb-nav          { width:36px; height:36px; font-size:.85rem; }
+      #lightbox .lb-img { max-width:99vw; max-height:86svh; }
+      .lb-close        { top:.6rem; right:.7rem; font-size:1.5rem; }
+      .carta-box       { padding:1.8rem 1.2rem; }
+      .gallery-placeholder { font-size:.88rem; }
+    }
 
-      /* Namoro — countdown compacto */
-      .countdown-wrap  { gap:.45rem; padding:0 .75rem; margin:1.5rem auto; }
-      .cd-unit         { min-width:46px; padding:.6rem .5rem; }
-      .cd-num          { font-size:clamp(1.5rem,5.5vw,2rem) !important; }
-      .cd-label        { font-size:.42rem; letter-spacing:.22em; }
+    /* ── MICRO (≤ 360px) ── */
+    @media (max-width:360px) {
+      .cd-unit  { min-width:38px; padding:.48rem .38rem; }
+      .cd-num   { font-size:1.3rem !important; }
+      .n-zoom-text { top:4%; padding:.8rem 1rem .9rem; }
+    }
 
-      /* Namoro — mensagem de amor */
-      .love-message            { padding:0 .75rem; }
-      .love-message p          { font-size:.93rem; line-height:1.85; padding:1rem 1rem 1rem 1.1rem; }
-      .love-message p::first-letter { font-size:2.4rem; }
+    /* ── LANDSCAPE COMPACTO (altura ≤ 520px — qualquer largura) ── */
+    @media (max-height:520px) {
+      /* Seletor: cards escalam pela altura disponível */
+      .cards-stage    { height:min(70svh,340px); }
+      .sel-card       { width:min(20vw,195px); height:min(64svh,280px); }
+      .sel-card.pos-left  { transform:translate(calc(-50% - min(17vw,175px)),-50%) scale(.8) rotateY(14deg); opacity:.45; }
+      .sel-card.pos-right { transform:translate(calc(-50% + min(17vw,175px)),-50%) scale(.8) rotateY(-14deg); opacity:.45; }
+      .selector-title { font-size:.78rem; margin-bottom:.7rem; }
+      .nav-arrows     { margin-top:.6rem; }
+      .nav-arr        { width:38px; height:38px; }
+      .card-open-hint { display:none; }
 
-      /* Namoro — galeria */
-      .gallery-section  { padding:0 .6rem; }
-      .gallery-viewer   { aspect-ratio:1/1; }
-      .g-btn            { width:40px; height:40px; font-size:.9rem; }
-      .g-counter        { font-size:.68rem; min-width:50px; }
-
-      /* Hero namoro */
-      .namoro-hero      { padding:3rem 1.2rem 2.5rem; min-height:32vh; }
-      .hero-title       { font-size:clamp(2.4rem,9vw,4.5rem); }
-
-      /* Music player */
-      .music-player     { padding:.5rem 1.1rem; }
-      .music-label      { font-size:.6rem; }
-      .music-progress-outer { width:130px; }
-
-      /* Noivado — texto zoom */
-      .n-zoom-text      { top:6%; max-width:88vw; padding:1rem 1.4rem 1.2rem; }
-      .n-zoom-eyebrow   { font-size:.62rem; letter-spacing:.4em; }
-      .n-zoom-title     { font-size:clamp(2.6rem,9.5vw,4.5rem); }
-      .n-zoom-quote     { font-size:clamp(1rem,3.5vw,1.4rem); }
-
-      /* Noivado hero */
-      .noivado-ring  { font-size:3.5rem; }
-      .noivado-title { font-size:clamp(2.5rem,9vw,4.5rem); }
-      .n-hero-content { gap:1rem; padding:1.5rem 1.2rem; }
+      /* Welcome: comprime margens verticais */
+      .welcome-line     { margin-bottom:.7rem; }
+      .welcome-eyebrow  { margin-bottom:.55rem; }
+      .welcome-title    { font-size:clamp(2.6rem,11vw,5rem); margin-bottom:.7rem; }
+      .welcome-sub      { font-size:.76rem; margin-bottom:1rem; }
+      .welcome-divider  { margin-bottom:.8rem; }
+      .welcome-btn      { padding:.75rem 2rem; }
 
       /* Casamento */
-      .wed-content  { padding:1.5rem 1.2rem; gap:.9rem; }
-      .wed-title    { font-size:clamp(2.4rem,9.5vw,4.5rem); }
-      .wed-title-reflect { font-size:clamp(2.4rem,9.5vw,4.5rem); }
-      .wed-rings    { font-size:2.8rem; }
-      .wed-desc     { font-size:clamp(.95rem,3.5vw,1.2rem); }
-      .c-lace       { width:min(48vw,160px); height:min(48vw,160px); }
-      .c-flowers    { width:min(44vw,145px); height:min(44vw,145px); }
+      .wed-content  { padding:1rem 2rem; gap:.65rem; }
+      .wed-rings    { font-size:2.2rem; }
+      .wed-desc     { font-size:clamp(.85rem,2.5vw,1rem); }
+      .c-lace       { width:min(28vw,130px); height:min(28vw,130px); }
+      .c-flowers    { width:min(25vw,115px); height:min(25vw,115px); }
 
-      /* Admin bar — compacto */
-      #adm-bar      { bottom:.6rem; padding:.4rem .7rem; gap:.35rem; max-width:96vw; }
-      .adm-bar-btn  { padding:.28rem .7rem; font-size:.56rem; }
-
-      /* Lightbox */
-      #lb-prev      { left:.2rem; }
-      #lb-next      { right:.2rem; }
-      .lb-nav       { width:36px; height:36px; font-size:.85rem; }
-      #lightbox .lb-img { max-width:98vw; max-height:84vh; }
-      .lb-close     { top:.7rem; right:.8rem; font-size:1.5rem; }
-
-      /* Carta surpresa */
-      .carta-box    { padding:2rem 1.4rem; }
-      .carta-titulo { font-size:clamp(1.8rem,6vw,2.5rem); }
-      .carta-texto  { font-size:clamp(.9rem,2.8vw,1.1rem); }
-
-      /* Placeholder galeria */
-      .gallery-placeholder { font-size:.9rem; gap:.6rem; }
+      /* Noivado */
+      .noivado-ring   { font-size:2.6rem; }
+      .noivado-title  { font-size:clamp(2rem,7vw,3.5rem); }
+      .n-hero-content { gap:.7rem; padding:1rem 1.5rem; }
+      .n-zoom-text    { top:4%; padding:.9rem 1.6rem 1rem; }
+      .n-zoom-title   { font-size:clamp(2.2rem,8vw,3.8rem); }
     }
 
-    /* ── Telas muito pequenas (≤ 360px) ── */
-    @media (max-width:360px) {
-      .sel-card       { width:126px; height:178px; }
-      .sel-card.pos-left  { transform:translate(calc(-50% - 105px),-50%) scale(.74) rotateY(13deg); }
-      .sel-card.pos-right { transform:translate(calc(-50% + 105px),-50%) scale(.74) rotateY(-13deg); }
-      .cd-unit        { min-width:40px; padding:.5rem .4rem; }
-      .cd-num         { font-size:1.35rem !important; }
-      .n-zoom-text    { top:4%; padding:.85rem 1.1rem 1rem; }
+    /* ── LANDSCAPE ULTRA-COMPACTO (altura ≤ 380px — iPhone SE landscape) ── */
+    @media (max-height:380px) {
+      .cards-stage    { height:min(74svh,270px); }
+      .sel-card       { width:min(18vw,170px); height:min(68svh,245px); }
+      .sel-card .card-content { padding:1rem .8rem .8rem; }
+      .sel-card .card-icon    { font-size:1.3rem; margin-bottom:.3rem; }
+      .sel-card .card-content h2 { font-size:clamp(1.2rem,3.5vw,1.6rem); }
+      .welcome-title  { font-size:clamp(2rem,10vw,3.5rem); }
+      .welcome-btn    { padding:.6rem 1.6rem; font-size:.6rem; }
     }
 
-    /* ── Touch: remove efeitos só-hover que não funcionam no toque ── */
+    /* ── TOUCH: remove efeitos hover, aumenta tap targets ── */
     @media (hover:none) {
       .sel-card.pos-center:hover .card-photo   { transform:none; }
       .sel-card.pos-center:hover .card-shimmer { background-position:0 0; }
       .sel-card.pos-center:hover               { transform:translate(-50%,-50%) scale(1.07); box-shadow:0 20px 80px rgba(0,0,0,.85),0 0 40px rgba(180,80,110,.18),0 0 0 1px rgba(180,100,130,.12); }
       .welcome-btn:hover::before               { transform:scaleX(0); }
       .welcome-btn:hover                       { color:rgba(212,136,154,.9); box-shadow:none; border-color:rgba(180,110,130,.45); }
-      /* Aumenta área de toque dos botões */
-      .g-btn, .lb-nav, .nav-arr { min-width:44px; min-height:44px; }
-      #adm-trigger { opacity:.15; }
+      .g-btn,.lb-nav,.nav-arr                  { min-width:44px; min-height:44px; }
+      #adm-trigger                             { opacity:.15; }
     }
 
     /* ══ CARTA SURPRESA ══ */
