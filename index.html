@@ -183,10 +183,10 @@
     .n-zoom-wrap { position:relative; width:100%; height:100vh; perspective:500px; overflow:hidden; flex-shrink:0; }
     .n-zoom-img-container { position:absolute; inset:0; overflow:hidden; }
     .n-zoom-img { width:100%; height:100%; object-fit:cover; object-position:center; will-change:transform; }
-    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.55) 0%,rgba(0,0,0,.08) 40%,rgba(0,0,0,.08) 60%,rgba(18,0,42,.9) 100%); z-index:1; pointer-events:none; }
-    .n-zoom-text { position:absolute; bottom:11%; left:0; right:0; text-align:center; z-index:2; will-change:opacity,transform; }
-    .n-zoom-eyebrow { font-size:.7rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(200,150,255,.7); margin-bottom:.6rem; }
-    .n-zoom-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:#fff; text-shadow:0 0 60px rgba(160,80,255,.9),0 0 120px rgba(160,80,255,.4); }
+    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.6) 0%,rgba(0,0,0,.05) 30%,rgba(0,0,0,.1) 55%,rgba(10,0,30,.97) 100%); z-index:1; pointer-events:none; }
+    .n-zoom-text { position:absolute; bottom:9%; left:0; right:0; text-align:center; z-index:2; will-change:opacity,transform; padding:1.2rem 1.5rem 1.5rem; background:radial-gradient(ellipse 80% 120% at 50% 100%,rgba(5,0,20,.65) 0%,transparent 70%); }
+    .n-zoom-eyebrow { font-size:.7rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(220,180,255,.95); text-shadow:0 1px 6px rgba(0,0,0,.9); margin-bottom:.6rem; }
+    .n-zoom-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:#fff; text-shadow:0 3px 10px rgba(0,0,0,.95), 0 0 40px rgba(160,80,255,.8), 0 0 90px rgba(160,80,255,.35); }
     /* Segunda mensagem — aparece no pico do zoom */
     .n-zoom-text-2 { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; will-change:opacity,transform; pointer-events:none; }
     .n-zoom-quote { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3.5vw,1.7rem); color:rgba(255,255,255,.88); text-shadow:0 2px 28px rgba(160,80,255,.75); line-height:1.7; text-align:center; }
