@@ -315,11 +315,11 @@
     .n-zoom-wrap { position:relative; width:100%; height:100vh; perspective:500px; overflow:hidden; flex-shrink:0; }
     .n-zoom-img-container { position:absolute; inset:0; overflow:hidden; }
     .n-zoom-img { width:100%; height:100%; object-fit:cover; object-position:center; will-change:transform; }
-    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.6) 0%,rgba(0,0,0,.05) 30%,rgba(0,0,0,.1) 50%,rgba(5,0,18,.88) 72%,rgba(2,0,10,.98) 100%); z-index:1; pointer-events:none; }
+    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(2,0,10,.98) 0%,rgba(5,0,18,.88) 28%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.05) 72%,rgba(18,0,42,.5) 100%); z-index:1; pointer-events:none; }
 
-    /* Bloco de texto — fundo escuro sólido para máxima leitura */
+    /* Bloco de texto — topo da imagem */
     .n-zoom-text {
-      position:absolute; bottom:8%; left:0; right:0;
+      position:absolute; top:8%; left:0; right:0;
       width:fit-content; max-width:min(82vw,400px);
       margin:0 auto;
       text-align:center; z-index:2; will-change:opacity,transform;
@@ -332,13 +332,13 @@
       box-shadow:0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(0,0,0,.5);
     }
 
-    /* Linha decorativa acima do eyebrow */
-    .n-zoom-text::before {
+    /* Linha decorativa abaixo do título */
+    .n-zoom-text::after {
       content:'';
       display:block;
       width:40px; height:1px;
       background:linear-gradient(90deg,transparent,rgba(180,120,220,.7),transparent);
-      margin:0 auto .9rem;
+      margin:.9rem auto 0;
     }
 
     .n-zoom-eyebrow {
@@ -1307,7 +1307,7 @@ function initNoivadoAnimation() {
 
   // Reset de estados iniciais
   gsap.set('.n-zoom-img',    { scale: 1,   z: 0,   transformOrigin: 'center center' });
-  gsap.set('.n-zoom-text',   { opacity: 0, y: 35 });
+  gsap.set('.n-zoom-text',   { opacity: 0, y: -35 });
   gsap.set('.n-zoom-text-2', { opacity: 0, y: 28 });
   gsap.set('.n-zoom-overlay',{ opacity: 1 });
 
@@ -1337,7 +1337,7 @@ function initNoivadoAnimation() {
       ease: 'power1.inOut', duration: 0.2 }, 0.05)
 
   // Fase 2 (30–60%): texto some enquanto zoom acelera
-  .to('.n-zoom-text', { opacity: 0, y: -50,
+  .to('.n-zoom-text', { opacity: 0, y: -65,
       ease: 'power2.in', duration: 0.28 }, 0.3)
   .to('.n-zoom-img',  { scale: 2.0, z: 280,
       ease: 'power2.in', duration: 0.45 }, 0.28)
