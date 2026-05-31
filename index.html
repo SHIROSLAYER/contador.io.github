@@ -315,10 +315,53 @@
     .n-zoom-wrap { position:relative; width:100%; height:100vh; perspective:500px; overflow:hidden; flex-shrink:0; }
     .n-zoom-img-container { position:absolute; inset:0; overflow:hidden; }
     .n-zoom-img { width:100%; height:100%; object-fit:cover; object-position:center; will-change:transform; }
-    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.6) 0%,rgba(0,0,0,.05) 30%,rgba(0,0,0,.1) 55%,rgba(10,0,30,.97) 100%); z-index:1; pointer-events:none; }
-    .n-zoom-text { position:absolute; bottom:9%; left:0; right:0; text-align:center; z-index:2; will-change:opacity,transform; padding:1.2rem 1.5rem 1.5rem; background:radial-gradient(ellipse 80% 120% at 50% 100%,rgba(5,0,20,.65) 0%,transparent 70%); }
-    .n-zoom-eyebrow { font-size:.7rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(220,180,255,.95); text-shadow:0 1px 6px rgba(0,0,0,.9); margin-bottom:.6rem; }
-    .n-zoom-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:#fff; text-shadow:0 3px 10px rgba(0,0,0,.95), 0 0 40px rgba(160,80,255,.8), 0 0 90px rgba(160,80,255,.35); }
+    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.6) 0%,rgba(0,0,0,.05) 30%,rgba(0,0,0,.1) 50%,rgba(5,0,18,.88) 72%,rgba(2,0,10,.98) 100%); z-index:1; pointer-events:none; }
+
+    /* Bloco de texto — fundo escuro sólido para máxima leitura */
+    .n-zoom-text {
+      position:absolute; bottom:8%; left:0; right:0;
+      width:fit-content; max-width:min(82vw,400px);
+      margin:0 auto;
+      text-align:center; z-index:2; will-change:opacity,transform;
+      padding:1.4rem 2.5rem 1.6rem;
+      background:rgba(4,0,14,.72);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      border:1px solid rgba(180,120,220,.22);
+      border-radius:4px;
+      box-shadow:0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(0,0,0,.5);
+    }
+
+    /* Linha decorativa acima do eyebrow */
+    .n-zoom-text::before {
+      content:'';
+      display:block;
+      width:40px; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(180,120,220,.7),transparent);
+      margin:0 auto .9rem;
+    }
+
+    .n-zoom-eyebrow {
+      font-size:.72rem;
+      letter-spacing:.55em;
+      text-transform:uppercase;
+      color:rgba(210,170,255,.95);
+      text-shadow:0 1px 8px rgba(0,0,0,1), 0 0 20px rgba(160,80,255,.6);
+      margin-bottom:.75rem;
+      font-weight:300;
+    }
+
+    .n-zoom-title {
+      font-family:'Great Vibes',cursive;
+      font-size:clamp(3.2rem,10vw,6rem);
+      color:#fff;
+      text-shadow:
+        0 3px 12px rgba(0,0,0,1),
+        0 6px 24px rgba(0,0,0,.9),
+        0 0 50px rgba(180,100,255,.9),
+        0 0 100px rgba(160,80,255,.45);
+      line-height:1.05;
+    }
     /* Segunda mensagem — aparece no pico do zoom */
     .n-zoom-text-2 { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; will-change:opacity,transform; pointer-events:none; }
     .n-zoom-quote { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3.5vw,1.7rem); color:rgba(255,255,255,.88); text-shadow:0 2px 28px rgba(160,80,255,.75); line-height:1.7; text-align:center; }
