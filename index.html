@@ -254,51 +254,106 @@
       text-shadow:0 0 24px rgba(200,110,135,.45);
     }
 
-    /* ── Galeria cinema ── */
-    .gallery-section { width:100%; max-width:820px; margin:2rem auto; padding:0 1.5rem; }
-    .gallery-section h3 {
-      font-family:'Playfair Display',serif;
-      font-style:italic;
-      font-size:1rem;
-      color:rgba(245,237,226,.3);
-      letter-spacing:.12em;
-      margin-bottom:1rem;
-      text-align:center;
+    /* ══ GALERIA MOSAICO ══ */
+    .gallery-section { width:100%; max-width:860px; margin:1.5rem auto; padding:0 1rem; }
+
+    .gallery-section-head {
+      display:flex; align-items:baseline; justify-content:space-between;
+      margin-bottom:.7rem; padding:0 .1rem;
     }
-    .gallery-viewer {
-      position:relative;
-      width:100%;
-      aspect-ratio:4/3;
-      background:#040008;
-      border-radius:4px;
-      overflow:hidden;
-      border:1px solid rgba(180,130,150,.14);
-      box-shadow:0 0 70px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.03);
+    .gallery-section-head h3 {
+      font-family:'Playfair Display',serif; font-style:italic;
+      font-size:1rem; color:rgba(245,237,226,.3); letter-spacing:.12em;
     }
-    .gallery-viewer img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity .65s ease; cursor:zoom-in; }
-    .gallery-viewer img.active { opacity:1; }
-    .gallery-placeholder { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.8rem; color:rgba(255,255,255,.22); font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.05rem; letter-spacing:.06em; text-align:center; padding:1rem; }
-    .gallery-controls { display:flex; align-items:center; justify-content:center; gap:1.2rem; margin-top:.9rem; }
-    .g-btn {
-      background:rgba(180,90,110,.08);
-      border:1px solid rgba(180,110,130,.2);
-      color:rgba(245,237,226,.7);
-      width:42px; height:42px;
-      border-radius:50%;
-      cursor:pointer;
-      font-size:1rem;
-      display:flex; align-items:center; justify-content:center;
-      transition:all .3s;
+    #gallery-count {
+      font-family:'Josefin Sans',sans-serif; font-size:.58rem;
+      letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.18);
     }
-    .g-btn:hover { background:rgba(180,90,110,.2); border-color:var(--rose); color:var(--ivory); transform:scale(1.08); }
-    .g-counter {
-      font-family:'Playfair Display',serif;
-      font-style:italic;
-      font-size:.75rem;
-      color:rgba(245,237,226,.3);
-      min-width:60px;
-      text-align:center;
+
+    /* Grid mosaico */
+    .gallery-mosaic {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(clamp(108px,27vw,162px), 1fr));
+      gap:clamp(3px,.7vw,6px);
     }
+    .gallery-mosaic-full { grid-column:1 / -1; } /* skeleton + placeholder full-width */
+
+    /* Cada thumbnail */
+    .gallery-thumb {
+      position:relative; aspect-ratio:1; overflow:hidden;
+      border-radius:3px; cursor:zoom-in;
+      background:rgba(18,4,12,.9);
+      will-change:transform,opacity;
+    }
+    .gallery-thumb img {
+      width:100%; height:100%; object-fit:cover; display:block;
+      transition:transform .45s cubic-bezier(.22,.68,0,1.2), filter .35s;
+    }
+    .gallery-thumb:hover img { transform:scale(1.08); filter:brightness(1.1) saturate(1.1); }
+
+    /* Vinheta hover */
+    .gallery-thumb::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.55));
+      opacity:0; transition:opacity .3s; pointer-events:none; z-index:1;
+    }
+    .gallery-thumb:hover::after { opacity:1; }
+
+    /* Badge número */
+    .thumb-num {
+      position:absolute; bottom:.38rem; left:.38rem; z-index:2;
+      font-family:'Josefin Sans',sans-serif; font-size:.5rem; letter-spacing:.15em;
+      color:rgba(245,237,226,.78); background:rgba(4,0,12,.62);
+      backdrop-filter:blur(6px); padding:.14rem .42rem; border-radius:2px;
+      opacity:0; transition:opacity .22s; pointer-events:none;
+    }
+    .gallery-thumb:hover .thumb-num { opacity:1; }
+
+    /* Botão deletar por thumb (só em adm-mode) */
+    .thumb-del {
+      display:none; position:absolute; top:.35rem; right:.35rem; z-index:3;
+      background:rgba(130,0,0,.82); border:none; color:white;
+      width:26px; height:26px; border-radius:50%; font-size:.72rem;
+      cursor:pointer; align-items:center; justify-content:center;
+      transition:background .2s; backdrop-filter:blur(4px);
+    }
+    .thumb-del:hover { background:rgba(200,0,0,.96); }
+    .gallery-viewer.adm-mode .thumb-del { display:flex; }
+
+    /* Placeholder mosaico */
+    .gallery-mosaic-ph {
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      gap:.8rem; padding:3rem 1rem;
+      color:rgba(255,255,255,.22); font-family:'Cormorant Garamond',serif;
+      font-style:italic; font-size:1rem; text-align:center; letter-spacing:.06em;
+    }
+
+    /* backward-compat */
+    .gallery-viewer { position:relative; }
+
+    /* ── Colunas por breakpoint ── */
+    @media (min-width:420px)  { .gallery-mosaic { grid-template-columns:repeat(3,1fr); } }
+    @media (min-width:640px)  { .gallery-mosaic { grid-template-columns:repeat(4,1fr); gap:5px; } }
+    @media (min-width:900px)  { .gallery-mosaic { grid-template-columns:repeat(5,1fr); gap:6px; } }
+    @media (min-width:1280px) { .gallery-mosaic { grid-template-columns:repeat(6,1fr); gap:7px; } }
+
+    /* ── Hover cinematográfico lift ── */
+    .gallery-thumb {
+      transition:
+        transform .38s cubic-bezier(.22,.68,0,1.2),
+        box-shadow .38s ease,
+        filter .3s ease;
+    }
+    .gallery-thumb:hover {
+      transform:translateY(-5px) scale(1.04);
+      box-shadow:
+        0 14px 44px rgba(0,0,0,.75),
+        0 0 0 1px rgba(212,136,154,.22),
+        0 0 22px rgba(212,136,154,.1);
+      z-index:2;
+      filter:brightness(1.07);
+    }
+    .gallery-thumb:active { transform:translateY(-2px) scale(1.01); }
 
     /* ══════════════════════
        PÁGINA 4 — NOIVADO (scroll + image zoom)
@@ -436,15 +491,15 @@
     .sel-card.pos-left  { transform:translate(calc(-50% - min(clamp(155px,22vw,240px),28svh)),-50%) scale(.82) rotateY(16deg); }
     .sel-card.pos-right { transform:translate(calc(-50% + min(clamp(155px,22vw,240px),28svh)),-50%) scale(.82) rotateY(-16deg); }
 
-    /* Galeria: altura baseada no viewport, não só aspect-ratio */
-    .gallery-viewer { aspect-ratio:unset; height:clamp(220px,min(48vw,44svh),520px); }
+    /* Galeria mosaico — altura livre (grid auto-rows) */
+    .gallery-mosaic { padding-bottom:2.5rem; }
 
     /* ── TELAS GRANDES (≥ 1280px desktop) ── */
     @media (min-width:1280px) {
       .sel-card       { width:clamp(220px,16vw,290px); height:clamp(310px,23vw,420px); }
       .cards-stage    { height:clamp(380px,54svh,540px); }
       .welcome-title  { font-size:clamp(6rem,10vw,9rem); }
-      .gallery-viewer { height:clamp(320px,44svh,580px); }
+      /* gallery now auto-height grid */
       .love-message   { max-width:760px; }
       .love-message p { font-size:1.12rem; }
     }
@@ -496,8 +551,7 @@
       .love-message p  { font-size:.92rem; line-height:1.8; padding:.9rem .9rem .9rem 1rem; }
       .love-message p::first-letter { font-size:2.3rem; }
       .gallery-section { padding:0 .5rem; }
-      .g-btn           { width:40px; height:40px; font-size:.9rem; }
-      .g-counter       { font-size:.66rem; min-width:48px; }
+      .gallery-mosaic  { gap:3px; }
       .namoro-hero     { padding:2.8rem 1rem 2.2rem; min-height:30svh; }
       .hero-title      { font-size:clamp(2.2rem,9vw,4rem); }
       .music-player    { padding:.5rem 1rem; }
@@ -585,7 +639,7 @@
       .sel-card.pos-center:hover               { transform:translate(-50%,-50%) scale(1.07); box-shadow:0 20px 80px rgba(0,0,0,.85),0 0 40px rgba(180,80,110,.18),0 0 0 1px rgba(180,100,130,.12); }
       .welcome-btn:hover::before               { transform:scaleX(0); }
       .welcome-btn:hover                       { color:rgba(212,136,154,.9); box-shadow:none; border-color:rgba(180,110,130,.45); }
-      .g-btn,.lb-nav,.nav-arr                  { min-width:44px; min-height:44px; }
+      .lb-nav,.nav-arr { min-width:44px; min-height:44px; }
       #adm-trigger                             { opacity:.15; }
     }
 
@@ -650,8 +704,7 @@
     .music-progress-outer { width:160px; height:2px; background:rgba(255,255,255,.1); border-radius:2px; margin:.55rem auto 0; overflow:hidden; }
     .music-progress-inner { height:100%; width:0%; background:var(--rose); border-radius:2px; transition:width .8s linear; }
 
-    /* ══ GALERIA — cursor ══ */
-    .gallery-viewer img { cursor:zoom-in; }
+    /* ══ GALERIA — cursor (definido por .gallery-thumb) ══ */
 
     /* ══ SKELETON LOADING — galeria ══ */
     .gallery-skeleton {
@@ -698,7 +751,7 @@
       user-select:none;
       transition:opacity .3s;
     }
-    .gallery-viewer:hover .photo-badge { opacity:.85; }
+    /* badge por thumb — ver .thumb-num */
 
     /* ══════════════════════════════════
        ADMIN — login, bar, upload
@@ -800,10 +853,7 @@
       color:var(--rose);
     }
 
-    /* Botão deletar foto (admin mode) */
-    #gallery-delete-btn { display:none; position:absolute; top:.6rem; right:.6rem; z-index:20; background:rgba(160,0,0,.75); border:none; color:white; font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; padding:.3rem .75rem; border-radius:3px; cursor:pointer; transition:background .3s; }
-    #gallery-delete-btn:hover { background:rgba(210,0,0,.95); }
-    .gallery-viewer.adm-mode #gallery-delete-btn { display:block; }
+    /* Botão deletar: agora .thumb-del em cada thumb — ver regras acima */
 
     /* ── Botão de troca de foto dos cards (admin) ── */
     .card-edit-btn {
@@ -1140,71 +1190,21 @@
   </div>
 
   <div class="gallery-section">
-    <h3>Nossas memórias</h3>
-    <div class="gallery-viewer" id="galleryViewer">
-      <!-- Skeleton shimmer — some enquanto carrega do Supabase -->
-      <div class="gallery-skeleton" id="gallerySkeleton">
+    <div class="gallery-section-head">
+      <h3>Nossas memórias</h3>
+      <span id="gallery-count"></span>
+    </div>
+    <!-- Mosaico — preenchido dinamicamente pelo JS -->
+    <div class="gallery-mosaic gallery-viewer" id="galleryViewer">
+      <!-- Skeleton (full-width enquanto carrega) -->
+      <div class="gallery-skeleton gallery-mosaic-full" id="gallerySkeleton">
         <span class="sk-heart">💗</span>
       </div>
-
-      <!--
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      GALERIA DE FOTOS — NAMORO
-      Adicione ou remova tags <img> abaixo.
-      A PRIMEIRA imagem deve ter class="active".
-
-      Para adicionar mais fotos, copie este modelo:
-      <img src="SEU_CAMINHO/foto.jpeg" alt="Descrição">
-
-      Para remover uma foto, apague a linha <img> dela.
-      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      -->
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00001.jpeg" alt="Foto 1"  class="active" onerror="this.remove();checkGalleryEmpty()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00002.jpeg" alt="Foto 2"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00003.jpeg" alt="Foto 3"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00004.jpeg" alt="Foto 4"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00005.jpeg" alt="Foto 5"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00006.jpeg" alt="Foto 6"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00007.jpeg" alt="Foto 7"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00008.jpeg" alt="Foto 8"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00009.jpeg" alt="Foto 9"  onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00010.jpeg" alt="Foto 10" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00011.jpeg" alt="Foto 11" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00012.jpeg" alt="Foto 12" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00013.jpeg" alt="Foto 13" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00014.jpeg" alt="Foto 14" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00015.jpeg" alt="Foto 15" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00016.jpeg" alt="Foto 16" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00017.jpeg" alt="Foto 17" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00018.jpeg" alt="Foto 18" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00019.jpeg" alt="Foto 19" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00020.jpeg" alt="Foto 20" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00021.jpeg" alt="Foto 21" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00022.jpeg" alt="Foto 22" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00023.jpeg" alt="Foto 23" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00024.jpeg" alt="Foto 24" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00025.jpeg" alt="Foto 25" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00026.jpeg" alt="Foto 26" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00027.jpeg" alt="Foto 27" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00028.jpeg" alt="Foto 28" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00029.jpeg" alt="Foto 29" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00030.jpeg" alt="Foto 30" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00031.jpeg" alt="Foto 31" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00032.jpeg" alt="Foto 32" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00033.jpeg" alt="Foto 33" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00034.jpeg" alt="Foto 34" onerror="this.remove()">
-      <img src="terceirapaginanamoro/arquivoscontador/unidade00035.jpeg" alt="Foto 35" onerror="this.remove()">
-
-      <div class="gallery-placeholder" id="galleryPlaceholder">
+      <!-- Placeholder vazio -->
+      <div class="gallery-mosaic-ph gallery-mosaic-full" id="galleryPlaceholder" style="display:none">
         <span style="font-size:2.2rem;filter:drop-shadow(0 0 12px rgba(200,120,140,.4))">📷</span>
         <span>Nossas memórias em breve…</span>
       </div>
-    </div>
-
-    <div class="gallery-controls">
-      <button class="g-btn" onclick="galleryNav(-1)">&#8592;</button>
-      <span class="g-counter" id="galleryCounter">1 / 1</span>
-      <button class="g-btn" onclick="galleryNav(1)">&#8594;</button>
     </div>
   </div>
 
@@ -1559,28 +1559,30 @@ setInterval(updateCountdown, 1000);
 updateCountdown();
 
 /* ══════════════════════════════════════════════
-   GALERIA
+   GALERIA MOSAICO
 ══════════════════════════════════════════════ */
 let galleryIdx = 0;
 
+/* Retorna todos os <img> dentro dos thumbs */
 function getGalleryImgs() {
-  return Array.from(document.querySelectorAll('#galleryViewer img'));
+  return Array.from(document.querySelectorAll('#galleryViewer .gallery-thumb img'));
+}
+
+function _updateGalleryCount() {
+  var n   = document.querySelectorAll('#galleryViewer .gallery-thumb').length;
+  var el  = document.getElementById('gallery-count');
+  if (el) el.textContent = n > 0 ? n + (n === 1 ? ' memória' : ' memórias') : '';
 }
 
 function checkGalleryEmpty() {
-  const imgs = getGalleryImgs();
-  const ph = document.getElementById('galleryPlaceholder');
-  if (imgs.length === 0) {
-    ph.style.display = 'flex';
-  } else {
-    ph.style.display = 'none';
-    if (!imgs.find(i => i.classList.contains('active'))) imgs[0].classList.add('active');
-    galleryIdx = Math.max(0, imgs.indexOf(imgs.find(i => i.classList.contains('active'))));
-    updateGalleryCounter();
-  }
+  var thumbs = document.querySelectorAll('#galleryViewer .gallery-thumb');
+  var ph = document.getElementById('galleryPlaceholder');
+  ph.style.display = thumbs.length === 0 ? 'flex' : 'none';
+  _updateGalleryCount();
 }
 
 function galleryNav(dir) {
+  // Mantido para compatibilidade — no mosaico a nav acontece no lightbox
   const imgs = getGalleryImgs();
   if (!imgs.length) return;
   imgs[galleryIdx].classList.remove('active');
@@ -2532,108 +2534,104 @@ async function admDoUpload() {
   setTimeout(() => { admCloseUpload(); _admLoadGallery(); }, 1400);
 }
 
-/* ── Carregar galeria do Supabase (skeleton + lazy loading) ── */
+/* ── Carregar galeria mosaico do Supabase ── */
 async function _admLoadGallery(page) {
   page = page || 'namoro';
   const sk = document.getElementById('gallerySkeleton');
-  if (sk) sk.classList.remove('sk-hidden'); // mostra skeleton
+  if (sk) sk.classList.remove('sk-hidden');
   try {
     const { data, error } = await _SB
       .from('gallery_photos')
       .select('*')
       .eq('page', page)
       .order('display_order', { ascending: true });
-    if (sk) sk.classList.add('sk-hidden');   // esconde skeleton
-    if (error || !data || data.length === 0) return; // mantém fotos locais
+    if (sk) sk.classList.add('sk-hidden');
+    if (error || !data || data.length === 0) { checkGalleryEmpty(); return; }
 
     const viewer = document.getElementById('galleryViewer');
     const ph     = document.getElementById('galleryPlaceholder');
-    /* remove imgs hardcoded */
-    Array.from(viewer.querySelectorAll('img')).forEach(el => el.remove());
-    /* adiciona imgs do Supabase com lazy loading */
+
+    /* Remove thumbs antigos */
+    Array.from(viewer.querySelectorAll('.gallery-thumb')).forEach(el => el.remove());
+
+    const newThumbs = [];
+
     data.forEach(function(photo, idx) {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb';
+      thumb.dataset.photoId   = photo.id;
+      thumb.dataset.photoPath = photo.storage_path;
+
       const img = document.createElement('img');
-      img.alt   = 'Foto #' + String(photo.photo_number).padStart(4,'0');
+      img.alt = 'Memória #' + String(photo.photo_number).padStart(4,'0');
       img.dataset.photoId     = photo.id;
       img.dataset.photoPath   = photo.storage_path;
       img.dataset.photoNumber = photo.photo_number;
-      if (idx === 0) {
-        img.src = photo.url;           // primeira foto: carrega já
-        img.classList.add('active');
+
+      if (idx < 6) {
+        img.src = photo.url;          // primeiras 6: carrega já (acima da dobra)
       } else {
-        img.dataset.src = photo.url;   // demais: lazy via IntersectionObserver
-        img.loading     = 'lazy';
+        img.dataset.src = photo.url;  // demais: lazy
+        img.loading = 'lazy';
         _imgObserver.observe(img);
       }
-      img.onerror = function() { this.remove(); checkGalleryEmpty(); };
-      img.onclick = function() { openLightbox(this); };
-      img.style.cursor = 'zoom-in';
-      viewer.insertBefore(img, ph);
+      img.onerror = function() { thumb.remove(); checkGalleryEmpty(); };
+      img.onclick  = function() { openLightbox(this); };
+
+      /* Badge número */
+      const badge = document.createElement('span');
+      badge.className = 'thumb-num';
+      badge.textContent = '#' + String(photo.photo_number).padStart(4,'0');
+
+      /* Botão deletar (só visível em adm-mode) */
+      const del = document.createElement('button');
+      del.className = 'thumb-del';
+      del.innerHTML = '✕';
+      del.title = 'Remover foto';
+      del.onclick = function(e) {
+        e.stopPropagation();
+        admDeletePhoto(photo.id, photo.storage_path, thumb);
+      };
+
+      thumb.appendChild(img);
+      thumb.appendChild(badge);
+      thumb.appendChild(del);
+      viewer.insertBefore(thumb, ph);
+      newThumbs.push(thumb);
     });
 
-    galleryIdx = 0;
     checkGalleryEmpty();
-    setTimeout(_updateGalleryBadge, 100);
-  } catch(e) {}
+    /* Anima os novos thumbs entrando */
+    _animateMosaico(newThumbs);
+  } catch(e) { checkGalleryEmpty(); }
 }
 
-/* ── Deletar foto atual ── */
-async function admDeleteCurrent() {
-  const imgs = getGalleryImgs();
-  if (!imgs.length) return;
-  const img  = imgs[galleryIdx];
-  const id   = img.dataset.photoId;
-  const path = img.dataset.photoPath;
-  if (!id) { alert('Foto local — adicione pelo painel admin para poder remover.'); return; }
+/* ── Deletar foto pelo botão do thumb ── */
+async function admDeletePhoto(id, path, thumbEl) {
   if (!confirm('Remover esta foto permanentemente?')) return;
   const { error: stErr } = await _SB.storage.from('gallery').remove([path]);
   if (stErr) { alert('Erro storage: ' + stErr.message); return; }
   await _SB.from('gallery_photos').delete().eq('id', id);
-  img.remove();
-  const remaining = getGalleryImgs();
-  if (galleryIdx >= remaining.length) galleryIdx = 0;
-  if (remaining.length) remaining[galleryIdx].classList.add('active');
-  checkGalleryEmpty();
-  updateGalleryCounter();
+  /* Animação de saída antes de remover */
+  if (window.gsap) {
+    gsap.to(thumbEl, {
+      scale:0.5, opacity:0, rotation: (Math.random()-0.5)*30,
+      duration:.35, ease:'back.in(2)',
+      onComplete: function() { thumbEl.remove(); checkGalleryEmpty(); }
+    });
+  } else { thumbEl.remove(); checkGalleryEmpty(); }
 }
+
+/* Manter compatibilidade (admin bar ainda chama admDeleteCurrent em alguns contextos) */
+function admDeleteCurrent() {}
 
 /* ── Badge de ID único — atualiza com a navegação ── */
-function _updateGalleryBadge() {
-  var badge = document.getElementById('gallery-num-badge');
-  if (!badge) return;
-  var imgs = getGalleryImgs();
-  if (!imgs.length) { badge.style.opacity = '0'; return; }
-  var img = imgs[galleryIdx];
-  if (!img) { badge.style.opacity = '0'; return; }
+/* Badge e contagem — o mosaico usa .thumb-num por thumb + #gallery-count total */
+function _updateGalleryBadge() { _updateGalleryCount(); } // compat alias
 
-  // Fotos do Supabase têm photo_number; locais recebem índice "L001"
-  var num = img.dataset.photoNumber
-    ? '#' + String(img.dataset.photoNumber).padStart(4, '0')
-    : '#L' + String(galleryIdx + 1).padStart(3, '0');
-
-  badge.textContent  = num;
-  badge.style.opacity = '1';
-}
-
-// Injeta o badge único no viewer
-document.addEventListener('DOMContentLoaded', function() {
-  var badge = document.createElement('div');
-  badge.id        = 'gallery-num-badge';
-  badge.className = 'photo-badge';
-  badge.style.opacity = '0';
-  document.getElementById('galleryViewer').appendChild(badge);
-});
-
-// Sobrescreve updateGalleryCounter para também atualizar o badge
-var _origUpdateCounter = updateGalleryCounter;
-updateGalleryCounter = function() {
-  _origUpdateCounter();
-  _updateGalleryBadge();
-};
-
-// Atualiza badge ao carregar galeria do Supabase (chamado em _admLoadGallery)
+// Atualiza contagem ao carregar
 window.addEventListener('load', function() {
-  setTimeout(function() { _updateGalleryBadge(); }, 900);
+  setTimeout(_updateGalleryCount, 900);
 });
 
 /* ── Toggle Google Drive backup ── */
@@ -2675,18 +2673,63 @@ var _imgObserver = new IntersectionObserver(function(entries) {
   });
 }, { rootMargin: '300px' });
 
-/* ── Garante que a foto ativa carrega ao navegar ── */
-var _origGalleryNav = galleryNav;
-galleryNav = function(dir) {
-  _origGalleryNav(dir);
-  var imgs = getGalleryImgs();
-  var active = imgs.find(function(i){ return i.classList.contains('active'); });
-  if (active && active.dataset.src) {
-    active.src = active.dataset.src;
-    delete active.dataset.src;
-    _imgObserver.unobserve(active);
+/* IntersectionObserver carrega lazy imgs quando entram na viewport do grid */
+
+/* ════════════════════════════════════════════════════
+   ANIMAÇÃO MOSAICO — polaroids caindo e se montando
+   Usa GSAP (já carregado com defer).
+   Cada foto voa de acima da tela com rotação aleatória
+   e pousa no grid com bounce — em cascata, construindo
+   o mural foto a foto.
+════════════════════════════════════════════════════ */
+function _animateMosaico(thumbEls) {
+  if (!thumbEls || !thumbEls.length) return;
+
+  // GSAP ainda não carregou — aguarda (máx 2.5s)
+  if (!window.gsap) {
+    _animateMosaico._r = (_animateMosaico._r || 0) + 1;
+    if (_animateMosaico._r > 30) { _animateMosaico._r = 0; return; }
+    setTimeout(function() { _animateMosaico(thumbEls); }, 80);
+    return;
   }
-};
+  _animateMosaico._r = 0;
+
+  var n       = thumbEls.length;
+  // Escala o stagger: 35 fotos em ~1.85s, 5 fotos em ~0.5s
+  var stagger = Math.min(1.85, n * 0.058);
+
+  // Garante que estão invisíveis antes de começar
+  gsap.set(thumbEls, { autoAlpha: 0 });
+
+  gsap.fromTo(thumbEls,
+    /* FROM — estado inicial: acima da tela, rotacionado, pequeno */
+    {
+      autoAlpha: 0,
+      scale:     0.55,
+      rotation:  function() { return (Math.random() - 0.5) * 38; },
+      y:         function() {
+        return -(window.innerHeight * (0.45 + Math.random() * 0.55));
+      },
+      x:         function() { return (Math.random() - 0.5) * 90; },
+    },
+    /* TO — estado final: posição natural no grid */
+    {
+      autoAlpha: 1,
+      scale:     1,
+      rotation:  0,
+      y:         0,
+      x:         0,
+      duration:  0.68,
+      stagger:   {
+        amount: stagger,
+        from:   'start',
+        ease:   'power2.inOut',
+      },
+      ease:        'back.out(1.65)',
+      clearProps:  'all',   // remove inline styles → CSS hover funciona livremente
+    }
+  );
+}
 
 /* ════════════════════════════════════════════════════
    WEBP — converte antes do upload (reduz ~35% tamanho)
