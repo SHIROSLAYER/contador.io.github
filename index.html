@@ -751,6 +751,23 @@
     #gallery-delete-btn:hover { background:rgba(210,0,0,.95); }
     .gallery-viewer.adm-mode #gallery-delete-btn { display:block; }
 
+    /* ── Botão de troca de foto dos cards (admin) ── */
+    .card-edit-btn {
+      position:absolute; top:.55rem; left:.55rem; z-index:20;
+      background:rgba(4,0,14,.72); border:1px solid rgba(232,160,176,.38);
+      color:rgba(232,160,176,.95); font-family:'Josefin Sans',sans-serif;
+      font-size:.58rem; letter-spacing:.18em; text-transform:uppercase;
+      padding:.3rem .65rem; border-radius:3px; cursor:pointer;
+      opacity:0; pointer-events:none;
+      transition:opacity .22s, background .22s;
+      backdrop-filter:blur(8px); white-space:nowrap; line-height:1.4;
+    }
+    /* Aparece ao passar o mouse no card */
+    .sel-card:hover .card-edit-btn { opacity:1; pointer-events:all; }
+    .card-edit-btn:hover { background:rgba(90,10,35,.85); border-color:var(--rose); }
+    /* Em touch sempre visível */
+    @media (hover:none) { .card-edit-btn { opacity:.85; pointer-events:all; } }
+
     /* ══ PÉTALAS DE ROSA (welcome / selector) ══ */
     .petal { position:absolute; top:-3%; pointer-events:none; border-radius:50% 5% 50% 5%; }
     @keyframes petal-fall {
@@ -965,14 +982,14 @@
   caminho do seu arquivo de áudio (MP3 ou WAV).
 
   Exemplo:
-  src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.mp3"
+  src="assets/audio/die-with-a-smile-official-music-video.mp3"
 
   A música toca automaticamente ao entrar nesta
   página. O botão 🎵 permite pausar e retomar.
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   -->
   <audio id="bgMusic" loop>
-    <source src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.mp3" type="audio/mpeg">
+    <source src="assets/audio/die-with-a-smile-official-music-video.mp3" type="audio/mpeg">
     <source src="terceirapaginanamoro/audiomusic/die-with-a-smile-official-music-video.wav" type="audio/wav">
   </audio>
 
@@ -2008,11 +2025,86 @@ function _admShowUI() {
   document.getElementById('adm-bar').classList.remove('hidden');
   document.getElementById('adm-trigger').style.opacity = '0.45';
   document.getElementById('galleryViewer').classList.add('adm-mode');
+  _admShowCardEdits();
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
   document.getElementById('adm-trigger').style.opacity = '';
   document.getElementById('galleryViewer').classList.remove('adm-mode');
+  _admHideCardEdits();
+}
+
+/* ════════════════════════════════════════════════════
+   ADMIN — Troca de foto dos cards do Seletor
+════════════════════════════════════════════════════ */
+
+/* Injeta botão 📷 em cada card */
+function _admShowCardEdits() {
+  [0, 1, 2].forEach(function(idx) {
+    const card = document.getElementById('card-' + idx);
+    if (!card || card.querySelector('.card-edit-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn';
+    btn.innerHTML  = '📷 Trocar';
+    btn.title      = 'Trocar foto deste card';
+    btn.onclick    = function(e) { e.stopPropagation(); _admPickCardPhoto(idx); };
+    card.appendChild(btn);
+  });
+}
+
+/* Remove botões ao sair do modo admin */
+function _admHideCardEdits() {
+  document.querySelectorAll('.card-edit-btn').forEach(function(b) { b.remove(); });
+}
+
+/* Abre seletor de arquivo e faz upload da nova foto do card */
+async function _admPickCardPhoto(cardIdx) {
+  if (!_admSession) return;
+  const input = document.createElement('input');
+  input.type   = 'file';
+  input.accept = 'image/*';
+
+  input.onchange = async function() {
+    const file = this.files[0];
+    if (!file) return;
+
+    const storageName = 'seletor_' + String(cardIdx).padStart(3, '0') + '.jpeg';
+    const btn = document.querySelectorAll('.card-edit-btn')[cardIdx];
+    if (btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
+
+    /* ── Upload (substitui arquivo existente) ── */
+    const { error: upErr } = await _SB.storage
+      .from('gallery')
+      .upload(storageName, file, { cacheControl: '3600', upsert: true });
+
+    if (upErr) {
+      if (btn) { btn.innerHTML = '❌ Erro'; btn.disabled = false; setTimeout(function(){ btn.innerHTML = '📷 Trocar'; }, 2500); }
+      return;
+    }
+
+    /* ── URL pública + cache-bust ── */
+    const { data: urlData } = _SB.storage.from('gallery').getPublicUrl(storageName);
+    const freshUrl = urlData.publicUrl + '?v=' + Date.now();
+
+    /* ── Atualiza registro no DB ── */
+    await _SB.from('gallery_photos')
+      .update({ url: urlData.publicUrl })
+      .eq('page', 'seletor')
+      .eq('display_order', cardIdx);
+
+    /* ── Atualiza o card visualmente na hora ── */
+    const card = document.getElementById('card-' + cardIdx);
+    if (card) {
+      let img = card.querySelector('.card-photo');
+      if (!img) { img = document.createElement('img'); img.className = 'card-photo'; card.insertBefore(img, card.firstChild); }
+      img.src = freshUrl;
+      img.style.display = '';
+    }
+
+    if (btn) { btn.innerHTML = '✅ Salvo'; btn.disabled = false; setTimeout(function(){ btn.innerHTML = '📷 Trocar'; }, 2200); }
+  };
+
+  input.click();
 }
 
 /* ── Upload modal ── */
