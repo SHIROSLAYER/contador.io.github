@@ -482,6 +482,27 @@
     /* ══ GALERIA — cursor ══ */
     .gallery-viewer img { cursor:zoom-in; }
 
+    /* ══ BADGE ID — número único da foto ══ */
+    .photo-badge {
+      position:absolute;
+      top:.55rem; left:.55rem;
+      font-family:'Josefin Sans',sans-serif;
+      font-size:.58rem;
+      letter-spacing:.18em;
+      color:rgba(245,237,226,.65);
+      background:rgba(4,0,12,.7);
+      border:1px solid rgba(200,150,180,.18);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      padding:.22rem .6rem;
+      border-radius:2px;
+      z-index:5;
+      pointer-events:none;
+      user-select:none;
+      transition:opacity .3s;
+    }
+    .gallery-viewer:hover .photo-badge { opacity:.85; }
+
     /* ══════════════════════════════════
        ADMIN — login, bar, upload
     ══════════════════════════════════ */
@@ -1792,19 +1813,27 @@ async function admDoUpload() {
     prog.style.color = 'var(--rose)';
     const file = _admFiles[i];
     const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
-    const name = Date.now() + '_' + Math.random().toString(36).substr(2,5) + '.' + ext;
+
+    // Pega o próximo número sequencial (nunca repete)
+    const { data: nextNum } = await _SB.rpc('next_photo_number');
+    const photoNum = (nextNum || Date.now());
+    const numPad   = String(photoNum).padStart(4, '0');
+    const selectedPage = document.getElementById('adm-page-select').value;
+    const name = selectedPage + '_foto' + numPad + '_' + Date.now() + '.' + ext;
+
     const { error: upErr } = await _SB.storage.from('gallery').upload(name, file, { cacheControl:'3600' });
     if (upErr) { err.textContent = 'Erro upload: ' + upErr.message; continue; }
     const { data: urlData } = _SB.storage.from('gallery').getPublicUrl(name);
-    const selectedPage = document.getElementById('adm-page-select').value;
-    const { error: dbErr } = await _SB.from('gallery_photos').insert({
+    const { data: inserted, error: dbErr } = await _SB.from('gallery_photos').insert({
       url:           urlData.publicUrl,
       storage_path:  name,
       display_order: Date.now() + i,
       page:          selectedPage,
       uploaded_by:   _admSession?.user?.id || null
-    });
+    }).select('photo_number').single();
     if (dbErr) { err.textContent = 'Erro ao salvar: ' + dbErr.message; continue; }
+    const assignedNum = inserted?.photo_number;
+    prog.textContent = '✅  Foto #' + String(assignedNum).padStart(4,'0') + ' salva!';
     ok++;
     // Backup automático Google Drive (se ativado)
     if (_gdriveEnabled) _gdriveUpload(file, name);
@@ -1834,17 +1863,20 @@ async function _admLoadGallery(page) {
     data.forEach(function(photo, idx) {
       const img = document.createElement('img');
       img.src   = photo.url;
-      img.alt   = 'Foto ' + (idx + 1);
-      img.dataset.photoId   = photo.id;
-      img.dataset.photoPath = photo.storage_path;
+      img.alt   = 'Foto #' + String(photo.photo_number).padStart(4,'0');
+      img.dataset.photoId     = photo.id;
+      img.dataset.photoPath   = photo.storage_path;
+      img.dataset.photoNumber = photo.photo_number;
       if (idx === 0) img.classList.add('active');
       img.onerror = function() { this.remove(); checkGalleryEmpty(); };
       img.onclick = function() { openLightbox(this); };
       img.style.cursor = 'zoom-in';
       viewer.insertBefore(img, ph);
     });
+
     galleryIdx = 0;
     checkGalleryEmpty();
+    setTimeout(_updateGalleryBadge, 100);
   } catch(e) {}
 }
 
@@ -1867,6 +1899,45 @@ async function admDeleteCurrent() {
   checkGalleryEmpty();
   updateGalleryCounter();
 }
+
+/* ── Badge de ID único — atualiza com a navegação ── */
+function _updateGalleryBadge() {
+  var badge = document.getElementById('gallery-num-badge');
+  if (!badge) return;
+  var imgs = getGalleryImgs();
+  if (!imgs.length) { badge.style.opacity = '0'; return; }
+  var img = imgs[galleryIdx];
+  if (!img) { badge.style.opacity = '0'; return; }
+
+  // Fotos do Supabase têm photo_number; locais recebem índice "L001"
+  var num = img.dataset.photoNumber
+    ? '#' + String(img.dataset.photoNumber).padStart(4, '0')
+    : '#L' + String(galleryIdx + 1).padStart(3, '0');
+
+  badge.textContent  = num;
+  badge.style.opacity = '1';
+}
+
+// Injeta o badge único no viewer
+document.addEventListener('DOMContentLoaded', function() {
+  var badge = document.createElement('div');
+  badge.id        = 'gallery-num-badge';
+  badge.className = 'photo-badge';
+  badge.style.opacity = '0';
+  document.getElementById('galleryViewer').appendChild(badge);
+});
+
+// Sobrescreve updateGalleryCounter para também atualizar o badge
+var _origUpdateCounter = updateGalleryCounter;
+updateGalleryCounter = function() {
+  _origUpdateCounter();
+  _updateGalleryBadge();
+};
+
+// Atualiza badge ao carregar galeria do Supabase (chamado em _admLoadGallery)
+window.addEventListener('load', function() {
+  setTimeout(function() { _updateGalleryBadge(); }, 900);
+});
 
 /* ── Toggle Google Drive backup ── */
 function admToggleDrive() {
