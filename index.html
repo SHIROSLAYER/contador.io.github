@@ -187,6 +187,10 @@
     .n-zoom-text { position:absolute; bottom:11%; left:0; right:0; text-align:center; z-index:2; will-change:opacity,transform; }
     .n-zoom-eyebrow { font-size:.7rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(200,150,255,.7); margin-bottom:.6rem; }
     .n-zoom-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:#fff; text-shadow:0 0 60px rgba(160,80,255,.9),0 0 120px rgba(160,80,255,.4); }
+    /* Segunda mensagem — aparece no pico do zoom */
+    .n-zoom-text-2 { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2; will-change:opacity,transform; pointer-events:none; }
+    .n-zoom-quote { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3.5vw,1.7rem); color:rgba(255,255,255,.88); text-shadow:0 2px 28px rgba(160,80,255,.75); line-height:1.7; text-align:center; }
+    .n-zoom-glyph { display:block; font-size:2rem; margin-top:.6rem; filter:drop-shadow(0 0 14px rgba(180,80,255,.9)); }
 
     /* — Promise section — */
     .n-promise-section { background:linear-gradient(135deg,#0a001a,#000820); }
@@ -636,6 +640,10 @@
       <p class="n-zoom-eyebrow">Capítulo II</p>
       <h2 class="n-zoom-title">A Promessa<br>Eterna</h2>
     </div>
+    <div class="n-zoom-text-2">
+      <p class="n-zoom-quote">Para sempre ao seu lado</p>
+      <span class="n-zoom-glyph">💜</span>
+    </div>
   </div>
 
   <!-- Seção 3 — Promessa / Em breve -->
@@ -950,7 +958,7 @@ function initNoivadoAnimation() {
   }
   gsap.registerPlugin(ScrollTrigger);
 
-  const pg = document.getElementById('pg-noivado');
+  var pg = document.getElementById('pg-noivado');
 
   // Limpa instâncias anteriores deste scroller
   ScrollTrigger.getAll().forEach(function(t) {
@@ -968,25 +976,52 @@ function initNoivadoAnimation() {
     pinType: 'transform'
   });
 
-  gsap.timeline({
+  // Reset de estados iniciais
+  gsap.set('.n-zoom-img',    { scale: 1,   z: 0,   transformOrigin: 'center center' });
+  gsap.set('.n-zoom-text',   { opacity: 0, y: 35 });
+  gsap.set('.n-zoom-text-2', { opacity: 0, y: 28 });
+  gsap.set('.n-zoom-overlay',{ opacity: 1 });
+
+  var tl = gsap.timeline({
     scrollTrigger: {
       trigger: '.n-zoom-wrap',
       scroller: pg,
       start: 'top top',
-      end: '+=120%',
+      end: '+=230%',
       pin: true,
-      scrub: 1.2,
+      scrub: 1.6,
+      anticipatePin: 1,
     }
-  })
-  .fromTo('.n-zoom-img',
-    { scale: 1, z: 0 },
-    { scale: 2.2, z: 350, transformOrigin: 'center center', ease: 'power1.inOut' }
-  )
-  .fromTo('.n-zoom-text',
-    { opacity: 1, y: 0 },
-    { opacity: 0, y: -40, ease: 'power1.in' },
-    '<'
-  );
+  });
+
+  tl
+  // Fase 1 (0–20%): texto principal entra vindo de baixo
+  .to('.n-zoom-text', { opacity: 1, y: 0,
+      ease: 'power2.out', duration: 0.2 }, 0)
+
+  // Fase 1 (0–30%): zoom começa lento e suave
+  .to('.n-zoom-img', { scale: 1.25, z: 60,
+      ease: 'power1.in', duration: 0.3 }, 0)
+
+  // Fase 1 (5–25%): overlay abre levemente — foto mais visível
+  .to('.n-zoom-overlay', { opacity: 0.55,
+      ease: 'power1.inOut', duration: 0.2 }, 0.05)
+
+  // Fase 2 (30–60%): texto some enquanto zoom acelera
+  .to('.n-zoom-text', { opacity: 0, y: -50,
+      ease: 'power2.in', duration: 0.28 }, 0.3)
+  .to('.n-zoom-img',  { scale: 2.0, z: 280,
+      ease: 'power2.in', duration: 0.45 }, 0.28)
+
+  // Fase 3 (60–80%): zoom explode até o pico + overlay escurece
+  .to('.n-zoom-img',  { scale: 2.55, z: 460,
+      ease: 'power3.in', duration: 0.25 }, 0.73)
+  .to('.n-zoom-overlay', { opacity: 0.78,
+      ease: 'power2.in', duration: 0.15 }, 0.72)
+
+  // Fase 4 (78–100%): segunda mensagem emerge do fundo da foto
+  .to('.n-zoom-text-2', { opacity: 1, y: 0,
+      ease: 'power2.out', duration: 0.22 }, 0.78);
 
   ScrollTrigger.refresh();
 }
