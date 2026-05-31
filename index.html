@@ -302,6 +302,31 @@
 
     /* ══ GALERIA — cursor ══ */
     .gallery-viewer img { cursor:zoom-in; }
+
+    /* ══ PÉTALAS DE ROSA (welcome / selector) ══ */
+    .petal { position:absolute; top:-3%; pointer-events:none; border-radius:50% 5% 50% 5%; }
+    @keyframes petal-fall {
+      0%   { transform:translateY(0)   translateX(0px)   rotate(0deg);   opacity:.9; }
+      30%  { transform:translateY(28vh) translateX(18px)  rotate(108deg); opacity:.8; }
+      65%  { transform:translateY(63vh) translateX(-13px) rotate(216deg); opacity:.5; }
+      100% { transform:translateY(113vh) translateX(7px)  rotate(360deg); opacity:0; }
+    }
+    @keyframes petal-fall-r {
+      0%   { transform:translateY(0)   translateX(0px)   rotate(0deg);    opacity:.9; }
+      30%  { transform:translateY(28vh) translateX(-18px) rotate(-108deg); opacity:.8; }
+      65%  { transform:translateY(63vh) translateX(13px)  rotate(-216deg); opacity:.5; }
+      100% { transform:translateY(113vh) translateX(-7px) rotate(-360deg); opacity:0; }
+    }
+
+    /* ══ ESTRELAS (noivado) ══ */
+    .star { position:absolute; border-radius:50%; animation:star-twinkle ease-in-out infinite alternate; }
+    @keyframes star-twinkle { from{opacity:.12;transform:scale(.6)} to{opacity:1;transform:scale(1.2)} }
+
+    /* ══ CASAMENTO — renda & flores ══ */
+    .c-lace    { position:absolute; top:0; right:0; width:min(42vw,310px); height:min(42vw,310px); pointer-events:none; z-index:0; }
+    .c-flowers { position:absolute; bottom:0; left:0; width:min(38vw,260px); height:min(38vw,260px); pointer-events:none; z-index:0; }
+    /* velas só à direita */
+    .candles { position:absolute; bottom:0; right:4vw; left:auto !important; justify-content:flex-end !important; align-items:flex-end; gap:clamp(10px,2.5vw,22px); }
   </style>
   <!-- GSAP + ScrollTrigger -->
   <script defer src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
@@ -632,6 +657,80 @@
 <div class="page" id="pg-casamento">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
   <div class="candles" id="candlesRow"></div>
+
+  <!-- Renda dourada — canto superior direito -->
+  <svg class="c-lace" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" fill="none">
+    <path d="M260,0 Q130,130 0,260" stroke="rgba(201,169,110,0.38)" stroke-width="1.5"/>
+    <path d="M238,0 Q119,119 0,238" stroke="rgba(201,169,110,0.28)" stroke-width="1"/>
+    <path d="M208,0 Q104,104 0,208" stroke="rgba(201,169,110,0.2)" stroke-width="1"/>
+    <path d="M168,0 Q84,84 0,168"   stroke="rgba(201,169,110,0.14)" stroke-width="0.8"/>
+    <path d="M256,4 Q126,126 4,256" stroke="rgba(232,201,138,0.18)" stroke-width="0.7" stroke-dasharray="3 5"/>
+    <!-- Círculos decorativos -->
+    <circle cx="248" cy="12" r="10" stroke="rgba(201,169,110,0.42)" stroke-width="0.9"/>
+    <circle cx="213" cy="47" r="8"  stroke="rgba(201,169,110,0.36)" stroke-width="0.9"/>
+    <circle cx="169" cy="91" r="12" stroke="rgba(201,169,110,0.45)" stroke-width="0.9"/>
+    <circle cx="130" cy="130" r="9" stroke="rgba(201,169,110,0.4)"  stroke-width="0.9"/>
+    <circle cx="91"  cy="169" r="12" stroke="rgba(201,169,110,0.45)" stroke-width="0.9"/>
+    <circle cx="47"  cy="213" r="8"  stroke="rgba(201,169,110,0.36)" stroke-width="0.9"/>
+    <circle cx="12"  cy="248" r="10" stroke="rgba(201,169,110,0.42)" stroke-width="0.9"/>
+    <!-- Pontos preenchidos entre círculos -->
+    <circle cx="231" cy="29"  r="2.5" fill="rgba(201,169,110,0.55)"/>
+    <circle cx="191" cy="69"  r="2"   fill="rgba(201,169,110,0.45)"/>
+    <circle cx="150" cy="110" r="2.5" fill="rgba(201,169,110,0.52)"/>
+    <circle cx="110" cy="150" r="2"   fill="rgba(201,169,110,0.45)"/>
+    <circle cx="69"  cy="191" r="2.5" fill="rgba(201,169,110,0.52)"/>
+    <circle cx="29"  cy="231" r="2"   fill="rgba(201,169,110,0.45)"/>
+    <!-- Sparkles -->
+    <text x="242" y="21"  font-size="7" fill="rgba(232,201,138,0.65)" transform="rotate(-42,242,21)">✦</text>
+    <text x="161" y="99"  font-size="9" fill="rgba(232,201,138,0.55)" transform="rotate(-42,161,99)">✦</text>
+    <text x="81"  y="179" font-size="7" fill="rgba(232,201,138,0.65)" transform="rotate(-42,81,179)">✦</text>
+  </svg>
+
+  <!-- Flores brancas transparentes — canto inferior esquerdo -->
+  <svg class="c-flowers" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220">
+    <!-- Flor principal -->
+    <g transform="translate(92,192)" fill="rgba(255,255,255,0.13)">
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(45)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(90)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(135)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(225)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(270)"/>
+      <ellipse cx="0" cy="-32" rx="10" ry="26" transform="rotate(315)"/>
+      <circle r="13" fill="rgba(255,255,255,0.16)"/>
+    </g>
+    <!-- Flor média -->
+    <g transform="translate(34,118)" fill="rgba(255,255,255,0.10)">
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(60)"/>
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(120)"/>
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(240)"/>
+      <ellipse cx="0" cy="-22" rx="8" ry="18" transform="rotate(300)"/>
+      <circle r="10" fill="rgba(255,255,255,0.12)"/>
+    </g>
+    <!-- Botão esquerdo -->
+    <g transform="translate(7,178)" fill="rgba(255,255,255,0.08)">
+      <ellipse cx="0" cy="-15" rx="6" ry="12" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-15" rx="6" ry="12" transform="rotate(72)"/>
+      <ellipse cx="0" cy="-15" rx="6" ry="12" transform="rotate(144)"/>
+      <ellipse cx="0" cy="-15" rx="6" ry="12" transform="rotate(216)"/>
+      <ellipse cx="0" cy="-15" rx="6" ry="12" transform="rotate(288)"/>
+      <circle r="7" fill="rgba(255,255,255,0.1)"/>
+    </g>
+    <!-- Botão pequeno -->
+    <g transform="translate(128,210)" fill="rgba(255,255,255,0.09)">
+      <ellipse cx="0" cy="-11" rx="5" ry="9" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-11" rx="5" ry="9" transform="rotate(90)"/>
+      <ellipse cx="0" cy="-11" rx="5" ry="9" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-11" rx="5" ry="9" transform="rotate(270)"/>
+      <circle r="6" fill="rgba(255,255,255,0.11)"/>
+    </g>
+    <!-- Haste / caule -->
+    <path d="M92,220 Q72,182 38,158 Q18,143 7,118" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </svg>
+
   <div class="wed-content">
     <div class="wed-rings">💒</div>
     <div class="wed-title-wrap">
@@ -796,7 +895,21 @@ window.addEventListener('load', () => setTimeout(checkGalleryEmpty, 600));
    CHUVA DE CORAÇÕES (global)
 ══════════════════════════════════════════════ */
 const heartEmojis = ['❤️','🩷','💕','💗','💖','✨'];
+const _petalCols = [
+  ['#ffb3c6','#ff6b8a'], ['#ffccd5','#ff8fab'],
+  ['#ffe0e8','#ffb3c6'], ['#ffd6e0','#ffaabb'], ['#fff0f3','#ffccd5']
+];
+
 function spawnHeart() {
+  if (currentPage === 'pg-welcome' || currentPage === 'pg-selector') {
+    _spawnPetal();
+  } else if (currentPage === 'pg-namoro') {
+    _spawnHeartEmoji();
+  }
+  // noivado e casamento têm seus próprios efeitos
+}
+
+function _spawnHeartEmoji() {
   const h = document.createElement('div');
   h.classList.add('hr');
   h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
@@ -806,6 +919,25 @@ function spawnHeart() {
   document.getElementById('heartRain').appendChild(h);
   setTimeout(() => h.remove(), 9500);
 }
+
+function _spawnPetal() {
+  const p = document.createElement('div');
+  p.classList.add('petal');
+  const [c1, c2] = _petalCols[Math.floor(Math.random() * _petalCols.length)];
+  const w   = 8 + Math.random() * 10;
+  const rot = Math.random() * 360;
+  p.style.left             = Math.random() * 100 + 'vw';
+  p.style.width            = w + 'px';
+  p.style.height           = (w * 1.65) + 'px';
+  p.style.background       = 'linear-gradient(' + rot + 'deg,' + c1 + ',' + c2 + ')';
+  p.style.transform        = 'rotate(' + rot + 'deg)';
+  p.style.animationName    = Math.random() > 0.5 ? 'petal-fall' : 'petal-fall-r';
+  p.style.animationDuration       = (5 + Math.random() * 6) + 's';
+  p.style.animationTimingFunction = 'linear';
+  document.getElementById('heartRain').appendChild(p);
+  setTimeout(() => p.remove(), 11000);
+}
+
 setInterval(spawnHeart, 1100);
 
 /* ══════════════════════════════════════════════
@@ -864,12 +996,49 @@ function initNoivadoAnimation() {
 ══════════════════════════════════════════════ */
 (function() {
   const c = document.getElementById('noivadoParticles');
-  for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
-    p.classList.add('n-particle');
-    const sz = 6 + Math.random() * 14;
-    p.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
-    c.appendChild(p);
+  // Camada 1 — estrelas minúsculas (60)
+  for (var i = 0; i < 60; i++) {
+    var s = document.createElement('div');
+    s.classList.add('star');
+    var sz = 1 + Math.random() * 2;
+    s.style.width  = sz + 'px';
+    s.style.height = sz + 'px';
+    s.style.left   = Math.random() * 100 + '%';
+    s.style.top    = Math.random() * 100 + '%';
+    s.style.background        = 'rgba(220,230,255,' + (0.55 + Math.random() * 0.45) + ')';
+    s.style.animationDuration = (2 + Math.random() * 4) + 's';
+    s.style.animationDelay    = (Math.random() * 6) + 's';
+    c.appendChild(s);
+  }
+  // Camada 2 — estrelas médias com glow leve (25)
+  for (var j = 0; j < 25; j++) {
+    var s2 = document.createElement('div');
+    s2.classList.add('star');
+    var sz2 = 2.5 + Math.random() * 2;
+    s2.style.width      = sz2 + 'px';
+    s2.style.height     = sz2 + 'px';
+    s2.style.left       = Math.random() * 100 + '%';
+    s2.style.top        = Math.random() * 100 + '%';
+    s2.style.background = 'rgba(200,218,255,0.9)';
+    s2.style.boxShadow  = '0 0 ' + (sz2*2) + 'px ' + sz2 + 'px rgba(180,200,255,0.35)';
+    s2.style.animationDuration = (1.5 + Math.random() * 3) + 's';
+    s2.style.animationDelay    = (Math.random() * 5) + 's';
+    c.appendChild(s2);
+  }
+  // Camada 3 — estrelas grandes brilhantes (8)
+  for (var k = 0; k < 8; k++) {
+    var s3 = document.createElement('div');
+    s3.classList.add('star');
+    var sz3 = 4 + Math.random() * 3;
+    s3.style.width      = sz3 + 'px';
+    s3.style.height     = sz3 + 'px';
+    s3.style.left       = Math.random() * 100 + '%';
+    s3.style.top        = Math.random() * 100 + '%';
+    s3.style.background = 'rgba(230,240,255,1)';
+    s3.style.boxShadow  = '0 0 ' + (sz3*3) + 'px ' + (sz3*1.5) + 'px rgba(200,220,255,0.65)';
+    s3.style.animationDuration = (1.8 + Math.random() * 2) + 's';
+    s3.style.animationDelay    = (Math.random() * 4) + 's';
+    c.appendChild(s3);
   }
 })();
 
@@ -877,17 +1046,18 @@ function initNoivadoAnimation() {
    ANIMAÇÕES — CASAMENTO: velas + pétalas douradas
 ══════════════════════════════════════════════ */
 (function() {
-  // Velas
-  const row = document.getElementById('candlesRow');
-  for (let i = 0; i < 7; i++) {
-    const c = document.createElement('div');
+  // Velas — 4 velas à direita com alturas variadas
+  var row = document.getElementById('candlesRow');
+  var heights = [48, 115, 68, 92];
+  heights.forEach(function(h) {
+    var c = document.createElement('div');
     c.classList.add('candle');
-    const h = 50 + Math.random() * 65;
-    const dur = 1.2 + Math.random() * 0.8;
-    const delay = Math.random() * 0.5;
-    c.innerHTML = `<div class="candle-flame" style="animation-duration:${dur}s;animation-delay:${delay}s"></div><div class="candle-body" style="height:${h}px"></div>`;
+    var dur   = 1.1 + Math.random() * 0.9;
+    var delay = Math.random() * 0.6;
+    c.innerHTML = '<div class="candle-flame" style="animation-duration:'+dur+'s;animation-delay:'+delay+'s"></div>'
+                + '<div class="candle-body" style="height:'+h+'px"></div>';
     row.appendChild(c);
-  }
+  });
   // Pétalas
   const petals = ['🌸','✨','⭐','💛','🌼'];
   const pg = document.getElementById('pg-casamento');
