@@ -307,6 +307,49 @@
     /* ══ GALERIA — cursor ══ */
     .gallery-viewer img { cursor:zoom-in; }
 
+    /* ══════════════════════════════════
+       ADMIN — login, bar, upload
+    ══════════════════════════════════ */
+    .adm-overlay { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.75); backdrop-filter:blur(8px); opacity:0; pointer-events:none; transition:opacity .3s; }
+    .adm-overlay.open { opacity:1; pointer-events:all; }
+    .adm-box { background:linear-gradient(160deg,#0d001a,#04000f); border:1px solid rgba(232,160,176,.22); border-radius:6px; padding:2rem 1.8rem; width:min(90vw,360px); position:relative; box-shadow:0 0 80px rgba(0,0,0,.7); }
+    .adm-box h3 { font-family:'Cormorant Garamond',serif; font-size:1.25rem; letter-spacing:.12em; color:var(--rose); text-align:center; margin-bottom:1.4rem; }
+    .adm-input { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:var(--white); font-family:'Josefin Sans',sans-serif; font-size:.78rem; padding:.7rem .9rem; border-radius:3px; margin-bottom:.75rem; outline:none; transition:border-color .3s; box-sizing:border-box; }
+    .adm-input:focus { border-color:var(--rose); }
+    .adm-btn { width:100%; padding:.75rem; background:transparent; border:1px solid var(--rose); color:var(--rose); font-family:'Josefin Sans',sans-serif; font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; cursor:pointer; transition:all .3s; border-radius:3px; }
+    .adm-btn:hover { background:var(--rose); color:var(--night); }
+    .adm-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .adm-err { font-size:.68rem; color:rgba(255,100,100,.85); text-align:center; margin-top:.5rem; min-height:1.1rem; }
+    .adm-close { position:absolute; top:.75rem; right:1rem; background:transparent; border:none; color:rgba(255,255,255,.3); font-size:1.3rem; cursor:pointer; transition:color .3s; line-height:1; }
+    .adm-close:hover { color:rgba(255,255,255,.8); }
+
+    /* Admin bar (bottom center, visível só logado) */
+    #adm-bar { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%); z-index:400; display:flex; align-items:center; gap:.7rem; background:rgba(8,0,18,.9); border:1px solid rgba(232,160,176,.28); backdrop-filter:blur(14px); border-radius:40px; padding:.5rem 1.2rem; white-space:nowrap; }
+    #adm-bar.hidden { display:none; }
+    .adm-bar-label { font-size:.58rem; letter-spacing:.35em; text-transform:uppercase; color:rgba(232,160,176,.55); }
+    .adm-bar-btn { background:transparent; border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; padding:.32rem .9rem; border-radius:20px; cursor:pointer; transition:all .3s; }
+    .adm-bar-btn:hover { border-color:var(--rose); color:var(--rose); }
+    .adm-bar-btn.out { border-color:rgba(255,80,80,.3); color:rgba(255,80,80,.55); }
+    .adm-bar-btn.out:hover { border-color:rgba(255,80,80,.7); color:rgba(255,80,80,.9); }
+
+    /* Botão gatilho oculto (canto direito) */
+    #adm-trigger { position:fixed; bottom:.6rem; right:.8rem; z-index:300; background:transparent; border:none; cursor:pointer; opacity:.07; font-size:1.1rem; color:white; transition:opacity .4s; padding:.3rem; }
+    #adm-trigger:hover { opacity:.3; }
+
+    /* Upload area */
+    .upload-drop { border:1px dashed rgba(232,160,176,.28); border-radius:4px; padding:1.8rem 1rem; text-align:center; cursor:pointer; transition:border-color .3s,background .3s; margin-bottom:.9rem; }
+    .upload-drop:hover { border-color:var(--rose); background:rgba(232,160,176,.04); }
+    .upload-drop input[type=file] { display:none; }
+    .upload-drop-icon { font-size:2rem; margin-bottom:.4rem; }
+    .upload-drop-text { font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.3); }
+    #upload-file-list { font-size:.68rem; color:rgba(255,255,255,.45); margin-bottom:.7rem; line-height:1.7; }
+    #upload-progress-txt { font-size:.7rem; text-align:center; margin-top:.5rem; min-height:1.1rem; color:var(--rose); }
+
+    /* Botão deletar foto (admin mode) */
+    #gallery-delete-btn { display:none; position:absolute; top:.6rem; right:.6rem; z-index:20; background:rgba(160,0,0,.75); border:none; color:white; font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; padding:.3rem .75rem; border-radius:3px; cursor:pointer; transition:background .3s; }
+    #gallery-delete-btn:hover { background:rgba(210,0,0,.95); }
+    .gallery-viewer.adm-mode #gallery-delete-btn { display:block; }
+
     /* ══ PÉTALAS DE ROSA (welcome / selector) ══ */
     .petal { position:absolute; top:-3%; pointer-events:none; border-radius:50% 5% 50% 5%; }
     @keyframes petal-fall {
@@ -335,6 +378,8 @@
   <!-- GSAP + ScrollTrigger -->
   <script defer src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
   <script defer src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Firebase -->
   <script type="module">
@@ -750,6 +795,59 @@
     <p class="wed-desc">A união de dois corações<br>que se escolheram para sempre.</p>
   </div>
 </div>
+
+<!-- ══ BOTÃO ADMIN OCULTO ══ -->
+<button id="adm-trigger" onclick="admOpenLogin()" title="Área administrativa">🔒</button>
+
+<!-- ══ ADMIN BAR ══ -->
+<div id="adm-bar" class="hidden">
+  <span class="adm-bar-label">Admin</span>
+  <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Adicionar foto</button>
+  <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
+</div>
+
+<!-- ══ MODAL LOGIN ══ -->
+<div id="adm-login" class="adm-overlay">
+  <div class="adm-box">
+    <button class="adm-close" onclick="admCloseLogin()">✕</button>
+    <h3>Área restrita</h3>
+    <input class="adm-input" type="email"    id="adm-email" placeholder="Email" autocomplete="email">
+    <input class="adm-input" type="password" id="adm-pass"  placeholder="Senha" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')admDoLogin()">
+    <button class="adm-btn" id="adm-login-btn" onclick="admDoLogin()">Entrar</button>
+    <p class="adm-err" id="adm-login-err"></p>
+  </div>
+</div>
+
+<!-- ══ MODAL UPLOAD ══ -->
+<div id="adm-upload" class="adm-overlay">
+  <div class="adm-box">
+    <button class="adm-close" onclick="admCloseUpload()">✕</button>
+    <h3>Adicionar fotos</h3>
+    <label class="upload-drop">
+      <input type="file" id="adm-files" accept="image/*" multiple onchange="admOnFiles(this.files)">
+      <div class="upload-drop-icon">📷</div>
+      <p class="upload-drop-text">Clique ou arraste as fotos aqui</p>
+      <p style="font-size:.62rem;color:rgba(255,255,255,.18);margin-top:.35rem">JPG · PNG · WEBP — máx 10 MB cada</p>
+    </label>
+    <div id="upload-file-list"></div>
+    <button class="adm-btn" id="adm-send-btn" style="display:none" onclick="admDoUpload()">Enviar</button>
+    <p class="adm-err" id="adm-upload-err"></p>
+    <p id="upload-progress-txt"></p>
+  </div>
+</div>
+
+<!-- Botão de deletar foto dentro da galeria (só aparece em admin mode) -->
+<script>
+/* injeta botão delete no galleryViewer após DOM ready */
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.createElement('button');
+  btn.id = 'gallery-delete-btn';
+  btn.textContent = '🗑 Remover foto';
+  btn.onclick = admDeleteCurrent;
+  document.getElementById('galleryViewer').appendChild(btn);
+});
+</script>
 
 <script>
 /* ══════════════════════════════════════════════
@@ -1255,6 +1353,185 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     }).observe(el, { childList: true, characterData: true, subtree: true });
   });
 })();
+</script>
+<script>
+/* ══════════════════════════════════════════════
+   SUPABASE GALLERY — cliente + auth + upload
+══════════════════════════════════════════════ */
+const _SB = window.supabase.createClient(
+  'https://cfirjoyjkazfryvzmjvy.supabase.co',
+  'sb_publishable_1qi0aW8SsJh_omDi2KtpAA_la5uITiT'
+);
+let _admSession   = null;
+let _admFiles     = [];
+
+/* ── Init: verifica sessão existente e carrega galeria ── */
+(async function admInit() {
+  try {
+    const { data: { session } } = await _SB.auth.getSession();
+    if (session) { _admSession = session; _admShowUI(); }
+  } catch(e) {}
+  _admLoadGallery();
+})();
+
+/* ── Login ── */
+function admOpenLogin() {
+  document.getElementById('adm-login').classList.add('open');
+  setTimeout(() => document.getElementById('adm-email').focus(), 120);
+}
+function admCloseLogin() {
+  document.getElementById('adm-login').classList.remove('open');
+  document.getElementById('adm-login-err').textContent = '';
+}
+async function admDoLogin() {
+  const email = document.getElementById('adm-email').value.trim();
+  const pass  = document.getElementById('adm-pass').value;
+  const err   = document.getElementById('adm-login-err');
+  const btn   = document.getElementById('adm-login-btn');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Preencha email e senha.'; return; }
+  btn.textContent = 'Entrando…'; btn.disabled = true;
+  const { data, error } = await _SB.auth.signInWithPassword({ email, password: pass });
+  btn.textContent = 'Entrar'; btn.disabled = false;
+  if (error) { err.textContent = 'Email ou senha incorretos.'; return; }
+  _admSession = data.session;
+  admCloseLogin();
+  _admShowUI();
+}
+
+/* ── Logout ── */
+async function admLogout() {
+  await _SB.auth.signOut();
+  _admSession = null;
+  _admHideUI();
+}
+
+/* ── Mostrar / esconder UI admin ── */
+function _admShowUI() {
+  document.getElementById('adm-bar').classList.remove('hidden');
+  document.getElementById('adm-trigger').style.opacity = '0.45';
+  document.getElementById('galleryViewer').classList.add('adm-mode');
+}
+function _admHideUI() {
+  document.getElementById('adm-bar').classList.add('hidden');
+  document.getElementById('adm-trigger').style.opacity = '';
+  document.getElementById('galleryViewer').classList.remove('adm-mode');
+}
+
+/* ── Upload modal ── */
+function admOpenUpload() {
+  _admFiles = [];
+  document.getElementById('upload-file-list').textContent = '';
+  document.getElementById('adm-send-btn').style.display = 'none';
+  document.getElementById('adm-upload-err').textContent = '';
+  document.getElementById('upload-progress-txt').textContent = '';
+  document.getElementById('adm-upload').classList.add('open');
+}
+function admCloseUpload() {
+  document.getElementById('adm-upload').classList.remove('open');
+}
+function admOnFiles(files) {
+  _admFiles = Array.from(files);
+  const list = document.getElementById('upload-file-list');
+  if (!_admFiles.length) { list.textContent = ''; return; }
+  list.innerHTML = _admFiles.map(f =>
+    '📎 ' + f.name + ' <span style="color:rgba(255,255,255,.25)">(' +
+    (f.size/1024/1024).toFixed(1) + ' MB)</span><br>'
+  ).join('');
+  const btn = document.getElementById('adm-send-btn');
+  btn.style.display = 'block';
+  btn.textContent   = 'Enviar ' + _admFiles.length + ' foto' + (_admFiles.length > 1 ? 's' : '');
+}
+async function admDoUpload() {
+  if (!_admFiles.length) return;
+  const err  = document.getElementById('adm-upload-err');
+  const prog = document.getElementById('upload-progress-txt');
+  const btn  = document.getElementById('adm-send-btn');
+  err.textContent = '';
+  btn.disabled = true;
+  let ok = 0;
+  for (let i = 0; i < _admFiles.length; i++) {
+    prog.textContent = 'Enviando ' + (i+1) + ' de ' + _admFiles.length + '…';
+    prog.style.color = 'var(--rose)';
+    const file = _admFiles[i];
+    const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const name = Date.now() + '_' + Math.random().toString(36).substr(2,5) + '.' + ext;
+    const { error: upErr } = await _SB.storage.from('gallery').upload(name, file, { cacheControl:'3600' });
+    if (upErr) { err.textContent = 'Erro upload: ' + upErr.message; continue; }
+    const { data: urlData } = _SB.storage.from('gallery').getPublicUrl(name);
+    const { error: dbErr } = await _SB.from('gallery_photos').insert({
+      url: urlData.publicUrl,
+      storage_path: name,
+      display_order: Date.now() + i,
+      uploaded_by: _admSession?.user?.id || null
+    });
+    if (dbErr) { err.textContent = 'Erro ao salvar: ' + dbErr.message; continue; }
+    ok++;
+  }
+  btn.disabled = false;
+  prog.textContent = ok + ' foto' + (ok !== 1 ? 's' : '') + ' enviada' + (ok !== 1 ? 's' : '') + ' ✓';
+  prog.style.color = '#88e8aa';
+  setTimeout(() => { admCloseUpload(); _admLoadGallery(); }, 1400);
+}
+
+/* ── Carregar galeria do Supabase ── */
+async function _admLoadGallery() {
+  try {
+    const { data, error } = await _SB
+      .from('gallery_photos')
+      .select('*')
+      .order('display_order', { ascending: true });
+    if (error || !data || data.length === 0) return; // mantém fotos locais
+
+    const viewer = document.getElementById('galleryViewer');
+    const ph     = document.getElementById('galleryPlaceholder');
+    /* remove imgs hardcoded */
+    Array.from(viewer.querySelectorAll('img')).forEach(el => el.remove());
+    /* adiciona imgs do Supabase */
+    data.forEach(function(photo, idx) {
+      const img = document.createElement('img');
+      img.src   = photo.url;
+      img.alt   = 'Foto ' + (idx + 1);
+      img.dataset.photoId   = photo.id;
+      img.dataset.photoPath = photo.storage_path;
+      if (idx === 0) img.classList.add('active');
+      img.onerror = function() { this.remove(); checkGalleryEmpty(); };
+      img.onclick = function() { openLightbox(this); };
+      img.style.cursor = 'zoom-in';
+      viewer.insertBefore(img, ph);
+    });
+    galleryIdx = 0;
+    checkGalleryEmpty();
+  } catch(e) {}
+}
+
+/* ── Deletar foto atual ── */
+async function admDeleteCurrent() {
+  const imgs = getGalleryImgs();
+  if (!imgs.length) return;
+  const img  = imgs[galleryIdx];
+  const id   = img.dataset.photoId;
+  const path = img.dataset.photoPath;
+  if (!id) { alert('Foto local — adicione pelo painel admin para poder remover.'); return; }
+  if (!confirm('Remover esta foto permanentemente?')) return;
+  const { error: stErr } = await _SB.storage.from('gallery').remove([path]);
+  if (stErr) { alert('Erro storage: ' + stErr.message); return; }
+  await _SB.from('gallery_photos').delete().eq('id', id);
+  img.remove();
+  const remaining = getGalleryImgs();
+  if (galleryIdx >= remaining.length) galleryIdx = 0;
+  if (remaining.length) remaining[galleryIdx].classList.add('active');
+  checkGalleryEmpty();
+  updateGalleryCounter();
+}
+
+/* ── Atalho teclado: Ctrl+Shift+A ── */
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    if (_admSession) admLogout(); else admOpenLogin();
+  }
+});
 </script>
 </body>
 </html>
