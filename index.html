@@ -1783,14 +1783,50 @@ const _SB = window.supabase.createClient(
 let _admSession   = null;
 let _admFiles     = [];
 
-/* ── Init: verifica sessão existente e carrega galeria ── */
+/* ── Init: verifica sessão existente e carrega todas as fotos ── */
 (async function admInit() {
   try {
     const { data: { session } } = await _SB.auth.getSession();
     if (session) { _admSession = session; _admShowUI(); }
   } catch(e) {}
-  _admLoadGallery();
+  _admLoadGallery();      // galeria Namoro
+  _loadSeletorPhotos();   // cards do carrossel
+  _loadNoivadoHero();     // zoom hero do Noivado
 })();
+
+/* ── Carregar fotos dos cards Seletor do Supabase ── */
+async function _loadSeletorPhotos() {
+  try {
+    const { data } = await _SB.from('gallery_photos')
+      .select('url, display_order')
+      .eq('page', 'seletor')
+      .order('display_order', { ascending: true })
+      .limit(3);
+    if (!data || !data.length) return; // mantém imagens locais
+    const cards = [
+      document.querySelector('#card-0 .card-photo'),
+      document.querySelector('#card-1 .card-photo'),
+      document.querySelector('#card-2 .card-photo'),
+    ];
+    data.forEach(function(photo, i) {
+      if (cards[i]) { cards[i].src = photo.url; cards[i].style.display = ''; }
+    });
+  } catch(e) {}
+}
+
+/* ── Carregar imagem hero da seção Noivado do Supabase ── */
+async function _loadNoivadoHero() {
+  try {
+    const { data } = await _SB.from('gallery_photos')
+      .select('url')
+      .eq('page', 'noivado')
+      .order('display_order', { ascending: true })
+      .limit(1);
+    if (!data || !data.length) return; // mantém imagem local
+    const img = document.querySelector('.n-zoom-img');
+    if (img) { img.src = data[0].url; img.style.display = ''; }
+  } catch(e) {}
+}
 
 /* ── Login ── */
 function admOpenLogin() {

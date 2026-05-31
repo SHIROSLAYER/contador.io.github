@@ -1,0 +1,22 @@
+# ── Utilitários (não são parte do site) ──
+node_modules/
+package.json
+upload-photos.js
+upload-tool.html
+upload-tool-v2.html
+
+# ── Credenciais ──
+.env
+*.env.local
+
+# ── Fotos — servidas pelo Supabase Storage ──
+# Use upload-tool-v2.html para migrar para o Supabase
+segundapagina/arquivosimagens/
+terceirapaginanamoro/arquivoscontador/
+
+# ── Lixo de SO ──
+*.zip
+*.rar
+*.log
+.DS_Store
+Thumbs.db
