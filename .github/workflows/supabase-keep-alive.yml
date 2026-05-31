@@ -4,7 +4,7 @@ name: 🏓 Supabase Keep-Alive
 # (projetos free pausam após 7 dias sem atividade)
 on:
   schedule:
-    - cron: '0 10 */3 * *'   # 00:00:00 → a cada 3 dias
+    - cron: '0 10 */3 * *'   # a cada 3 dias
   workflow_dispatch:           # Permite rodar manualmente pelo GitHub
 
 jobs:
@@ -16,7 +16,8 @@ jobs:
     steps:
       - name: 🏓 Consulta keep-alive na gallery_photos
         env:
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Usando vars. porque foi adicionado como Repository Variable (não Secret)
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
           echo "⏰  $(date -u '+%Y-%m-%d %H:%M UTC')"
 
@@ -30,6 +31,6 @@ jobs:
           if [ "${STATUS}" = "200" ]; then
             echo "✅  Supabase está ativo! Cronômetro de 7 dias resetado."
           else
-            echo "⚠️  Status inesperado (${STATUS}). Verifique o secret SUPABASE_ANON_KEY."
+            echo "⚠️  Status inesperado (${STATUS}). Verifique a variável SUPABASE_ANON_KEY."
             exit 1
           fi
