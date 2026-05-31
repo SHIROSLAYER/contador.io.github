@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nossa Linha do Tempo ❤️</title>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d4889a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nossa Linha do Tempo">
+  <link rel="apple-touch-icon" href="icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;300;400&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&display=swap" rel="stylesheet">
@@ -646,6 +653,32 @@
     /* ══ GALERIA — cursor ══ */
     .gallery-viewer img { cursor:zoom-in; }
 
+    /* ══ SKELETON LOADING — galeria ══ */
+    .gallery-skeleton {
+      position:absolute; inset:0; z-index:8; border-radius:4px; overflow:hidden;
+      background:linear-gradient(90deg,rgba(25,5,18,.7) 25%,rgba(65,18,40,.65) 50%,rgba(25,5,18,.7) 75%);
+      background-size:300% 100%;
+      animation:sk-shine 1.7s ease-in-out infinite;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .gallery-skeleton .sk-heart {
+      font-size:2rem; opacity:.22;
+      animation:sk-pulse 1.7s ease-in-out infinite;
+    }
+    @keyframes sk-shine {
+      0%   { background-position:100% 0 }
+      100% { background-position:-100% 0 }
+    }
+    @keyframes sk-pulse { 0%,100%{transform:scale(.85);opacity:.18} 50%{transform:scale(1.1);opacity:.32} }
+    .gallery-skeleton.sk-hidden { display:none; }
+
+    /* ══ CARTA — contador de múltiplas ══ */
+    .carta-counter {
+      font-family:'Josefin Sans',sans-serif; font-size:.58rem;
+      letter-spacing:.32em; text-transform:uppercase;
+      color:rgba(232,160,176,.38); margin-bottom:.35rem; min-height:.9rem;
+    }
+
     /* ══ BADGE ID — número único da foto ══ */
     .photo-badge {
       position:absolute;
@@ -856,22 +889,12 @@
 <div id="carta-wrap">
   <div class="carta-box">
     <button class="carta-fechar" onclick="fecharCarta()">✕</button>
-    <span class="carta-envelope">💌</span>
-    <p class="carta-eyebrow">Uma mensagem especial</p>
-    <h2 class="carta-titulo">Para Você</h2>
-    <!--
-    ✏️ PERSONALIZE A CARTA ABAIXO
-    Troque o texto pela sua mensagem especial.
-    -->
-    <p class="carta-texto">
-      ✏️ <em>Personalize esta mensagem no código</em><br><br>
-      Dois anos atrás, sem saber ao certo o que o futuro<br>
-      guardava, dei a mão pra você — e foi a melhor<br>
-      decisão que já tomei na vida.<br><br>
-      Cada dia ao seu lado é uma prova de que<br>
-      o amor verdadeiro existe, e que ele tem o seu nome.
-    </p>
-    <p class="carta-assinatura">Com todo o meu amor 💕</p>
+    <p class="carta-counter" id="carta-counter-el"></p>
+    <span class="carta-envelope" id="carta-emoji-el">💌</span>
+    <p class="carta-eyebrow" id="carta-eyebrow-el">Uma mensagem especial</p>
+    <h2 class="carta-titulo" id="carta-titulo-el">Para Você</h2>
+    <div class="carta-texto" id="carta-texto-el"></div>
+    <p class="carta-assinatura" id="carta-assinatura-el">Com todo o meu amor 💕</p>
   </div>
 </div>
 
@@ -1048,6 +1071,10 @@
   <div class="gallery-section">
     <h3>Nossas memórias</h3>
     <div class="gallery-viewer" id="galleryViewer">
+      <!-- Skeleton shimmer — some enquanto carrega do Supabase -->
+      <div class="gallery-skeleton" id="gallerySkeleton">
+        <span class="sk-heart">💗</span>
+      </div>
 
       <!--
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1703,56 +1730,107 @@ document.addEventListener('keydown', e => {
    ▶ PARA TESTAR: coloque uma data/hora já passada
    ▶ PARA LIMPAR (reabrir): Firebase → Dados → apague o nó "carta"
 ══════════════════════════════════════════════════════════════ */
-const DATA_CARTA = new Date("2026-05-04T00:00:00"); // ← MUDE AQUI a data de liberação
+/* ══════════════════════════════════════════════════════════════
+   CARTAS SURPRESA — sistema multi-carta com datas de liberação
+   ↓↓↓ ADICIONE NOVAS CARTAS NESTE ARRAY ↓↓↓
+══════════════════════════════════════════════════════════════ */
+var CARTAS = [
+  {
+    id: 'c_01',
+    data: new Date("2026-05-04T00:00:00"),   // ← data de liberação
+    emoji: '💌',
+    eyebrow: 'Uma mensagem especial',
+    titulo: 'Para Você',
+    texto: 'Dois anos atrás, sem saber ao certo o que o futuro guardava, dei a mão pra você — e foi a melhor decisão que já tomei na vida.<br><br>Cada dia ao seu lado é uma prova de que o amor verdadeiro existe, e que ele tem o seu nome.',
+    assinatura: 'Com todo o meu amor 💕'
+  }
+  // Adicione mais cartas abaixo:
+  // {
+  //   id: 'c_02',
+  //   data: new Date("2026-09-04T00:00:00"),  // aniversário de 2 anos
+  //   emoji: '🌹',
+  //   eyebrow: 'Dois anos juntos',
+  //   titulo: 'Meu Amor',
+  //   texto: 'Dois anos ao seu lado...',
+  //   assinatura: 'Para sempre seu, Steve'
+  // }
+];
 
-function _verificarExibicaoCarta() {
-  const agora = new Date();
-  if (agora >= DATA_CARTA && window._cartaNaoAberta) {
-    document.getElementById('card-surpresa').classList.add('show');
+function _cartasPendentes() {
+  var agora = new Date();
+  return CARTAS.filter(function(c) {
+    return agora >= c.data && !localStorage.getItem('carta_lida_' + c.id);
+  });
+}
+
+function _atualizarBotaoCarta() {
+  var pendentes = _cartasPendentes();
+  var btn = document.getElementById('card-surpresa');
+  if (pendentes.length > 0) {
+    btn.innerHTML = pendentes.length > 1
+      ? '💌 ' + pendentes.length + ' surpresas para você'
+      : '💌 uma surpresa para você';
+    btn.classList.add('show');
+  } else {
+    btn.classList.remove('show');
   }
 }
-window._verificarExibicaoCarta = _verificarExibicaoCarta;
 
+// Agenda verificação para cartas futuras
 (function() {
-  const agora = new Date();
-  if (agora < DATA_CARTA) {
-    const falta = DATA_CARTA - agora;
-    setTimeout(() => {
-      if (window._cartaNaoAberta) {
-        document.getElementById('card-surpresa').classList.add('show');
-      }
-    }, Math.min(falta, 2147483647));
-  } else {
-    // Data já passou — aguarda Firebase confirmar se foi aberta
-    setTimeout(_verificarExibicaoCarta, 1500);
-  }
+  var agora = new Date();
+  CARTAS.forEach(function(c) {
+    if (agora < c.data) {
+      var falta = c.data - agora;
+      setTimeout(_atualizarBotaoCarta, Math.min(falta, 2147483647));
+    }
+  });
+  setTimeout(_atualizarBotaoCarta, 1200);
+  setInterval(_atualizarBotaoCarta, 60000);
 })();
 
 function abrirCarta() {
-  if (!window._fbSet) { mostrarCarta(); return; }
-  window._fbSet('carta02', {
-    abertaEm: new Date().toISOString(),
-    abertaPor: 'primeiro acesso'
-  }).then(() => {
-    window._cartaNaoAberta = false;
-    document.getElementById('card-surpresa').classList.remove('show');
-    mostrarCarta();
-  }).catch(() => mostrarCarta());
+  var pendentes = _cartasPendentes();
+  if (!pendentes.length) return;
+  var carta = pendentes[0];
+
+  // Popula o modal dinamicamente
+  document.getElementById('carta-emoji-el').textContent    = carta.emoji;
+  document.getElementById('carta-eyebrow-el').textContent  = carta.eyebrow;
+  document.getElementById('carta-titulo-el').textContent   = carta.titulo;
+  document.getElementById('carta-texto-el').innerHTML      = carta.texto;
+  document.getElementById('carta-assinatura-el').textContent = carta.assinatura;
+  var total = pendentes.length;
+  document.getElementById('carta-counter-el').textContent  =
+    total > 1 ? '1 de ' + total : '';
+
+  // Marca como lida (localStorage)
+  localStorage.setItem('carta_lida_' + carta.id, '1');
+
+  // Firebase log (opcional)
+  if (window._fbSet) {
+    window._fbSet('carta_' + carta.id, { abertaEm: new Date().toISOString() }).catch(function(){});
+  }
+
+  mostrarCarta();
+  setTimeout(_atualizarBotaoCarta, 400);
 }
 
 function mostrarCarta() {
   document.getElementById('carta-wrap').classList.add('visible');
-  for (let i = 0; i < 22; i++) {
-    setTimeout(() => {
-      const h = document.createElement('div');
-      h.classList.add('hr');
-      h.textContent = ['💕','❤️','🩷','✨','💗','💖'][Math.floor(Math.random()*6)];
-      h.style.left = Math.random()*100 + 'vw';
-      h.style.fontSize = (0.8 + Math.random()) + 'rem';
-      h.style.animationDuration = (2 + Math.random()*2) + 's';
-      document.getElementById('heartRain').appendChild(h);
-      setTimeout(() => h.remove(), 4000);
-    }, i * 70);
+  for (var i = 0; i < 22; i++) {
+    (function(delay) {
+      setTimeout(function() {
+        var h = document.createElement('div');
+        h.classList.add('hr');
+        h.textContent = ['💕','❤️','🩷','✨','💗','💖'][Math.floor(Math.random()*6)];
+        h.style.left  = Math.random()*100 + 'vw';
+        h.style.fontSize = (0.8 + Math.random()) + 'rem';
+        h.style.animationDuration = (2 + Math.random()*2) + 's';
+        document.getElementById('heartRain').appendChild(h);
+        setTimeout(function(){ h.remove(); }, 4000);
+      }, delay);
+    })(i * 70);
   }
 }
 
@@ -1800,6 +1878,25 @@ document.getElementById('lightbox').addEventListener('click', function(e) {
 document.getElementById('galleryViewer').addEventListener('click', function(e) {
   if (e.target.tagName === 'IMG') openLightbox(e.target);
 });
+
+/* ── Swipe no lightbox ── */
+(function() {
+  var lb = document.getElementById('lightbox');
+  var lbX = 0, lbY = 0;
+  lb.addEventListener('touchstart', function(e) {
+    lbX = e.touches[0].clientX;
+    lbY = e.touches[0].clientY;
+  }, {passive:true});
+  lb.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - lbX;
+    var dy = e.changedTouches[0].clientY - lbY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 38) {
+      lbNav(dx < 0 ? 1 : -1);
+    } else if (Math.abs(dy) > 70 && Math.abs(dx) < 40) {
+      closeLightbox(); // swipe down fecha
+    }
+  }, {passive:true});
+})();
 
 /* ══════════════════════════════════════════════
    MUSIC PROGRESS BAR
@@ -2164,16 +2261,20 @@ async function admDoUpload() {
     prog.textContent = 'Enviando ' + (i+1) + ' de ' + _admFiles.length + '…';
     prog.style.color = 'var(--rose)';
     const file = _admFiles[i];
-    const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
+
+    // Converte para WebP (reduz ~35% tamanho sem perda visual)
+    prog.textContent = 'Convertendo ' + (i+1) + ' de ' + _admFiles.length + '…';
+    const webpBlob = await _toWebP(file);
 
     // Pega o próximo número sequencial (nunca repete)
     const { data: nextNum } = await _SB.rpc('next_photo_number');
     const photoNum = (nextNum || Date.now());
     const numPad   = String(photoNum).padStart(4, '0');
     const selectedPage = document.getElementById('adm-page-select').value;
-    const name = selectedPage + '_foto' + numPad + '_' + Date.now() + '.' + ext;
+    const name = selectedPage + '_foto' + numPad + '_' + Date.now() + '.webp';
 
-    const { error: upErr } = await _SB.storage.from('gallery').upload(name, file, { cacheControl:'3600' });
+    prog.textContent = 'Enviando ' + (i+1) + ' de ' + _admFiles.length + '…';
+    const { error: upErr } = await _SB.storage.from('gallery').upload(name, webpBlob, { cacheControl:'31536000', contentType:'image/webp' });
     if (upErr) { err.textContent = 'Erro upload: ' + upErr.message; continue; }
     const { data: urlData } = _SB.storage.from('gallery').getPublicUrl(name);
     const { data: inserted, error: dbErr } = await _SB.from('gallery_photos').insert({
@@ -2196,30 +2297,39 @@ async function admDoUpload() {
   setTimeout(() => { admCloseUpload(); _admLoadGallery(); }, 1400);
 }
 
-/* ── Carregar galeria do Supabase (filtrada por página) ── */
+/* ── Carregar galeria do Supabase (skeleton + lazy loading) ── */
 async function _admLoadGallery(page) {
   page = page || 'namoro';
+  const sk = document.getElementById('gallerySkeleton');
+  if (sk) sk.classList.remove('sk-hidden'); // mostra skeleton
   try {
     const { data, error } = await _SB
       .from('gallery_photos')
       .select('*')
       .eq('page', page)
       .order('display_order', { ascending: true });
+    if (sk) sk.classList.add('sk-hidden');   // esconde skeleton
     if (error || !data || data.length === 0) return; // mantém fotos locais
 
     const viewer = document.getElementById('galleryViewer');
     const ph     = document.getElementById('galleryPlaceholder');
     /* remove imgs hardcoded */
     Array.from(viewer.querySelectorAll('img')).forEach(el => el.remove());
-    /* adiciona imgs do Supabase */
+    /* adiciona imgs do Supabase com lazy loading */
     data.forEach(function(photo, idx) {
       const img = document.createElement('img');
-      img.src   = photo.url;
       img.alt   = 'Foto #' + String(photo.photo_number).padStart(4,'0');
       img.dataset.photoId     = photo.id;
       img.dataset.photoPath   = photo.storage_path;
       img.dataset.photoNumber = photo.photo_number;
-      if (idx === 0) img.classList.add('active');
+      if (idx === 0) {
+        img.src = photo.url;           // primeira foto: carrega já
+        img.classList.add('active');
+      } else {
+        img.dataset.src = photo.url;   // demais: lazy via IntersectionObserver
+        img.loading     = 'lazy';
+        _imgObserver.observe(img);
+      }
       img.onerror = function() { this.remove(); checkGalleryEmpty(); };
       img.onclick = function() { openLightbox(this); };
       img.style.cursor = 'zoom-in';
@@ -2313,6 +2423,69 @@ document.addEventListener('keydown', function(e) {
     if (_admSession) admLogout(); else admOpenLogin();
   }
 });
+
+/* ════════════════════════════════════════════════════
+   LAZY LOADING — IntersectionObserver para galeria
+════════════════════════════════════════════════════ */
+var _imgObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      var img = entry.target;
+      if (img.dataset.src) {
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+        _imgObserver.unobserve(img);
+      }
+    }
+  });
+}, { rootMargin: '300px' });
+
+/* ── Garante que a foto ativa carrega ao navegar ── */
+var _origGalleryNav = galleryNav;
+galleryNav = function(dir) {
+  _origGalleryNav(dir);
+  var imgs = getGalleryImgs();
+  var active = imgs.find(function(i){ return i.classList.contains('active'); });
+  if (active && active.dataset.src) {
+    active.src = active.dataset.src;
+    delete active.dataset.src;
+    _imgObserver.unobserve(active);
+  }
+};
+
+/* ════════════════════════════════════════════════════
+   WEBP — converte antes do upload (reduz ~35% tamanho)
+════════════════════════════════════════════════════ */
+function _toWebP(file, quality) {
+  quality = quality != null ? quality : 0.85;
+  return new Promise(function(resolve) {
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function() {
+      try {
+        var c = document.createElement('canvas');
+        c.width  = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        c.toBlob(function(blob) {
+          URL.revokeObjectURL(url);
+          resolve(blob && blob.size > 0 ? blob : file);
+        }, 'image/webp', quality);
+      } catch(e) { URL.revokeObjectURL(url); resolve(file); }
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   PWA — registra Service Worker
+════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
 </script>
 </body>
 </html>

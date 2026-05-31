@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#07040a"/>
+  <!-- Aurora glow -->
+  <ellipse cx="256" cy="256" rx="200" ry="200" fill="none" stroke="rgba(180,80,120,.15)" stroke-width="80"/>
+  <!-- Coração -->
+  <path d="M256 370 C256 370 110 270 110 170 C110 120 145 90 185 90 C215 90 240 110 256 135 C272 110 297 90 327 90 C367 90 402 120 402 170 C402 270 256 370 256 370Z"
+        fill="#d4889a" opacity="0.9"/>
+  <!-- Brilho interno -->
+  <path d="M200 130 C210 118 225 112 240 115 C225 128 215 145 210 165 C195 155 190 142 200 130Z"
+        fill="rgba(255,255,255,0.35)"/>
+  <!-- Texto NLT -->
+  <text x="256" y="460" font-family="serif" font-size="52" fill="rgba(212,136,154,0.6)"
+        text-anchor="middle" letter-spacing="8">NLT</text>
+</svg>
