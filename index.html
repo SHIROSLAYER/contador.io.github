@@ -162,20 +162,44 @@
     .g-counter { font-size:.65rem; letter-spacing:.2em; color:rgba(255,255,255,.3); min-width:60px; text-align:center; }
 
     /* ══════════════════════
-       PÁGINA 4 — NOIVADO
+       PÁGINA 4 — NOIVADO (scroll + image zoom)
     ══════════════════════ */
-    #pg-noivado { background:linear-gradient(135deg,#12002a,#000820); overflow:hidden; }
+    #pg-noivado { overflow-y:scroll; overflow-x:hidden; justify-content:flex-start; align-items:stretch; background:transparent; }
+    #pg-noivado::-webkit-scrollbar { width:3px; }
+    #pg-noivado::-webkit-scrollbar-thumb { background:rgba(180,100,255,.3); }
+
     .noivado-particles { position:absolute; inset:0; pointer-events:none; z-index:0; }
     .n-particle { position:absolute; border-radius:50%; background:rgba(180,100,255,.3); animation:n-float linear infinite; }
     @keyframes n-float { 0%{transform:translateY(110vh) scale(0);opacity:0} 10%{opacity:1} 90%{opacity:.6} 100%{transform:translateY(-10vh) scale(1.5);opacity:0} }
 
-    .noivado-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.4rem; text-align:center; padding:2rem; }
+    /* — Seções de scroll — */
+    .n-section { width:100%; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
+    .n-hero-section { background:linear-gradient(135deg,#12002a,#000820); }
+    .n-hero-content { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.4rem; text-align:center; padding:2rem; }
+    .n-scroll-hint { font-size:.62rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.2); animation:hint-bounce 2.2s ease-in-out infinite; margin-top:.5rem; }
+    @keyframes hint-bounce { 0%,100%{opacity:.2;transform:translateY(0)} 50%{opacity:.6;transform:translateY(6px)} }
+
+    /* — Zoom section — */
+    .n-zoom-wrap { position:relative; width:100%; height:100vh; perspective:500px; overflow:hidden; flex-shrink:0; }
+    .n-zoom-img-container { position:absolute; inset:0; overflow:hidden; }
+    .n-zoom-img { width:100%; height:100%; object-fit:cover; object-position:center; will-change:transform; }
+    .n-zoom-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(18,0,42,.55) 0%,rgba(0,0,0,.08) 40%,rgba(0,0,0,.08) 60%,rgba(18,0,42,.9) 100%); z-index:1; pointer-events:none; }
+    .n-zoom-text { position:absolute; bottom:11%; left:0; right:0; text-align:center; z-index:2; will-change:opacity,transform; }
+    .n-zoom-eyebrow { font-size:.7rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(200,150,255,.7); margin-bottom:.6rem; }
+    .n-zoom-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:#fff; text-shadow:0 0 60px rgba(160,80,255,.9),0 0 120px rgba(160,80,255,.4); }
+
+    /* — Promise section — */
+    .n-promise-section { background:linear-gradient(135deg,#0a001a,#000820); }
+    .n-promise-content { position:relative; z-index:1; text-align:center; padding:2rem; max-width:500px; display:flex; flex-direction:column; align-items:center; gap:1.3rem; }
+    .n-promise-quote { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3vw,1.35rem); color:rgba(255,248,245,.55); line-height:1.9; }
+    .n-promise-divider { width:60px; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
+
+    /* — Mantidos do design original — */
     .noivado-ring { font-size:4.5rem; animation:ring-spin 6s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(160,80,255,.7)); }
     @keyframes ring-spin { 0%,100%{transform:rotate(-5deg) scale(1)} 50%{transform:rotate(5deg) scale(1.08)} }
     .noivado-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:var(--blush); text-shadow:0 0 50px rgba(160,80,255,.7),0 0 100px rgba(160,80,255,.3); animation:title-glow 3s ease-in-out infinite alternate; }
     @keyframes title-glow { from{text-shadow:0 0 30px rgba(160,80,255,.5),0 0 60px rgba(160,80,255,.2)} to{text-shadow:0 0 60px rgba(160,80,255,.9),0 0 120px rgba(160,80,255,.5)} }
     .noivado-badge { padding:.45rem 1.4rem; border:1px solid rgba(180,100,255,.4); color:rgba(255,255,255,.4); font-size:.65rem; letter-spacing:.35em; text-transform:uppercase; }
-    .noivado-desc { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(1.1rem,3vw,1.5rem); color:rgba(255,248,245,.55); max-width:380px; line-height:1.7; }
     .noivado-divider { display:flex; align-items:center; gap:.8rem; width:220px; }
     .noivado-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
 
@@ -279,6 +303,10 @@
     /* ══ GALERIA — cursor ══ */
     .gallery-viewer img { cursor:zoom-in; }
   </style>
+  <!-- GSAP + ScrollTrigger -->
+  <script defer src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+  <script defer src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -550,22 +578,51 @@
 
 <!-- ════════════════════════════════════════
      PÁGINA 4 — NOIVADO
-     Animação: partículas flutuantes roxas + brilho pulsante no título
+     ScrollTrigger Image Zoom + partículas + 3 seções
 ════════════════════════════════════════ -->
 <div class="page" id="pg-noivado">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
-  <div class="noivado-particles" id="noivadoParticles"></div>
-  <div class="noivado-content">
-    <div class="noivado-ring">💍</div>
-    <h1 class="noivado-title">Noivado</h1>
-    <div class="noivado-divider">
-      <span></span>
-      <span style="font-size:.8rem;color:rgba(180,100,255,.6)">✦</span>
-      <span></span>
+
+  <!-- Seção 1 — Hero com partículas -->
+  <div class="n-section n-hero-section">
+    <div class="noivado-particles" id="noivadoParticles"></div>
+    <div class="n-hero-content">
+      <div class="noivado-ring">💍</div>
+      <h1 class="noivado-title">Noivado</h1>
+      <div class="noivado-divider">
+        <span></span>
+        <span style="font-size:.8rem;color:rgba(180,100,255,.6)">✦</span>
+        <span></span>
+      </div>
+      <p class="n-scroll-hint">↓ role para ver</p>
     </div>
-    <div class="noivado-badge">Em breve</div>
-    <p class="noivado-desc">Do "sim" ao "para sempre" —<br>um passo de cada vez.</p>
   </div>
+
+  <!-- Seção 2 — ScrollTrigger Image Zoom -->
+  <div class="n-zoom-wrap">
+    <div class="n-zoom-img-container">
+      <img class="n-zoom-img"
+           src="segundapagina/arquivosimagens/unidade00001.jpeg"
+           alt="Nossas memórias"
+           onerror="this.src='terceirapaginanamoro/arquivoscontador/unidade00001.jpeg'">
+    </div>
+    <div class="n-zoom-overlay"></div>
+    <div class="n-zoom-text">
+      <p class="n-zoom-eyebrow">Capítulo II</p>
+      <h2 class="n-zoom-title">A Promessa<br>Eterna</h2>
+    </div>
+  </div>
+
+  <!-- Seção 3 — Promessa / Em breve -->
+  <div class="n-section n-promise-section">
+    <div class="n-promise-content">
+      <span style="font-size:3rem;filter:drop-shadow(0 0 20px rgba(180,100,255,.7))">💜</span>
+      <div class="n-promise-divider"></div>
+      <p class="n-promise-quote">"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."</p>
+      <div class="noivado-badge">Em breve</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════════════════════════════════════════
@@ -604,13 +661,16 @@ function goTo(id) {
   document.getElementById(id).classList.add('active');
   if (id === 'pg-namoro') {
     document.getElementById('pg-namoro').scrollTop = 0;
-    // Toca música com pequeno delay (aguarda animação da página)
     setTimeout(() => {
       const m = document.getElementById('bgMusic');
       m.play()
         .then(() => { document.getElementById('musicStatus').textContent = 'tocando…'; })
         .catch(() => { document.getElementById('musicStatus').textContent = 'toque ▶ para tocar'; });
     }, 500);
+  }
+  if (id === 'pg-noivado') {
+    document.getElementById('pg-noivado').scrollTop = 0;
+    setTimeout(initNoivadoAnimation, 400);
   }
   currentPage = id;
 }
@@ -747,6 +807,57 @@ function spawnHeart() {
   setTimeout(() => h.remove(), 9500);
 }
 setInterval(spawnHeart, 1100);
+
+/* ══════════════════════════════════════════════
+   NOIVADO — ScrollTrigger Image Zoom
+══════════════════════════════════════════════ */
+function initNoivadoAnimation() {
+  if (!window.gsap || !window.ScrollTrigger) {
+    setTimeout(initNoivadoAnimation, 150);
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+
+  const pg = document.getElementById('pg-noivado');
+
+  // Limpa instâncias anteriores deste scroller
+  ScrollTrigger.getAll().forEach(function(t) {
+    if (t.vars.scroller === pg) t.kill();
+  });
+
+  // Proxy para scroll dentro do container fixo
+  ScrollTrigger.scrollerProxy(pg, {
+    scrollTop: function(value) {
+      return arguments.length ? (pg.scrollTop = value) : pg.scrollTop;
+    },
+    getBoundingClientRect: function() {
+      return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+    },
+    pinType: 'transform'
+  });
+
+  gsap.timeline({
+    scrollTrigger: {
+      trigger: '.n-zoom-wrap',
+      scroller: pg,
+      start: 'top top',
+      end: '+=120%',
+      pin: true,
+      scrub: 1.2,
+    }
+  })
+  .fromTo('.n-zoom-img',
+    { scale: 1, z: 0 },
+    { scale: 2.2, z: 350, transformOrigin: 'center center', ease: 'power1.inOut' }
+  )
+  .fromTo('.n-zoom-text',
+    { opacity: 1, y: 0 },
+    { opacity: 0, y: -40, ease: 'power1.in' },
+    '<'
+  );
+
+  ScrollTrigger.refresh();
+}
 
 /* ══════════════════════════════════════════════
    ANIMAÇÕES — NOIVADO: partículas roxas flutuantes
