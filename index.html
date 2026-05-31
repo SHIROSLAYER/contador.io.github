@@ -822,6 +822,77 @@
     /* Em touch sempre visível */
     @media (hover:none) { .card-edit-btn { opacity:.85; pointer-events:all; } }
 
+    /* ══ PAINEL CARTAS — admin ══ */
+    .adm-cartas-box {
+      width:min(96vw,480px);
+      max-height:88svh;
+      overflow-y:auto;
+      scrollbar-width:thin;
+    }
+    .adm-cartas-box::-webkit-scrollbar { width:3px; }
+    .adm-cartas-box::-webkit-scrollbar-thumb { background:rgba(232,160,176,.3); }
+    .adm-cartas-hint {
+      font-size:.65rem; letter-spacing:.12em;
+      color:rgba(255,255,255,.28); margin-bottom:1rem; line-height:1.6;
+    }
+    .adm-cartas-label {
+      display:block; font-size:.62rem; letter-spacing:.22em;
+      text-transform:uppercase; color:rgba(255,255,255,.32);
+      margin:.65rem 0 .25rem;
+    }
+    .adm-textarea {
+      resize:vertical; min-height:120px; line-height:1.65;
+      font-family:'Cormorant Garamond',serif; font-size:.95rem;
+    }
+    .cartas-form-wrap { padding-top:.3rem; }
+    .cartas-back-btn {
+      background:transparent; border:none; color:rgba(232,160,176,.65);
+      font-family:'Josefin Sans',sans-serif; font-size:.65rem;
+      letter-spacing:.25em; text-transform:uppercase; cursor:pointer;
+      padding:0; margin-bottom:.75rem; transition:color .25s;
+    }
+    .cartas-back-btn:hover { color:var(--rose); }
+    /* Item da lista */
+    .carta-item {
+      background:rgba(255,255,255,.035);
+      border:1px solid rgba(232,160,176,.12);
+      border-radius:4px; padding:.7rem .9rem;
+      margin-bottom:.55rem;
+      display:flex; align-items:flex-start; gap:.75rem;
+    }
+    .carta-item-emoji { font-size:1.5rem; flex-shrink:0; line-height:1; }
+    .carta-item-body  { flex:1; min-width:0; }
+    .carta-item-title {
+      font-family:'Cormorant Garamond',serif; font-size:.95rem;
+      color:rgba(245,237,226,.85); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    .carta-item-meta {
+      font-size:.62rem; letter-spacing:.1em;
+      color:rgba(255,255,255,.3); margin-top:.2rem;
+    }
+    .carta-item-badge {
+      display:inline-block; font-size:.56rem; letter-spacing:.15em;
+      text-transform:uppercase; border-radius:2px;
+      padding:.12rem .45rem; margin-left:.4rem;
+    }
+    .badge-locked   { background:rgba(100,80,160,.2);  color:rgba(180,150,255,.7); border:1px solid rgba(150,120,220,.2); }
+    .badge-unlocked { background:rgba(80,200,120,.12); color:rgba(120,220,160,.8); border:1px solid rgba(100,200,140,.2); }
+    .carta-item-actions { display:flex; gap:.4rem; flex-shrink:0; }
+    .carta-act-btn {
+      background:transparent; border:1px solid rgba(255,255,255,.1);
+      color:rgba(255,255,255,.45); width:30px; height:30px;
+      border-radius:3px; cursor:pointer; font-size:.82rem;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .22s;
+    }
+    .carta-act-btn:hover { border-color:var(--rose); color:var(--rose); }
+    .carta-act-btn.del:hover { border-color:rgba(255,80,80,.6); color:rgba(255,100,100,.8); }
+    .cartas-empty {
+      text-align:center; padding:1.5rem; font-family:'Cormorant Garamond',serif;
+      font-style:italic; color:rgba(255,255,255,.2); font-size:.9rem;
+    }
+
     /* ══ PÉTALAS DE ROSA (welcome / selector) ══ */
     .petal { position:absolute; top:-3%; pointer-events:none; border-radius:50% 5% 50% 5%; }
     @keyframes petal-fall {
@@ -1292,6 +1363,7 @@
 <div id="adm-bar" class="hidden">
   <span class="adm-bar-label">Admin</span>
   <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Foto</button>
+  <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
   <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
   <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
 </div>
@@ -1333,6 +1405,42 @@
     <button class="adm-btn" id="adm-send-btn" style="display:none" onclick="admDoUpload()">Enviar</button>
     <p class="adm-err" id="adm-upload-err"></p>
     <p id="upload-progress-txt"></p>
+  </div>
+</div>
+
+<!-- ══ PAINEL DE CARTAS SURPRESA (admin) ══ -->
+<div id="adm-cartas" class="adm-overlay">
+  <div class="adm-box adm-cartas-box">
+    <button class="adm-close" onclick="admCloseCartas()">✕</button>
+    <h3>💌 Cartas Surpresa</h3>
+    <p class="adm-cartas-hint">Cada carta é liberada automaticamente na data escolhida.</p>
+
+    <!-- Lista de cartas -->
+    <div id="cartas-lista"></div>
+
+    <!-- Formulário add / editar -->
+    <div id="cartas-form" class="cartas-form-wrap" style="display:none">
+      <button class="cartas-back-btn" onclick="admCartasShowLista()">← Voltar</button>
+      <input type="hidden" id="cf-id">
+      <label class="adm-cartas-label">Emoji</label>
+      <input class="adm-input" id="cf-emoji" maxlength="4" placeholder="💌">
+      <label class="adm-cartas-label">Subtítulo (eyebrow)</label>
+      <input class="adm-input" id="cf-eyebrow" placeholder="Uma mensagem especial">
+      <label class="adm-cartas-label">Título</label>
+      <input class="adm-input" id="cf-titulo" placeholder="Para Você">
+      <label class="adm-cartas-label">Texto da carta</label>
+      <textarea class="adm-input adm-textarea" id="cf-texto" rows="7"
+                placeholder="Escreva aqui sua mensagem..."></textarea>
+      <label class="adm-cartas-label">Assinatura</label>
+      <input class="adm-input" id="cf-assinatura" placeholder="Com todo o meu amor 💕">
+      <label class="adm-cartas-label">Data e hora de liberação</label>
+      <input class="adm-input" type="datetime-local" id="cf-data">
+      <p class="adm-err" id="cf-err"></p>
+      <button class="adm-btn" id="cf-save-btn" onclick="admSalvarCarta()">Salvar Carta</button>
+    </div>
+
+    <button class="adm-btn" id="cartas-nova-btn" onclick="admNovaCarta()"
+            style="margin-top:.9rem">+ Nova Carta</button>
   </div>
 </div>
 
@@ -1731,35 +1839,27 @@ document.addEventListener('keydown', e => {
    ▶ PARA LIMPAR (reabrir): Firebase → Dados → apague o nó "carta"
 ══════════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════════
-   CARTAS SURPRESA — sistema multi-carta com datas de liberação
-   ↓↓↓ ADICIONE NOVAS CARTAS NESTE ARRAY ↓↓↓
+   CARTAS SURPRESA — carregadas do Supabase, gerenciadas pelo admin
 ══════════════════════════════════════════════════════════════ */
-var CARTAS = [
-  {
-    id: 'c_01',
-    data: new Date("2026-05-04T00:00:00"),   // ← data de liberação
-    emoji: '💌',
-    eyebrow: 'Uma mensagem especial',
-    titulo: 'Para Você',
-    texto: 'Dois anos atrás, sem saber ao certo o que o futuro guardava, dei a mão pra você — e foi a melhor decisão que já tomei na vida.<br><br>Cada dia ao seu lado é uma prova de que o amor verdadeiro existe, e que ele tem o seu nome.',
-    assinatura: 'Com todo o meu amor 💕'
-  }
-  // Adicione mais cartas abaixo:
-  // {
-  //   id: 'c_02',
-  //   data: new Date("2026-09-04T00:00:00"),  // aniversário de 2 anos
-  //   emoji: '🌹',
-  //   eyebrow: 'Dois anos juntos',
-  //   titulo: 'Meu Amor',
-  //   texto: 'Dois anos ao seu lado...',
-  //   assinatura: 'Para sempre seu, Steve'
-  // }
-];
+var _cartasCache = []; // preenchido por _carregaCartasPublico()
+
+/* Carrega cartas desbloqueadas do Supabase (acesso público) */
+async function _carregaCartasPublico() {
+  try {
+    var { data } = await _SB
+      .from('cartas_surpresa')
+      .select('id,emoji,eyebrow,titulo,texto,assinatura,data_liberacao')
+      .order('data_liberacao');
+    if (data && data.length) {
+      _cartasCache = data;
+      _atualizarBotaoCarta();
+    }
+  } catch(e) {}
+}
 
 function _cartasPendentes() {
-  var agora = new Date();
-  return CARTAS.filter(function(c) {
-    return agora >= c.data && !localStorage.getItem('carta_lida_' + c.id);
+  return _cartasCache.filter(function(c) {
+    return !localStorage.getItem('carta_lida_' + c.id);
   });
 }
 
@@ -1776,38 +1876,27 @@ function _atualizarBotaoCarta() {
   }
 }
 
-// Agenda verificação para cartas futuras
-(function() {
-  var agora = new Date();
-  CARTAS.forEach(function(c) {
-    if (agora < c.data) {
-      var falta = c.data - agora;
-      setTimeout(_atualizarBotaoCarta, Math.min(falta, 2147483647));
-    }
-  });
-  setTimeout(_atualizarBotaoCarta, 1200);
-  setInterval(_atualizarBotaoCarta, 60000);
-})();
+// Verifica a cada minuto (carta pode ser liberada enquanto o site está aberto)
+setTimeout(_carregaCartasPublico, 1200);
+setInterval(_carregaCartasPublico, 60000);
 
 function abrirCarta() {
   var pendentes = _cartasPendentes();
   if (!pendentes.length) return;
   var carta = pendentes[0];
 
-  // Popula o modal dinamicamente
-  document.getElementById('carta-emoji-el').textContent    = carta.emoji;
-  document.getElementById('carta-eyebrow-el').textContent  = carta.eyebrow;
-  document.getElementById('carta-titulo-el').textContent   = carta.titulo;
-  document.getElementById('carta-texto-el').innerHTML      = carta.texto;
-  document.getElementById('carta-assinatura-el').textContent = carta.assinatura;
+  document.getElementById('carta-emoji-el').textContent      = carta.emoji || '💌';
+  document.getElementById('carta-eyebrow-el').textContent    = carta.eyebrow || 'Uma mensagem especial';
+  document.getElementById('carta-titulo-el').textContent     = carta.titulo;
+  document.getElementById('carta-texto-el').innerHTML        =
+    (carta.texto || '').replace(/\n/g, '<br>');
+  document.getElementById('carta-assinatura-el').textContent = carta.assinatura || '';
   var total = pendentes.length;
-  document.getElementById('carta-counter-el').textContent  =
+  document.getElementById('carta-counter-el').textContent    =
     total > 1 ? '1 de ' + total : '';
 
-  // Marca como lida (localStorage)
   localStorage.setItem('carta_lida_' + carta.id, '1');
 
-  // Firebase log (opcional)
   if (window._fbSet) {
     window._fbSet('carta_' + carta.id, { abertaEm: new Date().toISOString() }).catch(function(){});
   }
@@ -2155,6 +2244,152 @@ function _admHideUI() {
 /* ════════════════════════════════════════════════════
    ADMIN — Troca de foto dos cards do Seletor
 ════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════
+   ADMIN — Gerenciamento de Cartas Surpresa
+════════════════════════════════════════════════════ */
+
+var _cartasAdmCache = [];
+
+async function admOpenCartas() {
+  document.getElementById('adm-cartas').classList.add('open');
+  admCartasShowLista();
+  await _admCarregaTodasCartas();
+}
+function admCloseCartas() {
+  document.getElementById('adm-cartas').classList.remove('open');
+}
+
+async function _admCarregaTodasCartas() {
+  try {
+    var r = await _SB.from('cartas_surpresa').select('*').order('data_liberacao');
+    _cartasAdmCache = (r.error || !r.data) ? [] : r.data;
+  } catch(e) { _cartasAdmCache = []; }
+  _admRenderLista();
+}
+
+function _admRenderLista() {
+  var el = document.getElementById('cartas-lista');
+  if (!el) return;
+  if (!_cartasAdmCache.length) {
+    el.innerHTML = '<p class="cartas-empty">Nenhuma carta criada ainda.</p>';
+    return;
+  }
+  var agora = new Date();
+  el.innerHTML = _cartasAdmCache.map(function(c) {
+    var dt    = new Date(c.data_liberacao);
+    var lida  = localStorage.getItem('carta_lida_' + c.id) ? ' · lida' : '';
+    var badge = dt <= agora
+      ? '<span class="carta-item-badge badge-unlocked">🔓 liberada</span>'
+      : '<span class="carta-item-badge badge-locked">🔒 ' + _fmtDt(dt) + '</span>';
+    return '<div class="carta-item">'
+      + '<div class="carta-item-emoji">' + (c.emoji||'💌') + '</div>'
+      + '<div class="carta-item-body">'
+      +   '<div class="carta-item-title">' + _esc(c.titulo) + '</div>'
+      +   '<div class="carta-item-meta">' + badge + lida + '</div>'
+      + '</div>'
+      + '<div class="carta-item-actions">'
+      +   '<button class="carta-act-btn" onclick="admEditarCarta(\'' + c.id + '\')" title="Editar">✏</button>'
+      +   '<button class="carta-act-btn del" onclick="admDeletarCarta(\'' + c.id + '\')" title="Excluir">🗑</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function admCartasShowLista() {
+  var lista = document.getElementById('cartas-lista');
+  var form  = document.getElementById('cartas-form');
+  var nova  = document.getElementById('cartas-nova-btn');
+  if (lista) lista.style.display = '';
+  if (form)  form.style.display  = 'none';
+  if (nova)  nova.style.display  = '';
+}
+
+function admNovaCarta() {
+  document.getElementById('cf-id').value         = '';
+  document.getElementById('cf-emoji').value      = '💌';
+  document.getElementById('cf-eyebrow').value    = 'Uma mensagem especial';
+  document.getElementById('cf-titulo').value     = '';
+  document.getElementById('cf-texto').value      = '';
+  document.getElementById('cf-assinatura').value = 'Com todo o meu amor 💕';
+  var amanha = new Date(Date.now() + 86400000);
+  document.getElementById('cf-data').value = _toDatetimeLocal(amanha);
+  document.getElementById('cf-err').textContent  = '';
+  document.getElementById('cf-save-btn').textContent = 'Salvar Carta';
+  document.getElementById('cartas-lista').style.display    = 'none';
+  document.getElementById('cartas-nova-btn').style.display = 'none';
+  document.getElementById('cartas-form').style.display     = '';
+}
+
+function admEditarCarta(id) {
+  var c = _cartasAdmCache.find(function(x){ return x.id === id; });
+  if (!c) return;
+  document.getElementById('cf-id').value         = c.id;
+  document.getElementById('cf-emoji').value      = c.emoji      || '💌';
+  document.getElementById('cf-eyebrow').value    = c.eyebrow    || '';
+  document.getElementById('cf-titulo').value     = c.titulo     || '';
+  document.getElementById('cf-texto').value      = c.texto      || '';
+  document.getElementById('cf-assinatura').value = c.assinatura || '';
+  document.getElementById('cf-data').value = _toDatetimeLocal(new Date(c.data_liberacao));
+  document.getElementById('cf-err').textContent  = '';
+  document.getElementById('cf-save-btn').textContent = 'Atualizar Carta';
+  document.getElementById('cartas-lista').style.display    = 'none';
+  document.getElementById('cartas-nova-btn').style.display = 'none';
+  document.getElementById('cartas-form').style.display     = '';
+}
+
+async function admSalvarCarta() {
+  var id  = document.getElementById('cf-id').value.trim();
+  var err = document.getElementById('cf-err');
+  var btn = document.getElementById('cf-save-btn');
+  var payload = {
+    emoji:          document.getElementById('cf-emoji').value.trim()      || '💌',
+    eyebrow:        document.getElementById('cf-eyebrow').value.trim()    || 'Uma mensagem especial',
+    titulo:         document.getElementById('cf-titulo').value.trim(),
+    texto:          document.getElementById('cf-texto').value.trim(),
+    assinatura:     document.getElementById('cf-assinatura').value.trim() || 'Com todo o meu amor 💕',
+    data_liberacao: new Date(document.getElementById('cf-data').value).toISOString()
+  };
+  if (!payload.titulo) { err.textContent = 'Título obrigatório.'; return; }
+  if (!payload.texto)  { err.textContent = 'Texto obrigatório.'; return; }
+  if (!document.getElementById('cf-data').value) { err.textContent = 'Data obrigatória.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Salvando…'; err.textContent = '';
+
+  var r = id
+    ? await _SB.from('cartas_surpresa').update(payload).eq('id', id)
+    : await _SB.from('cartas_surpresa').insert(payload);
+
+  btn.disabled = false;
+  btn.textContent = id ? 'Atualizar Carta' : 'Salvar Carta';
+
+  if (r.error) { err.textContent = 'Erro: ' + r.error.message; return; }
+
+  await _admCarregaTodasCartas();
+  admCartasShowLista();
+  setTimeout(_carregaCartasPublico, 500);
+}
+
+async function admDeletarCarta(id) {
+  if (!confirm('Excluir esta carta permanentemente?')) return;
+  await _SB.from('cartas_surpresa').delete().eq('id', id);
+  _cartasAdmCache = _cartasAdmCache.filter(function(c){ return c.id !== id; });
+  _admRenderLista();
+  localStorage.removeItem('carta_lida_' + id);
+  setTimeout(_carregaCartasPublico, 300);
+}
+
+function _toDatetimeLocal(d) {
+  var p = function(n){ return String(n).padStart(2,'0'); };
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())
+       +'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+function _fmtDt(d) {
+  var p = function(n){ return String(n).padStart(2,'0'); };
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear();
+}
+function _esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 /* Injeta botão 📷 em cada card */
 function _admShowCardEdits() {
