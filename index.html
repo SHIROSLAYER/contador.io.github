@@ -478,6 +478,40 @@
     .nv-letter-card.editing { border-color:rgba(160,80,255,.38); box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.5),0 0 30px rgba(160,80,255,.16); }
     .nv-letter-card.editing [contenteditable="true"] { outline:none; border-bottom:1px dashed rgba(160,80,255,.38); padding-bottom:2px; cursor:text; min-height:1em; }
 
+    /* ══ SEÇÃO NOIVADO ATIVADO — Aurora Canvas ══ */
+    .nv-act-section { width:100%; min-height:100svh; position:relative; overflow:hidden; flex-shrink:0; background:#04000f; display:none; flex-direction:column; }
+    #nv-aurora-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+    .nv-act-content { position:relative; z-index:1; padding:5rem 1.5rem 4rem; display:flex; flex-direction:column; align-items:center; gap:1.8rem; }
+
+    /* Título */
+    .nv-act-crown { font-size:2rem; filter:drop-shadow(0 0 18px rgba(212,136,154,.8)); animation:crown-float 3s ease-in-out infinite alternate; }
+    @keyframes crown-float { from{transform:translateY(0) rotate(-4deg)} to{transform:translateY(-8px) rotate(4deg)} }
+    .nv-act-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,10vw,5.5rem); color:var(--blush); text-shadow:0 0 60px rgba(212,136,154,.8),0 0 120px rgba(212,136,154,.35); text-align:center; line-height:1.1; }
+    .nv-act-date-label { font-size:.58rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(180,100,255,.55); }
+    .nv-act-divider { display:flex; align-items:center; gap:1rem; width:min(280px,80vw); }
+    .nv-act-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(212,136,154,.4),transparent); }
+    .nv-act-divider em { font-size:.85rem; color:rgba(212,136,154,.5); font-style:normal; }
+
+    /* Galeria noivado */
+    .nv-gal-header { display:flex; align-items:center; gap:1rem; width:100%; max-width:900px; margin-top:.5rem; }
+    .nv-gal-title { font-size:.6rem; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.28); flex:1; }
+    .nv-gal-add { display:none; align-items:center; gap:.4rem; padding:.38rem 1rem; border-radius:20px; border:1px solid rgba(160,80,255,.3); background:rgba(160,80,255,.12); color:rgba(190,140,255,.75); font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.2em; cursor:pointer; transition:all .22s; }
+    .nv-gal-add:hover { background:rgba(160,80,255,.25); color:white; border-color:rgba(180,100,255,.55); }
+    .nv-gal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(clamp(110px,28vw,175px),1fr)); gap:clamp(4px,.8vw,7px); width:100%; max-width:900px; }
+    .nv-gal-thumb { position:relative; aspect-ratio:1; overflow:hidden; border-radius:4px; cursor:zoom-in; background:rgba(16,4,28,.9); will-change:transform,opacity; transition:transform .38s cubic-bezier(.22,.68,0,1.2),box-shadow .38s ease; }
+    .nv-gal-thumb:hover { transform:translateY(-5px) scale(1.04); box-shadow:0 14px 40px rgba(0,0,0,.75),0 0 0 1px rgba(212,136,154,.2),0 0 20px rgba(212,136,154,.1); z-index:2; }
+    .nv-gal-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:filter .35s; }
+    .nv-gal-thumb:hover img { filter:brightness(1.08) saturate(1.1); }
+    .nv-gal-thumb::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.5)); opacity:0; transition:opacity .3s; pointer-events:none; }
+    .nv-gal-thumb:hover::after { opacity:1; }
+    .nv-gal-del { display:none; position:absolute; top:.35rem; right:.35rem; z-index:3; background:rgba(130,0,0,.82); border:none; color:white; width:26px; height:26px; border-radius:50%; font-size:.72rem; cursor:pointer; align-items:center; justify-content:center; transition:background .2s; backdrop-filter:blur(4px); }
+    .nv-gal-del:hover { background:rgba(200,0,0,.96); }
+    .nv-gal-empty { display:flex; flex-direction:column; align-items:center; gap:.8rem; padding:3rem; color:rgba(255,255,255,.2); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.3em; text-transform:uppercase; }
+    .nv-gal-empty span { font-size:2.5rem; opacity:.35; }
+
+    /* Upload progress toast */
+    #nv-upload-toast { display:none; position:fixed; bottom:5rem; left:50%; transform:translateX(-50%); z-index:600; background:rgba(10,2,22,.92); border:1px solid rgba(160,80,255,.35); border-radius:20px; padding:.55rem 1.4rem; font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.2em; color:rgba(190,140,255,.9); white-space:nowrap; backdrop-filter:blur(10px); }
+
     /* ══ NOIVADO — Anéis orbitais ao redor do botão ══ */
     .nv-orbit-wrap { position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:0; }
     .nv-orbit { position:absolute; top:50%; left:50%; border-radius:50%; border:1px solid transparent; }
@@ -1416,8 +1450,33 @@
     </div>
   </div>
 
+  <!-- ══ Seção: Noivado Ativado (aparece após confirmação) ══ -->
+  <div class="nv-act-section" id="nv-act-section">
+    <canvas id="nv-aurora-canvas"></canvas>
+    <div class="nv-act-content">
+      <span class="nv-act-crown">💍</span>
+      <h2 class="nv-act-title">Oficialmente Noivos</h2>
+      <p class="nv-act-date-label" id="nv-act-date"></p>
+      <div class="nv-act-divider"><span></span><em>✦</em><span></span></div>
+
+      <!-- Galeria de fotos do noivado -->
+      <div class="nv-gal-header">
+        <span class="nv-gal-title">nossas memórias</span>
+        <button class="nv-gal-add" id="nv-gal-add-btn" onclick="nvAdmOpenUpload()">📷 Adicionar foto</button>
+      </div>
+      <div class="nv-gal-grid" id="nv-gal-grid">
+        <div class="nv-gal-empty" id="nv-gal-empty">
+          <span>💜</span>
+          <p>As fotos do nosso noivado aparecerão aqui</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
+
+<!-- Toast upload noivado -->
+<div id="nv-upload-toast"></div>
 
 <!-- Badge modo teste -->
 <div id="eng-test-badge">🧪 MODO TESTE</div>
@@ -2520,6 +2579,7 @@ function _admShowUI() {
   _admShowCardEdits();
   _admInjectDelButtons();
   _nvShowLetterEditBtn();
+  if (_engActivated) _nvShowGalAdd();
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
@@ -2527,6 +2587,7 @@ function _admHideUI() {
   document.getElementById('galleryViewer').classList.remove('adm-mode');
   _admHideCardEdits();
   _nvHideLetterEditBtn();
+  _nvHideGalAdd();
   _admRemoveDelButtons();   // remove botões ✕ do DOM completamente
 }
 
@@ -3000,6 +3061,222 @@ function nvCancelEdit() {
   _nvEditOriginal = null;
 }
 
+/* ══════════════════════════════════════════════
+   NOIVADO ATIVADO — Seção Aurora + Galeria
+══════════════════════════════════════════════ */
+var _nvAuroraRAF = null;
+
+function _nvActivatedSectionShow(isoDate) {
+  var section = document.getElementById('nv-act-section');
+  if (!section) return;
+  section.style.display = 'flex';
+
+  /* Data */
+  if (isoDate) {
+    var d   = new Date(isoDate);
+    var fmt = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
+    var el  = document.getElementById('nv-act-date');
+    if (el) el.textContent = fmt;
+  }
+
+  /* Entrada GSAP */
+  if (window.gsap) {
+    gsap.fromTo(section,       {opacity:0}, {opacity:1, duration:1, ease:'power2.out'});
+    gsap.fromTo('.nv-act-crown', {scale:.4,opacity:0,rotation:-20}, {scale:1,opacity:1,rotation:0,duration:1,ease:'elastic.out(1,.5)',delay:.2});
+    gsap.fromTo('.nv-act-title', {y:50,opacity:0}, {y:0,opacity:1,duration:.85,ease:'power3.out',delay:.4});
+    gsap.fromTo('.nv-act-date-label,.nv-act-divider', {y:20,opacity:0}, {y:0,opacity:1,duration:.6,ease:'power2.out',delay:.7,stagger:.12});
+  }
+
+  /* Canvas aurora */
+  _nvStartAurora();
+
+  /* Galeria */
+  _nvLoadGallery();
+
+  /* Admin: mostra botão adicionar se logado */
+  if (_admSession) _nvShowGalAdd();
+
+  /* Refresh ScrollTrigger */
+  if (window.ScrollTrigger) setTimeout(function(){ ScrollTrigger.refresh(); }, 300);
+}
+
+/* ── Canvas Aurora ── */
+function _nvStartAurora() {
+  if (_nvAuroraRAF) cancelAnimationFrame(_nvAuroraRAF);
+  var cv = document.getElementById('nv-aurora-canvas');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W, H;
+
+  function resize() {
+    W = cv.width  = cv.offsetWidth  || window.innerWidth;
+    H = cv.height = cv.offsetHeight || window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* Partículas */
+  var pts = [];
+  for (var i = 0; i < 110; i++) pts.push(mkPt());
+  function mkPt() {
+    return {
+      x: Math.random() * (W||400), y: Math.random() * (H||800),
+      r: .4 + Math.random() * 1.8,
+      vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35,
+      a: .08 + Math.random() * .45,
+      h: 255 + Math.random() * 70   // violeta → rosa
+    };
+  }
+
+  /* Anéis */
+  var rings = [];
+  var ringT = 0;
+
+  /* Aurora blobs */
+  var blobs = [
+    { x:.35, y:.3, hue:270, r:.55 },
+    { x:.65, y:.6, hue:310, r:.45 },
+    { x:.5,  y:.5, hue:240, r:.4  }
+  ];
+  var tick = 0;
+
+  function frame() {
+    _nvAuroraRAF = requestAnimationFrame(frame);
+    tick += .004;
+
+    /* Fundo */
+    ctx.fillStyle = 'rgba(4,0,14,.1)';
+    ctx.fillRect(0,0,W,H);
+
+    /* Blobs aurora */
+    blobs.forEach(function(b, i) {
+      var ox = Math.sin(tick * .7 + i) * .08;
+      var oy = Math.cos(tick * .5 + i) * .06;
+      var g  = ctx.createRadialGradient((b.x+ox)*W,(b.y+oy)*H,0,(b.x+ox)*W,(b.y+oy)*H,b.r*Math.min(W,H));
+      var h  = b.hue + Math.sin(tick+i) * 18;
+      g.addColorStop(0,   'hsla('+h+',65%,22%,.09)');
+      g.addColorStop(.5,  'hsla('+(h+20)+',55%,15%,.05)');
+      g.addColorStop(1,   'transparent');
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    });
+
+    /* Partículas */
+    pts.forEach(function(p) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x<-5||p.x>W+5||p.y<-5||p.y>H+5) { Object.assign(p, mkPt()); p.x=Math.random()*W; p.y=Math.random()*H; }
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      var pulse = p.a * (.7 + .3*Math.sin(tick*3+p.x));
+      ctx.fillStyle = 'hsla('+p.h+',75%,78%,'+pulse+')';
+      ctx.fill();
+    });
+
+    /* Anéis */
+    ringT++;
+    if (ringT > 90) {
+      rings.push({ x:W*(.2+Math.random()*.6), y:H*(.15+Math.random()*.7), r:0, dr:1+Math.random()*.8, maxR:120+Math.random()*180, a:.45, h:265+Math.random()*55 });
+      ringT = 0;
+    }
+    rings = rings.filter(function(rg) {
+      rg.r += rg.dr; rg.a -= .004;
+      if (rg.a <= 0) return false;
+      ctx.beginPath(); ctx.arc(rg.x,rg.y,rg.r,0,Math.PI*2);
+      ctx.strokeStyle = 'hsla('+rg.h+',70%,72%,'+rg.a+')';
+      ctx.lineWidth = .8; ctx.stroke();
+      return rg.r < rg.maxR;
+    });
+  }
+  frame();
+}
+
+/* ── Galeria do Noivado (Supabase) ── */
+async function _nvLoadGallery() {
+  var grid  = document.getElementById('nv-gal-grid');
+  var empty = document.getElementById('nv-gal-empty');
+  if (!grid) return;
+  try {
+    var { data, error } = await _SB.from('gallery_photos').select('*').eq('page','noivado').order('display_order',{ascending:true});
+    /* Remove thumbs antigos */
+    Array.from(grid.querySelectorAll('.nv-gal-thumb')).forEach(function(t){ t.remove(); });
+    if (error || !data || data.length === 0) { if (empty) empty.style.display='flex'; return; }
+    if (empty) empty.style.display = 'none';
+    var newThumbs = [];
+    data.forEach(function(photo, idx) {
+      var thumb = document.createElement('div');
+      thumb.className = 'nv-gal-thumb';
+      thumb.dataset.photoId   = photo.id;
+      thumb.dataset.photoPath = photo.storage_path;
+      var img = document.createElement('img');
+      img.alt = 'Noivado #' + (idx+1);
+      img.loading = idx < 6 ? 'eager' : 'lazy';
+      img.src = photo.url;
+      img.onerror = function(){ thumb.remove(); };
+      img.onclick = function(){ openLightbox(this); };
+      thumb.appendChild(img);
+      if (_admSession) { var del = _nvMakeDelBtn(photo.id, photo.storage_path, thumb); thumb.appendChild(del); }
+      grid.appendChild(thumb);
+      newThumbs.push(thumb);
+    });
+    _animateMosaico(newThumbs);
+  } catch(e) {}
+}
+
+function _nvMakeDelBtn(id, path, thumb) {
+  var btn = document.createElement('button');
+  btn.className = 'nv-gal-del'; btn.style.display='flex'; btn.innerHTML='✕'; btn.title='Remover foto';
+  btn.onclick = function(e){ e.stopPropagation(); _nvDeletePhoto(id, path, thumb); };
+  return btn;
+}
+
+async function _nvDeletePhoto(id, path, thumbEl) {
+  if (!confirm('Remover esta foto do noivado?')) return;
+  await _SB.storage.from('gallery').remove([path]);
+  await _SB.from('gallery_photos').delete().eq('id',id);
+  if (window.gsap) { gsap.to(thumbEl,{scale:.5,opacity:0,rotation:(Math.random()-.5)*30,duration:.35,ease:'back.in(2)',onComplete:function(){thumbEl.remove();}}); }
+  else { thumbEl.remove(); }
+}
+
+/* ── Admin: botão adicionar fotos ── */
+function _nvShowGalAdd() {
+  var btn = document.getElementById('nv-gal-add-btn');
+  if (btn) btn.style.display = 'flex';
+}
+function _nvHideGalAdd() {
+  var btn = document.getElementById('nv-gal-add-btn');
+  if (btn) btn.style.display = 'none';
+  /* Remove del buttons */
+  document.querySelectorAll('#nv-gal-grid .nv-gal-del').forEach(function(b){ b.remove(); });
+}
+
+function nvAdmOpenUpload() {
+  var input = document.createElement('input');
+  input.type='file'; input.accept='image/*'; input.multiple=true;
+  input.onchange = async function() {
+    var files = Array.from(input.files);
+    if (!files.length) return;
+    var toast = document.getElementById('nv-upload-toast');
+    toast.style.display='block';
+    var ok=0, fail=0;
+    for (var i=0; i<files.length; i++) {
+      toast.textContent = 'Enviando ' + (i+1) + ' / ' + files.length + '…';
+      try {
+        var webp = await _toWebP(files[i], .88);
+        var name = 'noivado/' + Date.now() + '_' + Math.random().toString(36).slice(2,7) + '.webp';
+        var { error: upErr } = await _SB.storage.from('gallery').upload(name, webp, {contentType:'image/webp',upsert:false});
+        if (upErr) { fail++; continue; }
+        var { data: urlData } = _SB.storage.from('gallery').getPublicUrl(name);
+        var maxOrd = await _SB.from('gallery_photos').select('display_order').eq('page','noivado').order('display_order',{ascending:false}).limit(1);
+        var ord = (maxOrd.data && maxOrd.data[0]) ? (maxOrd.data[0].display_order + 1) : 1;
+        await _SB.from('gallery_photos').insert({ page:'noivado', url:urlData.publicUrl, storage_path:name, display_order:ord });
+        ok++;
+      } catch(e) { fail++; }
+    }
+    toast.textContent = ok + ' foto' + (ok!==1?'s':'') + ' enviada' + (ok!==1?'s':'') + (fail?' ('+fail+' erro'+( fail!==1?'s':'')+')':'') + ' ✓';
+    setTimeout(function(){ toast.style.display='none'; _nvLoadGallery(); }, 1800);
+  };
+  input.click();
+}
+
 /* Coloca cursor no fim do elemento */
 function placeCursorAtEnd(el) {
   try {
@@ -3076,6 +3353,9 @@ function _engActivateVisuals(isoDate) {
   _engDate = isoDate;
   _updateEngCountdown();
   _engCountdownInterval = setInterval(_updateEngCountdown, 1000);
+
+  /* 4 — Seção Aurora + galeria do noivado */
+  _nvActivatedSectionShow(isoDate);
 }
 
 function _updateEngCountdown() {
