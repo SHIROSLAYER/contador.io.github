@@ -3508,6 +3508,23 @@ function engToggleTestMode() {
     var label = document.getElementById('enc-label');
     if (wrap)  wrap.style.display  = 'none';
     if (label) label.style.display = 'none';
+    /* Esconde seção Aurora e para canvas */
+    var actSection = document.getElementById('nv-act-section');
+    if (actSection) {
+      if (window.gsap) {
+        gsap.to(actSection, { opacity:0, duration:.4, ease:'power2.in', onComplete:function() {
+          actSection.style.display = 'none';
+          gsap.set(actSection, { opacity:1 });
+        }});
+      } else { actSection.style.display = 'none'; }
+    }
+    if (typeof _nvAuroraRAF !== 'undefined' && _nvAuroraRAF) {
+      cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null;
+    }
+    _nvHideActMsgEdit();
+    /* Volta ao topo da página de noivado */
+    var pg = document.getElementById('pg-noivado');
+    if (pg) { if (window.gsap) { gsap.to(pg, { scrollTop:0, duration:.8, ease:'power2.inOut' }); } else { pg.scrollTop = 0; } }
     btn.textContent = '🧪 Modo Teste';
     btn.style.borderColor = '';
     if (badge) badge.style.display = 'none';
@@ -3631,10 +3648,44 @@ function _engPlayCelebration(isoDate) {
 function engCloseCelebration() {
   var cel = document.getElementById('eng-celebrate');
   if (window.gsap) {
-    gsap.to(cel, {opacity:0, duration:.5, ease:'power2.in',
-      onComplete:function(){ cel.classList.remove('open'); gsap.set(cel,{opacity:1}); }
+    gsap.to(cel, {opacity:0, duration:.6, ease:'power2.in',
+      onComplete:function(){
+        cel.classList.remove('open');
+        gsap.set(cel, {opacity:1});
+        if (_engActivated) _nvRevealActivatedSection();
+      }
     });
-  } else { cel.classList.remove('open'); }
+  } else {
+    cel.classList.remove('open');
+    if (_engActivated) _nvRevealActivatedSection();
+  }
+}
+
+function _nvRevealActivatedSection() {
+  var pg         = document.getElementById('pg-noivado');
+  var actSection = document.getElementById('nv-act-section');
+  if (!pg || !actSection) return;
+  /* Garante que a seção está visível antes de rolar */
+  actSection.style.display = 'flex';
+  actSection.style.opacity = '0';
+  /* Pequena pausa para o usuário "respirar" após a celebração */
+  setTimeout(function() {
+    if (window.gsap) {
+      /* Scroll suave até a seção Aurora */
+      gsap.to(pg, {
+        scrollTop: actSection.offsetTop,
+        duration: 2,
+        ease: 'power3.inOut',
+        onComplete: function() {
+          /* Fade-in cinematográfico da seção ao chegar */
+          gsap.to(actSection, { opacity:1, duration:1.2, ease:'power2.out' });
+        }
+      });
+    } else {
+      pg.scrollTop = actSection.offsetTop;
+      actSection.style.opacity = '1';
+    }
+  }, 400);
 }
 
 /* ── Admin: ver e alterar código ── */
