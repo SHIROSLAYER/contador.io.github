@@ -2251,10 +2251,11 @@ function _admInjectDelButtons() {
     var id   = thumb.dataset.photoId;
     var path = thumb.dataset.photoPath;
     var btn  = document.createElement('button');
-    btn.className = 'thumb-del';
-    btn.innerHTML = '✕';
-    btn.title     = 'Remover foto';
-    btn.onclick   = function(e) { e.stopPropagation(); admDeletePhoto(id, path, thumb); };
+    btn.className      = 'thumb-del';
+    btn.style.display  = 'flex';   // sobrepõe display:none do CSS base
+    btn.innerHTML      = '✕';
+    btn.title          = 'Remover foto';
+    btn.onclick = function(e) { e.stopPropagation(); admDeletePhoto(id, path, thumb); };
     thumb.appendChild(btn);
   });
 }
@@ -2614,6 +2615,8 @@ async function _admLoadGallery(page) {
     checkGalleryEmpty();
     /* Anima os novos thumbs entrando */
     _animateMosaico(newThumbs);
+    /* Se já está em admin mode, injeta botões ✕ nos novos thumbs */
+    if (_admSession) _admInjectDelButtons();
   } catch(e) { checkGalleryEmpty(); }
 }
 
