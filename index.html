@@ -443,6 +443,62 @@
     .noivado-divider { display:flex; align-items:center; gap:.8rem; width:220px; }
     .noivado-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
 
+    /* ══ NOIVAMOS — botão + OTP + celebration ══ */
+    .eng-btn {
+      position:relative; overflow:hidden;
+      background:linear-gradient(135deg,rgba(100,30,200,.35),rgba(160,30,100,.3));
+      border:1px solid rgba(180,100,255,.5); color:var(--blush);
+      font-family:'Josefin Sans',sans-serif; font-size:.75rem; letter-spacing:.35em;
+      text-transform:uppercase; padding:1rem 2.8rem; border-radius:40px; cursor:pointer;
+      transition:all .4s cubic-bezier(.22,.68,0,1.2);
+      box-shadow:0 0 30px rgba(160,80,255,.2), inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter:blur(8px);
+    }
+    .eng-btn:hover { border-color:rgba(212,136,154,.7); box-shadow:0 0 50px rgba(160,80,255,.4),0 0 30px rgba(212,136,154,.25); transform:scale(1.04) translateY(-2px); color:white; }
+    .eng-btn::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% -20%,rgba(180,100,255,.35),transparent 60%); pointer-events:none; }
+    .eng-btn.activated { border-color:rgba(212,136,154,.5); background:linear-gradient(135deg,rgba(130,30,70,.3),rgba(80,10,160,.25)); cursor:default; pointer-events:none; }
+
+    /* OTP overlay */
+    .eng-overlay { position:fixed; inset:0; z-index:800; display:none; align-items:center; justify-content:center; background:rgba(4,0,14,.82); backdrop-filter:blur(14px); }
+    .eng-overlay.open { display:flex; }
+    .eng-box { position:relative; background:linear-gradient(160deg,rgba(28,8,48,.97),rgba(10,3,22,.99)); border:1px solid rgba(180,100,255,.24); border-radius:18px; padding:2.6rem 2rem 2rem; text-align:center; width:min(360px,90vw); box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 0 1px rgba(0,0,0,.5); animation:eng-drop .38s cubic-bezier(.22,.68,0,1.2) forwards; }
+    @keyframes eng-drop { from{opacity:0;transform:translateY(-24px) scale(.95)} to{opacity:1;transform:none} }
+    .eng-box-title { font-family:'Great Vibes',cursive; font-size:2.2rem; color:var(--blush); margin-bottom:.3rem; }
+    .eng-box-sub { font-size:.6rem; letter-spacing:.32em; text-transform:uppercase; color:rgba(255,255,255,.28); margin-bottom:1.8rem; }
+    .eng-otp-row { display:flex; gap:.55rem; justify-content:center; margin-bottom:1.7rem; }
+    .eng-otp-input { width:44px; height:56px; border:1px solid rgba(180,100,255,.3); background:rgba(20,5,35,.7); border-radius:9px; text-align:center; font-family:'Playfair Display',serif; font-size:1.7rem; font-weight:700; color:var(--blush); outline:none; transition:border-color .2s,box-shadow .2s; caret-color:var(--blush); }
+    .eng-otp-input:focus { border-color:rgba(212,136,154,.7); box-shadow:0 0 16px rgba(212,136,154,.22); }
+    .eng-otp-input.err { border-color:rgba(255,60,60,.65); animation:eng-shake .35s ease; }
+    @keyframes eng-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+    .eng-submit { width:100%; padding:.85rem; border-radius:30px; border:1px solid rgba(180,100,255,.35); background:linear-gradient(135deg,rgba(100,30,200,.4),rgba(160,30,100,.35)); color:white; font-family:'Josefin Sans',sans-serif; font-size:.68rem; letter-spacing:.3em; text-transform:uppercase; cursor:pointer; transition:all .3s; }
+    .eng-submit:hover:not(:disabled) { border-color:rgba(212,136,154,.6); box-shadow:0 0 20px rgba(212,136,154,.22); }
+    .eng-submit:disabled { opacity:.35; cursor:default; }
+    .eng-msg { font-size:.6rem; color:rgba(255,100,100,.8); letter-spacing:.15em; margin-top:.8rem; min-height:.9rem; }
+
+    /* Celebration fullscreen */
+    .eng-celebrate { position:fixed; inset:0; z-index:900; display:none; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 40%,rgba(80,10,160,.96),rgba(8,2,22,.99)); overflow:hidden; }
+    .eng-celebrate.open { display:flex; }
+    .eng-cel-ring { font-size:clamp(3.5rem,12vw,6rem); display:block; margin-bottom:.8rem; filter:drop-shadow(0 0 30px rgba(212,136,154,.85)); animation:cel-ring-spin 4s ease-in-out infinite; }
+    @keyframes cel-ring-spin { 0%,100%{transform:rotate(-6deg) scale(1)} 50%{transform:rotate(6deg) scale(1.12)} }
+    .eng-cel-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,10vw,6rem); color:var(--blush); text-shadow:0 0 60px rgba(212,136,154,.8),0 0 120px rgba(212,136,154,.4); margin-bottom:.5rem; }
+    .eng-cel-date { font-size:.68rem; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:2.8rem; }
+    .eng-cel-close { background:transparent; border:1px solid rgba(212,136,154,.35); color:rgba(255,255,255,.55); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.35em; text-transform:uppercase; padding:.7rem 2.2rem; border-radius:30px; cursor:pointer; transition:all .3s; }
+    .eng-cel-close:hover { border-color:var(--rose); color:white; }
+    .eng-cel-particle { position:absolute; pointer-events:none; animation:cel-fall linear forwards; }
+    @keyframes cel-fall { 0%{transform:translateY(-8vh) rotate(0deg);opacity:1} 100%{transform:translateY(112vh) rotate(400deg);opacity:0} }
+
+    /* Admin engagement panel */
+    .eng-adm-box { position:relative; background:linear-gradient(160deg,rgba(20,5,35,.98),rgba(8,2,20,.99)); border:1px solid rgba(180,100,255,.22); border-radius:16px; padding:2rem 1.8rem 1.6rem; width:min(320px,88vw); text-align:center; animation:eng-drop .38s cubic-bezier(.22,.68,0,1.2) forwards; }
+    .eng-adm-title { font-size:.62rem; letter-spacing:.38em; text-transform:uppercase; color:rgba(180,100,255,.65); margin-bottom:1.4rem; }
+    .eng-adm-code { font-family:'Playfair Display',serif; font-size:2.8rem; letter-spacing:.6em; color:var(--blush); text-shadow:0 0 30px rgba(212,136,154,.5); margin-bottom:.3rem; }
+    .eng-adm-hint { font-size:.56rem; color:rgba(255,255,255,.22); letter-spacing:.2em; margin-bottom:1.2rem; }
+    .eng-adm-status { font-size:.6rem; letter-spacing:.22em; color:rgba(255,255,255,.32); margin-bottom:1.4rem; }
+    .eng-adm-status.activated { color:rgba(100,220,140,.65); }
+    .eng-adm-new-row { display:flex; gap:.5rem; margin-bottom:.6rem; }
+    .eng-adm-new-input { flex:1; background:rgba(20,5,35,.7); border:1px solid rgba(180,100,255,.22); border-radius:7px; padding:.5rem .7rem; color:var(--blush); font-family:'Playfair Display',serif; font-size:1.1rem; letter-spacing:.25em; outline:none; text-align:center; }
+    .eng-adm-save { padding:.5rem 1rem; border-radius:20px; border:1px solid rgba(180,100,255,.28); background:rgba(100,30,200,.22); color:rgba(255,255,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.2em; cursor:pointer; transition:all .2s; white-space:nowrap; }
+    .eng-adm-save:hover { border-color:rgba(212,136,154,.5); color:white; }
+
     /* ══════════════════════
        PÁGINA 5 — CASAMENTO
     ══════════════════════ */
@@ -1260,13 +1316,13 @@
     </div>
   </div>
 
-  <!-- Seção 3 — Promessa / Em breve -->
+  <!-- Seção 3 — Botão Noivamos -->
   <div class="n-section n-promise-section">
     <div class="n-promise-content">
-      <span style="font-size:3rem;filter:drop-shadow(0 0 20px rgba(180,100,255,.7))">💜</span>
+      <span id="eng-ring-icon" style="font-size:3rem;filter:drop-shadow(0 0 20px rgba(180,100,255,.7))">💍</span>
       <div class="n-promise-divider"></div>
-      <p class="n-promise-quote">"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."</p>
-      <div class="noivado-badge">Em breve</div>
+      <p class="n-promise-quote" id="eng-quote">"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."</p>
+      <button class="eng-btn" id="eng-btn" onclick="engOpenModal()">💍 Noivamos!</button>
     </div>
   </div>
 
@@ -1366,6 +1422,49 @@
 </div>
 
 <!-- ══ BOTÃO ADMIN OCULTO ══ -->
+<!-- ══ ENGAGEMENT — Modal OTP ══ -->
+<div class="eng-overlay" id="eng-modal">
+  <div class="eng-box">
+    <button class="adm-close" onclick="engCloseModal()" style="position:absolute;top:.8rem;right:.8rem">✕</button>
+    <div class="eng-box-title">Um momento especial</div>
+    <div class="eng-box-sub">Insira o código de 6 dígitos</div>
+    <div class="eng-otp-row" id="eng-otp-row">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+      <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    </div>
+    <button class="eng-submit" id="eng-submit" onclick="engVerify()" disabled>Confirmar</button>
+    <div class="eng-msg" id="eng-msg"></div>
+  </div>
+</div>
+
+<!-- ══ ENGAGEMENT — Celebração ══ -->
+<div class="eng-celebrate" id="eng-celebrate">
+  <span class="eng-cel-ring">💍</span>
+  <div class="eng-cel-title">Oficialmente Noivos!</div>
+  <div class="eng-cel-date" id="eng-cel-date"></div>
+  <button class="eng-cel-close" onclick="engCloseCelebration()">continuar →</button>
+</div>
+
+<!-- ══ ENGAGEMENT — Painel Admin ══ -->
+<div class="eng-overlay" id="eng-adm-panel">
+  <div class="eng-adm-box">
+    <button class="adm-close" onclick="document.getElementById('eng-adm-panel').classList.remove('open')" style="position:absolute;top:.8rem;right:.8rem">✕</button>
+    <div class="eng-adm-title">Código de Noivado</div>
+    <div class="eng-adm-code" id="eng-adm-code-display">——</div>
+    <div class="eng-adm-hint">mostre o site e espere ela tocar o botão</div>
+    <div class="eng-adm-status" id="eng-adm-status">status: aguardando</div>
+    <div class="eng-adm-new-row">
+      <input class="eng-adm-new-input" id="eng-adm-new-input" placeholder="novo código" maxlength="6" inputmode="numeric">
+      <button class="eng-adm-save" onclick="engAdmSaveCode()">Salvar</button>
+    </div>
+    <div class="eng-msg" id="eng-adm-msg"></div>
+  </div>
+</div>
+
 <button id="adm-trigger" onclick="admOpenLogin()" title="Área administrativa">🔒</button>
 
 <!-- ══ ADMIN BAR ══ -->
@@ -1373,6 +1472,7 @@
   <span class="adm-bar-label">Admin</span>
   <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Foto</button>
   <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
+  <button class="adm-bar-btn" onclick="engAdmOpenPanel()">💍 Noivado</button>
   <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
   <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
 </div>
@@ -2164,6 +2264,7 @@ let _admFiles     = [];
   _admLoadGallery();      // galeria Namoro
   _loadSeletorPhotos();   // cards do carrossel
   _loadNoivadoHero();     // zoom hero do Noivado
+  _engLoadState();        // estado do botão Noivamos
 })();
 
 /* ── Carregar fotos dos cards Seletor do Supabase ── */
@@ -2642,6 +2743,201 @@ async function admDeletePhoto(id, path, thumbEl) {
 
 /* Manter compatibilidade (admin bar ainda chama admDeleteCurrent em alguns contextos) */
 function admDeleteCurrent() {}
+
+/* ══════════════════════════════════════════════
+   ENGAGEMENT — Sistema Noivamos!
+══════════════════════════════════════════════ */
+var _engActivated = false;
+var _engDate      = null;
+
+async function _engLoadState() {
+  try {
+    var res = await _SB.from('project_configs').select('key,value').in('key',['engagement_activated','engagement_date']);
+    if (!res.data) return;
+    res.data.forEach(function(r) {
+      if (r.key === 'engagement_activated' && r.value === 'true') _engActivated = true;
+      if (r.key === 'engagement_date') _engDate = r.value;
+    });
+    _engUpdateButton();
+  } catch(e) {}
+}
+
+function _engUpdateButton() {
+  var btn   = document.getElementById('eng-btn');
+  var quote = document.getElementById('eng-quote');
+  if (!btn) return;
+  if (_engActivated) {
+    btn.classList.add('activated');
+    btn.textContent = '💍 Noivos!';
+    if (_engDate && quote) {
+      var d   = new Date(_engDate);
+      var fmt = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+      quote.innerHTML = '"Noivamos em ' + fmt + ' — o dia mais lindo da nossa história 💜"';
+    }
+  }
+}
+
+function engOpenModal() {
+  if (_engActivated) return;
+  var overlay = document.getElementById('eng-modal');
+  overlay.classList.add('open');
+  var inputs = Array.from(overlay.querySelectorAll('.eng-otp-input'));
+  inputs.forEach(function(inp){ inp.value=''; inp.classList.remove('err'); });
+  document.getElementById('eng-msg').textContent = '';
+  document.getElementById('eng-submit').disabled = true;
+  inputs[0].focus();
+  _engWireOtp(inputs);
+}
+
+function engCloseModal() {
+  document.getElementById('eng-modal').classList.remove('open');
+}
+
+function _engWireOtp(inputs) {
+  inputs.forEach(function(inp, i) {
+    inp.oninput = function() {
+      inp.value = inp.value.replace(/\D/g,'').slice(0,1);
+      if (inp.value && i < inputs.length - 1) inputs[i+1].focus();
+      var full = inputs.every(function(x){ return x.value.length===1; });
+      document.getElementById('eng-submit').disabled = !full;
+      document.getElementById('eng-msg').textContent = '';
+      inputs.forEach(function(x){ x.classList.remove('err'); });
+    };
+    inp.onkeydown = function(e) {
+      if (e.key==='Backspace' && !inp.value && i > 0) inputs[i-1].focus();
+      if (e.key==='Enter') { var full=inputs.every(function(x){return x.value.length===1;}); if(full) engVerify(); }
+    };
+    inp.onpaste = function(e) {
+      e.preventDefault();
+      var txt = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+      inputs.forEach(function(x,j){ x.value=txt[j]||''; });
+      document.getElementById('eng-submit').disabled = txt.length < 6;
+      inputs[Math.min(txt.length,5)].focus();
+    };
+  });
+}
+
+async function engVerify() {
+  var inputs = Array.from(document.querySelectorAll('#eng-otp-row .eng-otp-input'));
+  var code   = inputs.map(function(x){ return x.value; }).join('');
+  if (code.length < 6) return;
+  var btn = document.getElementById('eng-submit');
+  var msg = document.getElementById('eng-msg');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    var { data: ok, error } = await _SB.rpc('verify_engagement_code', { input_code: code });
+    if (error || !ok) {
+      inputs.forEach(function(x){ x.classList.add('err'); });
+      msg.textContent = 'código incorreto — tente novamente';
+      btn.textContent = 'Confirmar'; btn.disabled = false;
+      return;
+    }
+    engCloseModal();
+    await _engActivate();
+  } catch(e) {
+    msg.textContent = 'erro de conexão';
+    btn.textContent = 'Confirmar'; btn.disabled = false;
+  }
+}
+
+async function _engActivate() {
+  var now = new Date().toISOString();
+  _engActivated = true; _engDate = now;
+  try {
+    await _SB.from('project_configs').upsert([
+      { key:'engagement_activated', value:'true', updated_at:now },
+      { key:'engagement_date',      value:now,    updated_at:now }
+    ]);
+  } catch(e) {}
+  _engUpdateButton();
+  _engPlayCelebration(now);
+}
+
+function _engPlayCelebration(isoDate) {
+  var cel    = document.getElementById('eng-celebrate');
+  var dateEl = document.getElementById('eng-cel-date');
+  if (dateEl) {
+    var d   = new Date(isoDate);
+    dateEl.textContent = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
+  }
+  cel.classList.add('open');
+  /* partículas caindo */
+  var symbols = ['💍','💜','✨','🌸','💎','⭐','🌙','💕'];
+  var particleInterval = setInterval(function() {
+    if (!cel.classList.contains('open')) { clearInterval(particleInterval); return; }
+    var p = document.createElement('span');
+    p.className = 'eng-cel-particle';
+    p.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    p.style.left     = (Math.random()*100) + 'vw';
+    p.style.top      = '-6vh';
+    p.style.fontSize = (.7 + Math.random()*1.4) + 'rem';
+    var dur = 2.8 + Math.random()*3.5;
+    p.style.animationDuration = dur + 's';
+    cel.appendChild(p);
+    setTimeout(function(){ p.remove(); }, dur*1000);
+  }, 110);
+  setTimeout(function(){ clearInterval(particleInterval); }, 14000);
+  /* GSAP entrada cinematográfica */
+  if (window.gsap) {
+    var ring  = cel.querySelector('.eng-cel-ring');
+    var title = cel.querySelector('.eng-cel-title');
+    var date  = cel.querySelector('.eng-cel-date');
+    var close = cel.querySelector('.eng-cel-close');
+    gsap.set([ring,title,date,close], {opacity:0, y:45});
+    gsap.to(ring,  {opacity:1, y:0, duration:.75, ease:'back.out(2)',   delay:.1});
+    gsap.to(title, {opacity:1, y:0, duration:.75, ease:'back.out(1.8)', delay:.35});
+    gsap.to(date,  {opacity:1, y:0, duration:.6,  ease:'power2.out',    delay:.6});
+    gsap.to(close, {opacity:1, y:0, duration:.5,  ease:'power2.out',    delay:.85});
+  }
+}
+
+function engCloseCelebration() {
+  var cel = document.getElementById('eng-celebrate');
+  if (window.gsap) {
+    gsap.to(cel, {opacity:0, duration:.5, ease:'power2.in',
+      onComplete:function(){ cel.classList.remove('open'); gsap.set(cel,{opacity:1}); }
+    });
+  } else { cel.classList.remove('open'); }
+}
+
+/* ── Admin: ver e alterar código ── */
+async function engAdmOpenPanel() {
+  var panel    = document.getElementById('eng-adm-panel');
+  var codeEl   = document.getElementById('eng-adm-code-display');
+  var statusEl = document.getElementById('eng-adm-status');
+  panel.classList.add('open');
+  codeEl.textContent = '...';
+  try {
+    var s = await _SB.from('admin_secrets').select('value').eq('key','engagement_code').single();
+    if (s.data) codeEl.textContent = s.data.value;
+    var c = await _SB.from('project_configs').select('key,value').in('key',['engagement_activated','engagement_date']);
+    var activated=false, date=null;
+    if (c.data) c.data.forEach(function(r){ if(r.key==='engagement_activated') activated=r.value==='true'; if(r.key==='engagement_date') date=r.value; });
+    if (activated && date) {
+      var fmt = new Date(date).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+      statusEl.className = 'eng-adm-status activated';
+      statusEl.textContent = '✓ Ativado em ' + fmt;
+    } else {
+      statusEl.className = 'eng-adm-status';
+      statusEl.textContent = 'status: aguardando ativação';
+    }
+  } catch(e) { codeEl.textContent = 'erro'; }
+}
+
+async function engAdmSaveCode() {
+  var inp  = document.getElementById('eng-adm-new-input');
+  var msg  = document.getElementById('eng-adm-msg');
+  var code = inp.value.replace(/\D/g,'').slice(0,6);
+  if (code.length !== 6) { msg.textContent = 'precisa ter exatamente 6 dígitos'; return; }
+  msg.textContent = '...';
+  try {
+    await _SB.from('admin_secrets').upsert([{key:'engagement_code', value:code}]);
+    document.getElementById('eng-adm-code-display').textContent = code;
+    inp.value = '';
+    msg.textContent = '✓ código atualizado';
+    setTimeout(function(){ msg.textContent=''; }, 2500);
+  } catch(e) { msg.textContent = 'erro ao salvar'; }
+}
 
 /* ── Badge de ID único — atualiza com a navegação ── */
 /* Badge e contagem — o mosaico usa .thumb-num por thumb + #gallery-count total */
