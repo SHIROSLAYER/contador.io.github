@@ -499,6 +499,20 @@
     .eng-adm-save { padding:.5rem 1rem; border-radius:20px; border:1px solid rgba(180,100,255,.28); background:rgba(100,30,200,.22); color:rgba(255,255,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.2em; cursor:pointer; transition:all .2s; white-space:nowrap; }
     .eng-adm-save:hover { border-color:rgba(212,136,154,.5); color:white; }
 
+    /* Contador de noivado — tema violeta */
+    .eng-countdown-label { text-align:center; font-size:.55rem; letter-spacing:.4em; text-transform:uppercase; color:rgba(180,100,255,.45); margin:1.6rem 0 .2rem; }
+    .eng-cd-unit .cd-num { color:rgba(200,155,255,.95); text-shadow:0 0 28px rgba(160,80,255,.65),0 2px 8px rgba(0,0,0,.9); }
+    .eng-cd-unit.cd-changed { animation:enc-pulse .65s ease forwards; }
+    @keyframes enc-pulse {
+      0%   { border-color:rgba(200,140,160,.14); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4); }
+      40%  { border-color:rgba(160,80,255,.5); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4),0 0 20px rgba(160,80,255,.28),0 0 42px rgba(160,80,255,.12); }
+      100% { border-color:rgba(200,140,160,.14); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4); }
+    }
+    /* Label "congelado" do contador namoro */
+    .namoro-frozen-label { text-align:center; font-size:.5rem; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.18); margin-top:.5rem; }
+    /* Badge modo teste admin */
+    #eng-test-badge { display:none; position:fixed; top:.8rem; left:50%; transform:translateX(-50%); z-index:600; background:rgba(120,80,0,.92); border:1px solid rgba(255,200,60,.45); border-radius:20px; padding:.3rem 1.1rem; font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,220,80,.9); white-space:nowrap; backdrop-filter:blur(10px); pointer-events:none; }
+
     /* ══════════════════════
        PÁGINA 5 — CASAMENTO
     ══════════════════════ */
@@ -1244,6 +1258,7 @@
     <div class="cd-unit"><div class="cd-num" id="cd-min">0</div><div class="cd-label">Min</div></div>
     <div class="cd-unit"><div class="cd-num" id="cd-seg">0</div><div class="cd-label">Seg</div></div>
   </div>
+  <div class="namoro-frozen-label" id="namoro-frozen-label" style="display:none">— tempo de namoro registrado —</div>
 
   <div class="love-message">
     <p>Desde o dia em que você entrou na minha vida, tudo mudou. Não apenas em pequenos detalhes, mas em todas as cores, sentidos e direções. Você trouxe luz aos meus dias mais nublados, trouxe música aos momentos de silêncio e fez meu coração bater em um ritmo que eu nunca tinha sentido antes.</p>
@@ -1323,10 +1338,23 @@
       <div class="n-promise-divider"></div>
       <p class="n-promise-quote" id="eng-quote">"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."</p>
       <button class="eng-btn" id="eng-btn" onclick="engOpenModal()">💍 Noivamos!</button>
+      <!-- Contador de noivado (visível só após ativação) -->
+      <div class="eng-countdown-label" id="enc-label" style="display:none">noivos há</div>
+      <div class="countdown-wrap" id="eng-countdown" style="display:none">
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-anos">00</div><div class="cd-label">Anos</div></div>
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-meses">00</div><div class="cd-label">Meses</div></div>
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-dias">00</div><div class="cd-label">Dias</div></div>
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-horas">00</div><div class="cd-label">Horas</div></div>
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-min">00</div><div class="cd-label">Min</div></div>
+        <div class="cd-unit eng-cd-unit"><div class="cd-num" id="enc-seg">00</div><div class="cd-label">Seg</div></div>
+      </div>
     </div>
   </div>
 
 </div>
+
+<!-- Badge modo teste -->
+<div id="eng-test-badge">🧪 MODO TESTE</div>
 
 <!-- ════════════════════════════════════════
      PÁGINA 5 — CASAMENTO
@@ -1473,6 +1501,7 @@
   <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Foto</button>
   <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
   <button class="adm-bar-btn" onclick="engAdmOpenPanel()">💍 Noivado</button>
+  <button class="adm-bar-btn" id="adm-test-btn" onclick="engToggleTestMode()">🧪 Modo Teste</button>
   <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
   <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
 </div>
@@ -1672,7 +1701,7 @@ function updateCountdown() {
   _animateNumber(document.getElementById('cd-min'),   p(Math.floor(diff / 60) % 60));
   _animateNumber(document.getElementById('cd-seg'),   p(diff % 60));
 }
-setInterval(updateCountdown, 1000);
+var _countdownInterval = setInterval(updateCountdown, 1000);
 updateCountdown();
 
 /* ══════════════════════════════════════════════
@@ -2747,8 +2776,10 @@ function admDeleteCurrent() {}
 /* ══════════════════════════════════════════════
    ENGAGEMENT — Sistema Noivamos!
 ══════════════════════════════════════════════ */
-var _engActivated = false;
-var _engDate      = null;
+var _engActivated        = false;
+var _engDate             = null;
+var _engTestMode         = false;
+var _engCountdownInterval = null;
 
 async function _engLoadState() {
   try {
@@ -2758,22 +2789,89 @@ async function _engLoadState() {
       if (r.key === 'engagement_activated' && r.value === 'true') _engActivated = true;
       if (r.key === 'engagement_date') _engDate = r.value;
     });
-    _engUpdateButton();
+    if (_engActivated && _engDate) _engActivateVisuals(_engDate);
   } catch(e) {}
 }
 
-function _engUpdateButton() {
+/* Aplica o estado "noivado" visualmente (real ou teste) */
+function _engActivateVisuals(isoDate) {
+  /* 1 — Para o contador de namoro */
+  if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+  var fl = document.getElementById('namoro-frozen-label');
+  if (fl) fl.style.display = 'block';
+
+  /* 2 — Atualiza botão + citação */
   var btn   = document.getElementById('eng-btn');
   var quote = document.getElementById('eng-quote');
-  if (!btn) return;
-  if (_engActivated) {
-    btn.classList.add('activated');
-    btn.textContent = '💍 Noivos!';
-    if (_engDate && quote) {
-      var d   = new Date(_engDate);
-      var fmt = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-      quote.innerHTML = '"Noivamos em ' + fmt + ' — o dia mais lindo da nossa história 💜"';
+  if (btn)   { btn.classList.add('activated'); btn.textContent = '💍 Noivos!'; }
+  if (quote && isoDate) {
+    var d   = new Date(isoDate);
+    var fmt = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    quote.innerHTML = '"Noivamos em ' + fmt + ' — o dia mais lindo da nossa história 💜"';
+  }
+
+  /* 3 — Mostra e inicia contador de noivado */
+  var wrap  = document.getElementById('eng-countdown');
+  var label = document.getElementById('enc-label');
+  if (wrap)  wrap.style.display  = 'flex';
+  if (label) label.style.display = 'block';
+  if (_engCountdownInterval) clearInterval(_engCountdownInterval);
+  _engDate = isoDate;
+  _updateEngCountdown();
+  _engCountdownInterval = setInterval(_updateEngCountdown, 1000);
+}
+
+function _updateEngCountdown() {
+  if (!_engDate) return;
+  var diff = Math.max(0, Math.floor((new Date() - new Date(_engDate)) / 1000));
+  var p    = function(n) { return String(n).padStart(2,'0'); };
+  _animateNumber(document.getElementById('enc-anos'),  p(Math.floor(diff / (365.25*24*3600))));
+  _animateNumber(document.getElementById('enc-meses'), p(Math.floor(diff / (30.44*24*3600)) % 12));
+  _animateNumber(document.getElementById('enc-dias'),  p(Math.floor(diff / (24*3600)) % 30));
+  _animateNumber(document.getElementById('enc-horas'), p(Math.floor(diff / 3600) % 24));
+  _animateNumber(document.getElementById('enc-min'),   p(Math.floor(diff / 60) % 60));
+  _animateNumber(document.getElementById('enc-seg'),   p(diff % 60));
+}
+
+/* Admin: simula estado noivado localmente sem salvar */
+function engToggleTestMode() {
+  if (_engActivated) { alert('O noivado já foi ativado de verdade — não precisa de teste!'); return; }
+  var btn   = document.getElementById('adm-test-btn');
+  var badge = document.getElementById('eng-test-badge');
+  _engTestMode = !_engTestMode;
+  if (_engTestMode) {
+    /* Data falsa: 2 dias e 7 horas atrás para mostrar valores não-zero */
+    var fakeDate = new Date(Date.now() - (2*24*3600 + 7*3600 + 42*60 + 18) * 1000).toISOString();
+    _engActivateVisuals(fakeDate);
+    btn.textContent = '🧪 Sair Teste';
+    btn.style.borderColor = 'rgba(255,200,60,.55)';
+    if (badge) badge.style.display = 'block';
+    goTo('pg-noivado');
+  } else {
+    /* Reverte tudo */
+    if (_engCountdownInterval) { clearInterval(_engCountdownInterval); _engCountdownInterval = null; }
+    _engDate = null;
+    /* Reinicia namoro */
+    if (!_countdownInterval) {
+      _countdownInterval = setInterval(updateCountdown, 1000);
+      updateCountdown();
     }
+    /* Esconde frozen label */
+    var fl = document.getElementById('namoro-frozen-label');
+    if (fl) fl.style.display = 'none';
+    /* Reverte botão */
+    var engBtn = document.getElementById('eng-btn');
+    var quote  = document.getElementById('eng-quote');
+    if (engBtn) { engBtn.classList.remove('activated'); engBtn.textContent = '💍 Noivamos!'; engBtn.onclick = engOpenModal; }
+    if (quote)  { quote.innerHTML = '"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."'; }
+    /* Esconde contador */
+    var wrap  = document.getElementById('eng-countdown');
+    var label = document.getElementById('enc-label');
+    if (wrap)  wrap.style.display  = 'none';
+    if (label) label.style.display = 'none';
+    btn.textContent = '🧪 Modo Teste';
+    btn.style.borderColor = '';
+    if (badge) badge.style.display = 'none';
   }
 }
 
@@ -2849,7 +2947,7 @@ async function _engActivate() {
       { key:'engagement_date',      value:now,    updated_at:now }
     ]);
   } catch(e) {}
-  _engUpdateButton();
+  _engActivateVisuals(now);
   _engPlayCelebration(now);
 }
 
