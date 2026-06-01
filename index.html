@@ -492,6 +492,18 @@
     .nv-act-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(212,136,154,.4),transparent); }
     .nv-act-divider em { font-size:.85rem; color:rgba(212,136,154,.5); font-style:normal; }
 
+    /* Mensagem noivado */
+    .nv-msg-card { position:relative; width:min(520px,88vw); background:linear-gradient(145deg,rgba(25,8,48,.75),rgba(12,3,28,.88)); backdrop-filter:blur(20px); border:1px solid rgba(160,80,255,.2); border-radius:3px; padding:2.6rem 2.4rem 2.2rem; text-align:center; box-shadow:0 0 0 1px rgba(212,136,154,.06) inset,0 35px 90px rgba(0,0,0,.55),0 0 70px rgba(120,40,200,.1); }
+    .nv-msg-card::before { content:'✦  ✦  ✦'; position:absolute; top:.85rem; left:50%; transform:translateX(-50%); font-size:.38rem; letter-spacing:.7em; color:rgba(180,100,255,.28); white-space:nowrap; }
+    .nv-msg-card p { font-family:'Cormorant Garamond',serif; font-size:clamp(.92rem,2.5vw,1.12rem); font-style:italic; color:rgba(238,192,210,.75); line-height:1.95; font-weight:300; }
+    .nv-msg-card p + p { margin-top:1.1rem; }
+    .nv-msg-sig { font-family:'Great Vibes',cursive !important; font-size:1.65rem !important; color:rgba(212,136,154,.68) !important; margin-top:1.6rem !important; font-style:normal !important; font-weight:400 !important; }
+    .nv-msg-edit-btn { position:absolute; top:.65rem; right:.65rem; background:none; border:none; color:rgba(180,100,255,.4); font-size:.82rem; cursor:pointer; width:1.9rem; height:1.9rem; display:none; align-items:center; justify-content:center; border-radius:50%; transition:all .22s; padding:0; }
+    .nv-msg-edit-btn:hover { color:rgba(210,150,255,.9); background:rgba(160,80,255,.15); }
+    .nv-msg-edit-btn.confirming { color:rgba(80,225,130,.85); font-size:1.05rem; }
+    .nv-msg-card.editing { border-color:rgba(160,80,255,.4); box-shadow:0 0 0 1px rgba(160,80,255,.08) inset,0 35px 90px rgba(0,0,0,.55),0 0 50px rgba(120,40,200,.2); }
+    .nv-msg-card.editing [contenteditable="true"] { outline:none; border-bottom:1px dashed rgba(160,80,255,.35); padding-bottom:2px; cursor:text; min-height:1.2em; }
+
     /* Galeria noivado */
     .nv-gal-header { display:flex; align-items:center; gap:1rem; width:100%; max-width:900px; margin-top:.5rem; }
     .nv-gal-title { font-size:.6rem; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.28); flex:1; }
@@ -1458,6 +1470,14 @@
       <h2 class="nv-act-title">Oficialmente Noivos</h2>
       <p class="nv-act-date-label" id="nv-act-date"></p>
       <div class="nv-act-divider"><span></span><em>✦</em><span></span></div>
+
+      <!-- Mensagem noivado -->
+      <div class="nv-msg-card" id="nv-msg-card">
+        <button class="nv-msg-edit-btn" id="nv-msg-edit-btn" onclick="nvActMsgStartEdit()" title="Editar mensagem">✏️</button>
+        <p id="nv-msg-p1">A partir de hoje, não somos mais apenas dois —<br>somos uma promessa viva, um lar que se constrói<br>tijolo a tijolo, abraço a abraço, dia a dia.</p>
+        <p id="nv-msg-p2">O mundo inteiro poderia ter outros caminhos,<br>mas eu te escolheria em todos eles.</p>
+        <p class="nv-msg-sig" id="nv-msg-sig">Steven</p>
+      </div>
 
       <!-- Galeria de fotos do noivado -->
       <div class="nv-gal-header">
@@ -2579,7 +2599,7 @@ function _admShowUI() {
   _admShowCardEdits();
   _admInjectDelButtons();
   _nvShowLetterEditBtn();
-  if (_engActivated) _nvShowGalAdd();
+  if (_engActivated) { _nvShowGalAdd(); _nvShowActMsgEdit(); }
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
@@ -2588,6 +2608,7 @@ function _admHideUI() {
   _admHideCardEdits();
   _nvHideLetterEditBtn();
   _nvHideGalAdd();
+  _nvHideActMsgEdit();
   _admRemoveDelButtons();   // remove botões ✕ do DOM completamente
 }
 
@@ -3085,16 +3106,20 @@ function _nvActivatedSectionShow(isoDate) {
     gsap.fromTo('.nv-act-crown', {scale:.4,opacity:0,rotation:-20}, {scale:1,opacity:1,rotation:0,duration:1,ease:'elastic.out(1,.5)',delay:.2});
     gsap.fromTo('.nv-act-title', {y:50,opacity:0}, {y:0,opacity:1,duration:.85,ease:'power3.out',delay:.4});
     gsap.fromTo('.nv-act-date-label,.nv-act-divider', {y:20,opacity:0}, {y:0,opacity:1,duration:.6,ease:'power2.out',delay:.7,stagger:.12});
+    gsap.fromTo('#nv-msg-card', {y:35,opacity:0}, {y:0,opacity:1,duration:.8,ease:'power3.out',delay:1.08});
   }
 
   /* Canvas aurora */
   _nvStartAurora();
 
+  /* Mensagem */
+  _nvActMsgLoad();
+
   /* Galeria */
   _nvLoadGallery();
 
-  /* Admin: mostra botão adicionar se logado */
-  if (_admSession) _nvShowGalAdd();
+  /* Admin: mostra botão adicionar e editar mensagem se logado */
+  if (_admSession) { _nvShowGalAdd(); _nvShowActMsgEdit(); }
 
   /* Refresh ScrollTrigger */
   if (window.ScrollTrigger) setTimeout(function(){ ScrollTrigger.refresh(); }, 300);
@@ -3246,6 +3271,83 @@ function _nvHideGalAdd() {
   if (btn) btn.style.display = 'none';
   /* Remove del buttons */
   document.querySelectorAll('#nv-gal-grid .nv-gal-del').forEach(function(b){ b.remove(); });
+}
+
+/* ── Mensagem da seção Noivado Ativado ── */
+function _nvActMsgLoad() {
+  _SB.from('project_configs').select('value').eq('key','noivado_message').maybeSingle()
+    .then(function(res) {
+      if (!res || !res.data || !res.data.value) return;
+      try {
+        var msg = JSON.parse(res.data.value);
+        var p1  = document.getElementById('nv-msg-p1');
+        var p2  = document.getElementById('nv-msg-p2');
+        var sig = document.getElementById('nv-msg-sig');
+        if (p1  && msg.p1  !== undefined) p1.innerHTML   = msg.p1;
+        if (p2  && msg.p2  !== undefined) p2.innerHTML   = msg.p2;
+        if (sig && msg.sig !== undefined) sig.textContent = msg.sig;
+      } catch(e) {}
+    });
+}
+
+function _nvShowActMsgEdit() {
+  var btn = document.getElementById('nv-msg-edit-btn');
+  if (btn) btn.style.display = 'flex';
+}
+function _nvHideActMsgEdit() {
+  var btn  = document.getElementById('nv-msg-edit-btn');
+  var card = document.getElementById('nv-msg-card');
+  if (card && card.classList.contains('editing')) {
+    card.classList.remove('editing');
+    ['nv-msg-p1','nv-msg-p2','nv-msg-sig'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.contentEditable = 'false';
+    });
+    if (btn) { btn.innerHTML = '✏️'; btn.classList.remove('confirming'); btn.onclick = nvActMsgStartEdit; }
+  }
+  if (btn) btn.style.display = 'none';
+}
+
+function nvActMsgStartEdit() {
+  var card = document.getElementById('nv-msg-card');
+  var btn  = document.getElementById('nv-msg-edit-btn');
+  if (!card || !btn) return;
+  card.classList.add('editing');
+  ['nv-msg-p1','nv-msg-p2','nv-msg-sig'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.contentEditable = 'true'; }
+  });
+  var p1 = document.getElementById('nv-msg-p1');
+  if (p1) { p1.focus(); var r = document.createRange(); r.selectNodeContents(p1); r.collapse(false); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  btn.innerHTML = '✓';
+  btn.classList.add('confirming');
+  btn.onclick = nvActMsgSaveEdit;
+}
+
+async function nvActMsgSaveEdit() {
+  var card = document.getElementById('nv-msg-card');
+  var btn  = document.getElementById('nv-msg-edit-btn');
+  if (!card || !btn) return;
+  var p1  = document.getElementById('nv-msg-p1');
+  var p2  = document.getElementById('nv-msg-p2');
+  var sig = document.getElementById('nv-msg-sig');
+  var payload = JSON.stringify({
+    p1:  p1  ? p1.innerHTML   : '',
+    p2:  p2  ? p2.innerHTML   : '',
+    sig: sig ? sig.textContent : ''
+  });
+  card.classList.remove('editing');
+  ['nv-msg-p1','nv-msg-p2','nv-msg-sig'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.contentEditable = 'false';
+  });
+  btn.innerHTML = '✏️';
+  btn.classList.remove('confirming');
+  btn.onclick = nvActMsgStartEdit;
+  try {
+    var now = new Date().toISOString();
+    await _SB.from('project_configs').upsert({ key:'noivado_message', value:payload, updated_at:now });
+  } catch(e) {}
 }
 
 function nvAdmOpenUpload() {
