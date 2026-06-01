@@ -473,14 +473,10 @@
     /* ── Botão editar carta (admin) ── */
     .nv-edit-btn { position:absolute; top:.65rem; left:.65rem; display:none; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(160,80,255,.14); border:1px solid rgba(160,80,255,.28); border-radius:7px; color:rgba(190,140,255,.7); font-size:.85rem; cursor:pointer; transition:all .22s; z-index:5; }
     .nv-edit-btn:hover { background:rgba(160,80,255,.3); color:white; border-color:rgba(180,100,255,.65); transform:scale(1.1); }
-    .nv-letter-card.editing { border-color:rgba(160,80,255,.4); box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.5),0 0 35px rgba(160,80,255,.18); }
-    .nv-letter-card.editing [contenteditable="true"] { outline:none; border-bottom:1px dashed rgba(160,80,255,.4); padding-bottom:2px; cursor:text; min-height:1em; }
-    .nv-edit-toolbar { position:absolute; bottom:-3rem; left:50%; transform:translateX(-50%); display:none; gap:.5rem; white-space:nowrap; z-index:10; }
-    .nv-edit-save,.nv-edit-cancel { padding:.38rem 1.1rem; border-radius:20px; font-family:'Josefin Sans',sans-serif; font-size:.56rem; letter-spacing:.22em; text-transform:uppercase; cursor:pointer; transition:all .2s; }
-    .nv-edit-save   { background:rgba(80,190,80,.14); border:1px solid rgba(100,210,100,.32); color:rgba(140,230,140,.8); }
-    .nv-edit-save:hover { background:rgba(80,190,80,.26); color:white; }
-    .nv-edit-cancel { background:rgba(200,80,80,.12); border:1px solid rgba(220,100,100,.28); color:rgba(230,140,140,.75); }
-    .nv-edit-cancel:hover { background:rgba(200,80,80,.22); color:white; }
+    .nv-edit-btn.confirming { background:rgba(60,190,80,.18); border-color:rgba(80,220,100,.45); color:rgba(130,240,140,.9); font-size:1.05rem; font-weight:700; }
+    .nv-edit-btn.confirming:hover { background:rgba(60,190,80,.32); border-color:rgba(100,240,120,.7); color:white; box-shadow:0 0 14px rgba(80,220,100,.3); }
+    .nv-letter-card.editing { border-color:rgba(160,80,255,.38); box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.5),0 0 30px rgba(160,80,255,.16); }
+    .nv-letter-card.editing [contenteditable="true"] { outline:none; border-bottom:1px dashed rgba(160,80,255,.38); padding-bottom:2px; cursor:text; min-height:1em; }
 
     /* ══ NOIVADO — Anéis orbitais ao redor do botão ══ */
     .nv-orbit-wrap { position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:0; }
@@ -1402,10 +1398,6 @@
   <div class="nv-letter-section">
     <div class="nv-letter-card" id="nv-letter-card">
       <button class="nv-edit-btn" id="nv-letter-edit-btn" onclick="nvStartEdit()" title="Editar carta">✏️</button>
-      <div class="nv-edit-toolbar" id="nv-edit-toolbar">
-        <button class="nv-edit-save"   onclick="nvSaveEdit()">💾 Salvar</button>
-        <button class="nv-edit-cancel" onclick="nvCancelEdit()">✕ Cancelar</button>
-      </div>
       <span class="nv-letter-seal">💍</span>
       <p class="nv-letter-eyebrow">Uma mensagem para você</p>
       <h2 class="nv-letter-to">Vitória,</h2>
@@ -2952,16 +2944,16 @@ function nvStartEdit() {
   var card = document.getElementById('nv-letter-card');
   var body = card.querySelector('.nv-letter-body');
   var sig  = card.querySelector('.nv-letter-signature');
-  /* Guarda original para cancelar */
+  var btn  = document.getElementById('nv-letter-edit-btn');
   _nvEditOriginal = { body: body.innerHTML, sig: sig.textContent };
-  /* Torna editável */
   Array.from(body.querySelectorAll('p')).forEach(function(p) { p.contentEditable = 'true'; });
   sig.contentEditable = 'true';
   card.classList.add('editing');
-  /* Mostra toolbar, esconde lápis */
-  document.getElementById('nv-edit-toolbar').style.display = 'flex';
-  document.getElementById('nv-letter-edit-btn').style.display = 'none';
-  /* Foca no primeiro parágrafo */
+  /* Botão vira ✓ verde */
+  btn.innerHTML = '✓';
+  btn.classList.add('confirming');
+  btn.title = 'Confirmar alterações';
+  btn.onclick = nvSaveEdit;
   var first = body.querySelector('p');
   if (first) { first.focus(); placeCursorAtEnd(first); }
 }
@@ -2970,21 +2962,25 @@ async function nvSaveEdit() {
   var card = document.getElementById('nv-letter-card');
   var body = card.querySelector('.nv-letter-body');
   var sig  = card.querySelector('.nv-letter-signature');
-  /* Coleta parágrafos */
+  var btn  = document.getElementById('nv-letter-edit-btn');
   var paragraphs = Array.from(body.querySelectorAll('p')).map(function(p) {
     p.contentEditable = 'false'; return p.innerHTML;
   });
   sig.contentEditable = 'false';
-  var payload = JSON.stringify({ paragraphs: paragraphs, signature: sig.textContent.trim() });
-  var saveBtn = document.querySelector('.nv-edit-save');
-  saveBtn.textContent = '...'; saveBtn.disabled = true;
+  btn.innerHTML = '…'; btn.disabled = true;
   try {
-    await _SB.from('project_configs').upsert([{ key:'letter_content', value:payload, updated_at:new Date().toISOString() }]);
-  } catch(e) { alert('Erro ao salvar: ' + (e.message || e)); saveBtn.textContent='💾 Salvar'; saveBtn.disabled=false; return; }
+    await _SB.from('project_configs').upsert([{
+      key: 'letter_content',
+      value: JSON.stringify({ paragraphs: paragraphs, signature: sig.textContent.trim() }),
+      updated_at: new Date().toISOString()
+    }]);
+  } catch(e) {
+    alert('Erro ao salvar: ' + (e.message || e));
+    btn.innerHTML = '✓'; btn.disabled = false; return;
+  }
   card.classList.remove('editing');
-  document.getElementById('nv-edit-toolbar').style.display = 'none';
-  saveBtn.textContent = '💾 Salvar'; saveBtn.disabled = false;
-  document.getElementById('nv-letter-edit-btn').style.display = 'flex';
+  btn.innerHTML = '✏️'; btn.classList.remove('confirming');
+  btn.title = 'Editar carta'; btn.onclick = nvStartEdit; btn.disabled = false;
   _nvEditOriginal = null;
 }
 
@@ -2993,12 +2989,14 @@ function nvCancelEdit() {
   var card = document.getElementById('nv-letter-card');
   var body = card.querySelector('.nv-letter-body');
   var sig  = card.querySelector('.nv-letter-signature');
+  var btn  = document.getElementById('nv-letter-edit-btn');
   body.innerHTML = _nvEditOriginal.body;
   sig.textContent = _nvEditOriginal.sig;
+  Array.from(body.querySelectorAll('p')).forEach(function(p) { p.contentEditable = 'false'; });
   sig.contentEditable = 'false';
   card.classList.remove('editing');
-  document.getElementById('nv-edit-toolbar').style.display = 'none';
-  if (_admSession) document.getElementById('nv-letter-edit-btn').style.display = 'flex';
+  btn.innerHTML = '✏️'; btn.classList.remove('confirming');
+  btn.title = 'Editar carta'; btn.onclick = nvStartEdit; btn.disabled = false;
   _nvEditOriginal = null;
 }
 
