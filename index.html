@@ -1339,7 +1339,26 @@
 <div class="page" id="pg-noivado">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
 
-  <!-- ══ Seção 1 — Hero cinematográfico ══ -->
+  <!-- ══ Seção 1 — Cabeçalho: A Promessa Eterna (ScrollTrigger) ══ -->
+  <div class="n-zoom-wrap">
+    <div class="n-zoom-img-container">
+      <img class="n-zoom-img"
+           src="segundapagina/arquivosimagens/unidade00001.jpeg"
+           alt="Nossas memórias"
+           onerror="this.src='terceirapaginanamoro/arquivoscontador/unidade00001.jpeg'">
+    </div>
+    <div class="n-zoom-overlay"></div>
+    <div class="n-zoom-text">
+      <p class="n-zoom-eyebrow">Capítulo II</p>
+      <h2 class="n-zoom-title">A Promessa<br>Eterna</h2>
+    </div>
+    <div class="n-zoom-text-2">
+      <p class="n-zoom-quote">Para sempre ao seu lado</p>
+      <span class="n-zoom-glyph">💜</span>
+    </div>
+  </div>
+
+  <!-- ══ Seção 2 — Hero: anel + título ══ -->
   <div class="n-section n-hero-section">
     <div class="noivado-particles" id="noivadoParticles"></div>
     <div class="n-hero-content">
@@ -1355,7 +1374,7 @@
     </div>
   </div>
 
-  <!-- ══ Seção 2 — Carta do Steve ══ -->
+  <!-- ══ Seção 3 — Carta do Steve ══ -->
   <div class="nv-letter-section">
     <div class="nv-letter-card" id="nv-letter-card">
       <span class="nv-letter-seal">💍</span>
@@ -1373,25 +1392,6 @@
         <p class="nv-letter-closing">Com todo o amor que existe em mim</p>
         <p class="nv-letter-signature">Steve</p>
       </div>
-    </div>
-  </div>
-
-  <!-- ══ Seção 3 — ScrollTrigger Image Zoom ══ -->
-  <div class="n-zoom-wrap">
-    <div class="n-zoom-img-container">
-      <img class="n-zoom-img"
-           src="segundapagina/arquivosimagens/unidade00001.jpeg"
-           alt="Nossas memórias"
-           onerror="this.src='terceirapaginanamoro/arquivoscontador/unidade00001.jpeg'">
-    </div>
-    <div class="n-zoom-overlay"></div>
-    <div class="n-zoom-text">
-      <p class="n-zoom-eyebrow">Capítulo II</p>
-      <h2 class="n-zoom-title">A Promessa<br>Eterna</h2>
-    </div>
-    <div class="n-zoom-text-2">
-      <p class="n-zoom-quote">Para sempre ao seu lado</p>
-      <span class="n-zoom-glyph">💜</span>
     </div>
   </div>
 
@@ -1680,7 +1680,6 @@ function goTo(id) {
   if (id === 'pg-noivado') {
     document.getElementById('pg-noivado').scrollTop = 0;
     setTimeout(initNoivadoAnimation, 400);
-    setTimeout(_nvHeroEntrance, 180);
   }
   currentPage = id;
 }
@@ -1946,6 +1945,15 @@ function initNoivadoAnimation() {
   // Fase 4 (78–100%): segunda mensagem emerge do fundo da foto
   .to('.n-zoom-text-2', { opacity: 1, y: 0,
       ease: 'power2.out', duration: 0.22 }, 0.78);
+
+  /* Hero anima quando a seção entra na tela (após zoom desafixar) */
+  ScrollTrigger.create({
+    trigger: '.n-hero-section',
+    scroller: pg,
+    start: 'top 75%',
+    once: true,
+    onEnter: function() { _nvHeroEntrance(); }
+  });
 
   /* Revela a carta do Steve via scroll */
   _nvLetterReveal(pg);
