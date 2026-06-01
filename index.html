@@ -200,7 +200,7 @@
     .music-status { font-size:.7rem; color:var(--rose); }
 
     /* ── Countdown Crystal ── */
-    .countdown-wrap { display:flex; gap:.85rem; flex-wrap:wrap; justify-content:center; margin:2.2rem auto; padding:0 1.5rem; max-width:720px; }
+    .countdown-wrap { display:flex; gap:.85rem; flex-wrap:nowrap; justify-content:center; margin:2.2rem auto; padding:0 1.5rem; max-width:720px; width:100%; }
     .cd-unit {
       background:linear-gradient(160deg,rgba(40,10,25,.9),rgba(12,4,10,.95));
       border:1px solid rgba(200,140,160,.14);
@@ -208,7 +208,7 @@
       border-radius:5px;
       padding:1rem 1.3rem;
       text-align:center;
-      min-width:72px;
+      flex:1 1 0; min-width:0;
       position:relative;
       overflow:hidden;
       box-shadow:0 6px 28px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.055), 0 0 0 1px rgba(0,0,0,.4);
@@ -580,7 +580,7 @@
       .welcome-title  { font-size:11rem; }
       .gallery-viewer { height:640px; }
       .cd-num         { font-size:3.8rem !important; }
-      .cd-unit        { min-width:90px; padding:1.4rem 1.6rem; }
+      .cd-unit        { padding:1.4rem 1.2rem; }
       .selector-title { font-size:1.8rem; }
       .page-back      { font-size:.75rem; padding:.7rem 1.5rem; }
     }
@@ -590,7 +590,7 @@
       .cards-stage    { width:min(98vw,900px); }
       .selector-title { margin-bottom:1.6rem; }
       .countdown-wrap { gap:.65rem; padding:0 1rem; }
-      .cd-unit        { min-width:56px; padding:.7rem .85rem; }
+      .cd-unit        { padding:.7rem .5rem; }
       .gallery-section { padding:0 1rem; }
       .love-message   { padding:0 1.1rem; }
       .n-zoom-text    { max-width:min(90vw,380px); padding:1.2rem 1.8rem 1.4rem; }
@@ -613,7 +613,7 @@
       .nav-arr         { width:42px; height:42px; font-size:1rem; }
       .card-open-hint  { font-size:.52rem; }
       .countdown-wrap  { gap:.4rem; padding:0 .7rem; margin:1.4rem auto; }
-      .cd-unit         { min-width:44px; padding:.55rem .45rem; }
+      .cd-unit         { padding:.5rem .3rem; }
       .cd-num          { font-size:clamp(1.4rem,5.5vw,2rem) !important; }
       .cd-label        { font-size:.4rem; letter-spacing:.2em; }
       .love-message    { padding:0 .7rem; }
@@ -650,7 +650,7 @@
 
     /* ── MICRO (≤ 360px) ── */
     @media (max-width:360px) {
-      .cd-unit  { min-width:38px; padding:.48rem .38rem; }
+      .cd-unit  { padding:.42rem .22rem; }
       .cd-num   { font-size:1.3rem !important; }
       .n-zoom-text { top:4%; padding:.8rem 1rem .9rem; }
     }
