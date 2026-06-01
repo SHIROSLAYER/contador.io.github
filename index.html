@@ -574,6 +574,15 @@
     .eng-hint-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.78rem; color:rgba(212,136,154,.52); letter-spacing:.04em; line-height:1.4; text-align:left; }
     .eng-msg { font-size:.6rem; color:rgba(255,100,100,.8); letter-spacing:.15em; margin-top:.8rem; min-height:.9rem; }
 
+    /* ══ UNLOCK overlay ══ */
+    #eng-unlock-overlay { position:fixed; inset:0; z-index:99998; background:#02000a; display:none; align-items:center; justify-content:center; overflow:hidden; }
+    #eng-unlock-overlay.active { display:flex; }
+    #eng-unlock-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+    .eng-unlock-inner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
+    .eng-unlock-ring { font-size:4.5rem; line-height:1; filter:drop-shadow(0 0 28px rgba(212,136,154,.85)); display:block; }
+    .eng-unlock-label { font-family:'Great Vibes',cursive; font-size:clamp(2rem,8vw,3.4rem); color:var(--blush); text-align:center; line-height:1.25; text-shadow:0 0 50px rgba(212,136,154,.75),0 0 100px rgba(212,136,154,.3); opacity:0; }
+    .eng-unlock-sub { font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(180,100,255,.55); opacity:0; }
+
     /* Celebration fullscreen */
     .eng-celebrate { position:fixed; inset:0; z-index:900; display:none; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 40%,rgba(80,10,160,.96),rgba(8,2,22,.99)); overflow:hidden; }
     .eng-celebrate.open { display:flex; }
@@ -1599,6 +1608,16 @@
 </div>
 
 <!-- ══ BOTÃO ADMIN OCULTO ══ -->
+<!-- ══ ENGAGEMENT — Unlock Animation Overlay ══ -->
+<div id="eng-unlock-overlay">
+  <canvas id="eng-unlock-canvas"></canvas>
+  <div class="eng-unlock-inner">
+    <span class="eng-unlock-ring" id="eng-unlock-ring">💍</span>
+    <p class="eng-unlock-label" id="eng-unlock-label">Nossa história<br>mudou para sempre</p>
+    <span class="eng-unlock-sub" id="eng-unlock-sub">para sempre e além</span>
+  </div>
+</div>
+
 <!-- ══ ENGAGEMENT — Modal OTP ══ -->
 <div class="eng-overlay" id="eng-modal">
   <div class="eng-box">
@@ -1655,6 +1674,7 @@
   <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
   <button class="adm-bar-btn" onclick="engAdmOpenPanel()">💍 Noivado</button>
   <button class="adm-bar-btn" id="adm-test-btn" onclick="engToggleTestMode()">🧪 Modo Teste</button>
+  <button class="adm-bar-btn" id="adm-unlock-btn" onclick="engPreviewUnlock()" style="display:none">🎬 Desbloqueio</button>
   <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
   <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
 </div>
@@ -3493,6 +3513,8 @@ function engToggleTestMode() {
     btn.textContent = '🧪 Sair Teste';
     btn.style.borderColor = 'rgba(255,200,60,.55)';
     if (badge) badge.style.display = 'block';
+    var unlockBtn = document.getElementById('adm-unlock-btn');
+    if (unlockBtn) unlockBtn.style.display = '';
     goTo('pg-noivado');
   } else {
     /* Reverte tudo */
@@ -3536,7 +3558,160 @@ function engToggleTestMode() {
     btn.textContent = '🧪 Modo Teste';
     btn.style.borderColor = '';
     if (badge) badge.style.display = 'none';
+    var unlockBtn = document.getElementById('adm-unlock-btn');
+    if (unlockBtn) unlockBtn.style.display = 'none';
   }
+}
+
+/* ── Animação de desbloqueio (uma vez na vida real, replay no teste) ── */
+var _engUnlockRAF = null;
+
+function engPreviewUnlock() {
+  _engPlayUnlock(null);
+}
+
+function _engPlayUnlock(onDone) {
+  var overlay = document.getElementById('eng-unlock-overlay');
+  var ring    = document.getElementById('eng-unlock-ring');
+  var label   = document.getElementById('eng-unlock-label');
+  var sub     = document.getElementById('eng-unlock-sub');
+  if (!overlay || !window.gsap) { if (onDone) onDone(); return; }
+
+  /* Reset */
+  overlay.classList.add('active');
+  gsap.set(ring,  { scale:0,  opacity:0, rotation:-180, y:0 });
+  gsap.set(label, { opacity:0, y:40 });
+  gsap.set(sub,   { opacity:0, y:20 });
+
+  /* Canvas: ripples + partículas */
+  _engUnlockCanvas();
+
+  var tl = gsap.timeline({
+    onComplete: function() {
+      /* Espera 0.9s exibindo tudo antes de sair */
+      gsap.to(overlay, {
+        opacity: 0, duration: 1, delay: 0.9, ease: 'power2.in',
+        onComplete: function() {
+          overlay.classList.remove('active');
+          gsap.set(overlay, { opacity:1 });
+          if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
+          if (onDone) onDone();
+        }
+      });
+    }
+  });
+
+  /* 1 — Anel entra com elastic bounce */
+  tl.to(ring, {
+    scale: 1, opacity: 1, rotation: 0, y: 0,
+    duration: 1.1, ease: 'elastic.out(1, .48)'
+  }, 0.1);
+
+  /* 2 — Anel brilha intensamente */
+  tl.to(ring, {
+    filter: 'drop-shadow(0 0 55px rgba(212,136,154,1)) drop-shadow(0 0 110px rgba(180,100,255,.9))',
+    duration: 0.45, ease: 'power2.out'
+  }, 1.0);
+  tl.to(ring, {
+    filter: 'drop-shadow(0 0 28px rgba(212,136,154,.85))',
+    duration: 0.5, ease: 'power2.in'
+  }, 1.45);
+
+  /* 3 — Anel pulsa levemente antes do texto */
+  tl.to(ring, { scale: 1.12, duration: 0.25, ease: 'power1.out', yoyo: true, repeat: 1 }, 1.1);
+
+  /* 4 — Texto principal sobe */
+  tl.to(label, { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }, 1.55);
+
+  /* 5 — Subtítulo sobe */
+  tl.to(sub, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 2.1);
+}
+
+function _engUnlockCanvas() {
+  if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
+  var cv = document.getElementById('eng-unlock-canvas');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  cv.width  = window.innerWidth;
+  cv.height = window.innerHeight;
+  var cx = cv.width  / 2;
+  var cy = cv.height / 2;
+  var t  = 0;
+
+  /* Anéis de ripple expandindo a partir do centro */
+  var ripples = [
+    { r:0, a:0.75, col:'212,136,154', spd:14, delay:0  },
+    { r:0, a:0.60, col:'180,100,255', spd:16, delay:6  },
+    { r:0, a:0.50, col:'240,192,207', spd:13, delay:12 },
+    { r:0, a:0.40, col:'196,168,112', spd:18, delay:18 }
+  ];
+
+  /* Partículas do burst (disparadas no frame 16) */
+  var particles = [];
+  var burst = false;
+  var COLS = ['212,136,154','180,100,255','240,192,207','196,168,112','255,240,250'];
+
+  function spawnBurst() {
+    for (var i = 0; i < 85; i++) {
+      var ang   = Math.random() * Math.PI * 2;
+      var spd   = 2.5 + Math.random() * 9.5;
+      var big   = i > 65;
+      particles.push({
+        x:cx, y:cy,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - (big ? Math.random()*2 : 0),
+        r:  big ? 3 + Math.random()*5 : 1.2 + Math.random()*3.2,
+        a:  1,
+        da: big ? 0.008 + Math.random()*0.01 : 0.012 + Math.random()*0.016,
+        col: COLS[Math.floor(Math.random()*COLS.length)],
+        g:  big ? 0.08 + Math.random()*0.14 : 0
+      });
+    }
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    t++;
+
+    /* Ripples */
+    for (var i = 0; i < ripples.length; i++) {
+      var rp = ripples[i];
+      if (t < rp.delay) continue;
+      rp.r += rp.spd;
+      rp.a -= 0.016;
+      if (rp.a > 0) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, rp.r, 0, Math.PI*2);
+        ctx.strokeStyle = 'rgba(' + rp.col + ',' + rp.a.toFixed(2) + ')';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      }
+    }
+
+    /* Lança burst quando o anel aparece */
+    if (t === 16 && !burst) { burst = true; spawnBurst(); }
+
+    /* Partículas */
+    var anyAlive = ripples.some(function(rp){ return rp.a > 0; });
+    for (var k = 0; k < particles.length; k++) {
+      var p = particles[k];
+      if (p.a <= 0) continue;
+      anyAlive = true;
+      p.x  += p.vx; p.y  += p.vy;
+      p.vy += p.g || 0;
+      p.vx *= 0.975; p.vy *= 0.975;
+      p.a  -= p.da;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(' + p.col + ',' + Math.max(0, p.a).toFixed(2) + ')';
+      ctx.fill();
+    }
+
+    if (anyAlive || t < 50) _engUnlockRAF = requestAnimationFrame(frame);
+    else _engUnlockRAF = null;
+  }
+
+  frame();
 }
 
 function engOpenModal() {
@@ -3595,7 +3770,7 @@ async function engVerify() {
       return;
     }
     engCloseModal();
-    await _engActivate();
+    _engPlayUnlock(async function() { await _engActivate(); });
   } catch(e) {
     msg.textContent = 'erro de conexão';
     btn.textContent = 'Confirmar'; btn.disabled = false;
