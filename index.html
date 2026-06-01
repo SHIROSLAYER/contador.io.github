@@ -568,6 +568,10 @@
     .eng-submit { width:100%; padding:.85rem; border-radius:30px; border:1px solid rgba(180,100,255,.35); background:linear-gradient(135deg,rgba(100,30,200,.4),rgba(160,30,100,.35)); color:white; font-family:'Josefin Sans',sans-serif; font-size:.68rem; letter-spacing:.3em; text-transform:uppercase; cursor:pointer; transition:all .3s; }
     .eng-submit:hover:not(:disabled) { border-color:rgba(212,136,154,.6); box-shadow:0 0 20px rgba(212,136,154,.22); }
     .eng-submit:disabled { opacity:.35; cursor:default; }
+    .eng-hint { display:flex; align-items:center; justify-content:center; gap:.45rem; margin-bottom:1.4rem; }
+    .eng-hint-icon { font-size:.85rem; filter:drop-shadow(0 0 6px rgba(212,136,154,.6)); animation:hint-pulse 2.6s ease-in-out infinite; }
+    @keyframes hint-pulse { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:1;transform:scale(1.12)} }
+    .eng-hint-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.78rem; color:rgba(212,136,154,.52); letter-spacing:.04em; line-height:1.4; text-align:left; }
     .eng-msg { font-size:.6rem; color:rgba(255,100,100,.8); letter-spacing:.15em; margin-top:.8rem; min-height:.9rem; }
 
     /* Celebration fullscreen */
@@ -1608,6 +1612,10 @@
       <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
       <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
       <input class="eng-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    </div>
+    <div class="eng-hint">
+      <span class="eng-hint-icon">💍</span>
+      <span class="eng-hint-text">o código está dentro do porta alianças</span>
     </div>
     <button class="eng-submit" id="eng-submit" onclick="engVerify()" disabled>Confirmar</button>
     <div class="eng-msg" id="eng-msg"></div>
