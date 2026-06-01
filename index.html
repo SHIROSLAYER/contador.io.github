@@ -1443,17 +1443,6 @@
   </div>
 </div>
 
-<!-- Botão de deletar foto dentro da galeria (só aparece em admin mode) -->
-<script>
-/* injeta botão delete no galleryViewer após DOM ready */
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.createElement('button');
-  btn.id = 'gallery-delete-btn';
-  btn.textContent = '🗑 Remover foto';
-  btn.onclick = admDeleteCurrent;
-  document.getElementById('galleryViewer').appendChild(btn);
-});
-</script>
 
 <script>
 /* ══════════════════════════════════════════════
