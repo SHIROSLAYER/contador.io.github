@@ -435,6 +435,7 @@
     .n-promise-divider { width:60px; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
 
     /* — Mantidos do design original — */
+    .n-hero-sub { font-family:'Josefin Sans',sans-serif; font-size:.72rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(210,170,255,.5); margin-top:-.4rem; }
     .noivado-ring { font-size:4.5rem; animation:ring-spin 6s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(160,80,255,.7)); }
     @keyframes ring-spin { 0%,100%{transform:rotate(-5deg) scale(1)} 50%{transform:rotate(5deg) scale(1.08)} }
     .noivado-title { font-family:'Great Vibes',cursive; font-size:clamp(3rem,9vw,5.5rem); color:var(--blush); text-shadow:0 0 50px rgba(160,80,255,.7),0 0 100px rgba(160,80,255,.3); animation:title-glow 3s ease-in-out infinite alternate; }
@@ -442,6 +443,47 @@
     .noivado-badge { padding:.45rem 1.4rem; border:1px solid rgba(180,100,255,.4); color:rgba(255,255,255,.4); font-size:.65rem; letter-spacing:.35em; text-transform:uppercase; }
     .noivado-divider { display:flex; align-items:center; gap:.8rem; width:220px; }
     .noivado-divider span { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.5),transparent); }
+
+    /* ══ NOIVADO — Carta do Steve ══ */
+    .nv-letter-section { width:100%; min-height:100svh; display:flex; align-items:center; justify-content:center; padding:5rem 1.5rem; position:relative; background:linear-gradient(170deg,#08001c,#000c26); flex-shrink:0; }
+    .nv-letter-section::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(160,80,255,.14),transparent 65%); pointer-events:none; }
+    .nv-letter-card {
+      max-width:600px; width:100%;
+      background:linear-gradient(155deg,rgba(18,5,34,.95),rgba(8,2,20,.98));
+      border:1px solid rgba(160,80,255,.18);
+      border-top:2px solid rgba(212,136,154,.32);
+      border-radius:6px;
+      padding:3.4rem 3rem 2.8rem;
+      position:relative;
+      box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.5),0 0 80px rgba(160,80,255,.07);
+    }
+    .nv-letter-seal { position:absolute; top:-1.5rem; left:50%; transform:translateX(-50%); font-size:1.9rem; filter:drop-shadow(0 0 16px rgba(212,136,154,.7)); background:linear-gradient(160deg,#0e0320,#08011a); padding:0 1rem; }
+    .nv-letter-eyebrow { font-size:.54rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(180,100,255,.4); text-align:center; margin-bottom:2rem; }
+    .nv-letter-to { font-family:'Great Vibes',cursive; font-size:clamp(2.4rem,7vw,3.5rem); color:var(--blush); text-shadow:0 0 45px rgba(212,136,154,.4); text-align:center; line-height:1.15; margin-bottom:.7rem; }
+    .nv-letter-hdivider { width:70px; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.42),transparent); margin:0 auto 2.2rem; }
+    .nv-letter-body p { font-family:'Cormorant Garamond',serif; font-size:clamp(.96rem,2.5vw,1.1rem); font-weight:300; line-height:2.1; color:rgba(245,237,226,.68); margin-bottom:1.4rem; }
+    .nv-letter-body p:first-of-type::first-letter { font-size:1.7em; float:left; line-height:.82; margin-right:.07em; color:var(--rose); font-style:italic; font-family:'Cormorant Garamond',serif; }
+    .nv-letter-footer { margin-top:2.4rem; text-align:right; border-top:1px solid rgba(160,80,255,.1); padding-top:1.6rem; }
+    .nv-letter-closing { font-size:.53rem; letter-spacing:.38em; text-transform:uppercase; color:rgba(255,255,255,.18); margin-bottom:.5rem; }
+    .nv-letter-signature { font-family:'Great Vibes',cursive; font-size:2.6rem; color:var(--rose); text-shadow:0 0 22px rgba(212,136,154,.38); }
+    @media (max-width:480px) {
+      .nv-letter-card { padding:2.8rem 1.5rem 2.2rem; }
+      .nv-letter-to   { font-size:2rem; }
+    }
+
+    /* ══ NOIVADO — Anéis orbitais ao redor do botão ══ */
+    .nv-orbit-wrap { position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:0; }
+    .nv-orbit { position:absolute; top:50%; left:50%; border-radius:50%; border:1px solid transparent; }
+    .nv-orbit-1 { width:240px; height:90px; border-color:rgba(160,80,255,.2); animation:nv-orb 9s linear infinite; }
+    .nv-orbit-2 { width:310px; height:115px; border-color:rgba(212,136,154,.13); animation:nv-orb 15s linear infinite reverse; }
+    .nv-orbit-3 { width:400px; height:145px; border-color:rgba(160,80,255,.07); animation:nv-orb 22s linear infinite; }
+    @keyframes nv-orb { from{transform:translate(-50%,-50%) rotate(0)} to{transform:translate(-50%,-50%) rotate(360deg)} }
+    .nv-orbit::after { content:''; position:absolute; top:0; left:50%; transform:translate(-50%,-50%); border-radius:50%; }
+    .nv-orbit-1::after { width:7px; height:7px; background:rgba(180,100,255,.75); box-shadow:0 0 10px rgba(160,80,255,.6); }
+    .nv-orbit-2::after { width:5px; height:5px; background:rgba(212,136,154,.65); box-shadow:0 0 8px rgba(212,136,154,.5); }
+    .nv-orbit-3::after { width:4px; height:4px; background:rgba(180,100,255,.45); box-shadow:0 0 6px rgba(160,80,255,.4); }
+    .n-promise-section { overflow:visible; }
+    .n-promise-content { position:relative; z-index:1; }
 
     /* ══ NOIVAMOS — botão + OTP + celebration ══ */
     .eng-btn {
@@ -1297,22 +1339,44 @@
 <div class="page" id="pg-noivado">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
 
-  <!-- Seção 1 — Hero com partículas -->
+  <!-- ══ Seção 1 — Hero cinematográfico ══ -->
   <div class="n-section n-hero-section">
     <div class="noivado-particles" id="noivadoParticles"></div>
     <div class="n-hero-content">
-      <div class="noivado-ring">💍</div>
-      <h1 class="noivado-title">Noivado</h1>
-      <div class="noivado-divider">
+      <div class="noivado-ring" id="nv-ring">💍</div>
+      <h1 class="noivado-title" id="nv-title">Noivado</h1>
+      <div class="noivado-divider" id="nv-divider">
         <span></span>
         <span style="font-size:.8rem;color:rgba(180,100,255,.6)">✦</span>
         <span></span>
       </div>
-      <p class="n-scroll-hint">↓ role para ver</p>
+      <p class="n-hero-sub" id="nv-subtitle">A promessa eterna</p>
+      <p class="n-scroll-hint" id="nv-scroll-hint">↓ role para ver</p>
     </div>
   </div>
 
-  <!-- Seção 2 — ScrollTrigger Image Zoom -->
+  <!-- ══ Seção 2 — Carta do Steve ══ -->
+  <div class="nv-letter-section">
+    <div class="nv-letter-card" id="nv-letter-card">
+      <span class="nv-letter-seal">💍</span>
+      <p class="nv-letter-eyebrow">Uma mensagem para você</p>
+      <h2 class="nv-letter-to">Vitória,</h2>
+      <div class="nv-letter-hdivider"></div>
+      <div class="nv-letter-body">
+        <!-- ✏️ EDITE O TEXTO ABAIXO COM SUA MENSAGEM PESSOAL -->
+        <p>Existem momentos que a gente sente, antes mesmo de entender. Eu senti quando te vi — algo sem nome ainda, mas que o tempo foi tornando impossível de ignorar.</p>
+        <p>Não foi um amor barulhento. Cresceu devagar, como a luz antes do amanhecer: quase imperceptível, até que de repente o mundo estava completamente iluminado.</p>
+        <p>Você me escolheu nos dias difíceis. Me viu errar, me viu tentar de novo. E ficou. Isso é o que mais carrego: a certeza de que você me conhece de verdade — e ainda assim fica.</p>
+        <p>Por isso hoje, sem dúvidas e sem medo, eu te pergunto: quer construir o resto da nossa história comigo?</p>
+      </div>
+      <div class="nv-letter-footer">
+        <p class="nv-letter-closing">Com todo o amor que existe em mim</p>
+        <p class="nv-letter-signature">Steve</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Seção 3 — ScrollTrigger Image Zoom ══ -->
   <div class="n-zoom-wrap">
     <div class="n-zoom-img-container">
       <img class="n-zoom-img"
@@ -1331,9 +1395,15 @@
     </div>
   </div>
 
-  <!-- Seção 3 — Botão Noivamos -->
+  <!-- ══ Seção 4 — O Momento ══ -->
   <div class="n-section n-promise-section">
     <div class="n-promise-content">
+      <!-- Anéis orbitais decorativos -->
+      <div class="nv-orbit-wrap">
+        <div class="nv-orbit nv-orbit-1"></div>
+        <div class="nv-orbit nv-orbit-2"></div>
+        <div class="nv-orbit nv-orbit-3"></div>
+      </div>
       <span id="eng-ring-icon" style="font-size:3rem;filter:drop-shadow(0 0 20px rgba(180,100,255,.7))">💍</span>
       <div class="n-promise-divider"></div>
       <p class="n-promise-quote" id="eng-quote">"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."</p>
@@ -1610,6 +1680,7 @@ function goTo(id) {
   if (id === 'pg-noivado') {
     document.getElementById('pg-noivado').scrollTop = 0;
     setTimeout(initNoivadoAnimation, 400);
+    setTimeout(_nvHeroEntrance, 180);
   }
   currentPage = id;
 }
@@ -1876,7 +1947,81 @@ function initNoivadoAnimation() {
   .to('.n-zoom-text-2', { opacity: 1, y: 0,
       ease: 'power2.out', duration: 0.22 }, 0.78);
 
+  /* Revela a carta do Steve via scroll */
+  _nvLetterReveal(pg);
+
   ScrollTrigger.refresh();
+}
+
+/* ══════════════════════════════════════════════
+   NOIVADO — Hero entrance GSAP
+══════════════════════════════════════════════ */
+function _nvHeroEntrance() {
+  if (!window.gsap) { setTimeout(_nvHeroEntrance, 80); return; }
+
+  /* Char-split no título (só na primeira vez) */
+  var titleEl = document.getElementById('nv-title');
+  if (titleEl && !titleEl._nvSplit) {
+    titleEl._nvSplit = true;
+    var chars = titleEl.textContent.split('').map(function(c) {
+      var s = document.createElement('span');
+      s.style.cssText = 'display:inline-block';
+      s.textContent   = c;
+      return s;
+    });
+    titleEl.innerHTML = '';
+    chars.forEach(function(s) { titleEl.appendChild(s); });
+  }
+
+  var tl = gsap.timeline({ delay:.05 });
+  tl
+    .fromTo('#nv-ring',
+      { scale:.08, opacity:0, rotation:-22 },
+      { scale:1, opacity:1, rotation:0, duration:1.1, ease:'elastic.out(1,.48)' })
+    .fromTo('#nv-title span',
+      { y:60, opacity:0 },
+      { y:0, opacity:1, stagger:.058, duration:.52, ease:'power3.out' }, '-=.62')
+    .fromTo('#nv-divider',
+      { scaleX:0, opacity:0 },
+      { scaleX:1, opacity:1, duration:.55, ease:'power2.out', transformOrigin:'center center' }, '-=.28')
+    .fromTo('#nv-subtitle',
+      { y:18, opacity:0 },
+      { y:0, opacity:1, duration:.45, ease:'power2.out' }, '-=.32')
+    .fromTo('#nv-scroll-hint',
+      { opacity:0, y:10 },
+      { opacity:1, y:0, duration:.4, ease:'power2.out' }, '-=.18');
+}
+
+/* ══════════════════════════════════════════════
+   NOIVADO — Carta: reveal via ScrollTrigger
+══════════════════════════════════════════════ */
+function _nvLetterReveal(pg) {
+  /* Estado inicial: carta invisível */
+  gsap.set('#nv-letter-card', { opacity:0, y:60, scale:.97 });
+  var innerEls = Array.from(document.querySelectorAll(
+    '.nv-letter-to,.nv-letter-hdivider,.nv-letter-body p,.nv-letter-footer'
+  ));
+  gsap.set(innerEls, { opacity:0, y:24 });
+
+  /* Card inteiro sobe quando entra na tela */
+  gsap.to('#nv-letter-card', {
+    opacity:1, y:0, scale:1, duration:1, ease:'power3.out',
+    scrollTrigger:{
+      trigger:'#nv-letter-card', scroller:pg,
+      start:'top 82%', toggleActions:'play none none none'
+    }
+  });
+
+  /* Elementos internos com stagger após o card aparecer */
+  innerEls.forEach(function(el, i) {
+    gsap.to(el, {
+      opacity:1, y:0, duration:.65, ease:'power2.out', delay: i * .09,
+      scrollTrigger:{
+        trigger:'#nv-letter-card', scroller:pg,
+        start:'top 70%', toggleActions:'play none none none'
+      }
+    });
+  });
 }
 
 /* ══════════════════════════════════════════════
