@@ -470,6 +470,17 @@
       .nv-letter-card { padding:2.8rem 1.5rem 2.2rem; }
       .nv-letter-to   { font-size:2rem; }
     }
+    /* ── Botão editar carta (admin) ── */
+    .nv-edit-btn { position:absolute; top:.65rem; left:.65rem; display:none; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(160,80,255,.14); border:1px solid rgba(160,80,255,.28); border-radius:7px; color:rgba(190,140,255,.7); font-size:.85rem; cursor:pointer; transition:all .22s; z-index:5; }
+    .nv-edit-btn:hover { background:rgba(160,80,255,.3); color:white; border-color:rgba(180,100,255,.65); transform:scale(1.1); }
+    .nv-letter-card.editing { border-color:rgba(160,80,255,.4); box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.5),0 0 35px rgba(160,80,255,.18); }
+    .nv-letter-card.editing [contenteditable="true"] { outline:none; border-bottom:1px dashed rgba(160,80,255,.4); padding-bottom:2px; cursor:text; min-height:1em; }
+    .nv-edit-toolbar { position:absolute; bottom:-3rem; left:50%; transform:translateX(-50%); display:none; gap:.5rem; white-space:nowrap; z-index:10; }
+    .nv-edit-save,.nv-edit-cancel { padding:.38rem 1.1rem; border-radius:20px; font-family:'Josefin Sans',sans-serif; font-size:.56rem; letter-spacing:.22em; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+    .nv-edit-save   { background:rgba(80,190,80,.14); border:1px solid rgba(100,210,100,.32); color:rgba(140,230,140,.8); }
+    .nv-edit-save:hover { background:rgba(80,190,80,.26); color:white; }
+    .nv-edit-cancel { background:rgba(200,80,80,.12); border:1px solid rgba(220,100,100,.28); color:rgba(230,140,140,.75); }
+    .nv-edit-cancel:hover { background:rgba(200,80,80,.22); color:white; }
 
     /* ══ NOIVADO — Anéis orbitais ao redor do botão ══ */
     .nv-orbit-wrap { position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:0; }
@@ -1387,6 +1398,11 @@
   <!-- ══ Seção 3 — Carta do Steve ══ -->
   <div class="nv-letter-section">
     <div class="nv-letter-card" id="nv-letter-card">
+      <button class="nv-edit-btn" id="nv-letter-edit-btn" onclick="nvStartEdit()" title="Editar carta">✏️</button>
+      <div class="nv-edit-toolbar" id="nv-edit-toolbar">
+        <button class="nv-edit-save"   onclick="nvSaveEdit()">💾 Salvar</button>
+        <button class="nv-edit-cancel" onclick="nvCancelEdit()">✕ Cancelar</button>
+      </div>
       <span class="nv-letter-seal">💍</span>
       <p class="nv-letter-eyebrow">Uma mensagem para você</p>
       <h2 class="nv-letter-to">Vitória,</h2>
@@ -2447,6 +2463,7 @@ let _admFiles     = [];
   _loadSeletorPhotos();   // cards do carrossel
   _loadNoivadoHero();     // zoom hero do Noivado
   _engLoadState();        // estado do botão Noivamos
+  _nvLoadLetterContent(); // texto salvo da carta
 })();
 
 /* ── Carregar fotos dos cards Seletor do Supabase ── */
@@ -2521,13 +2538,15 @@ function _admShowUI() {
   document.getElementById('adm-trigger').style.opacity = '0.45';
   document.getElementById('galleryViewer').classList.add('adm-mode');
   _admShowCardEdits();
-  _admInjectDelButtons();   // injeta botões ✕ nos thumbs agora
+  _admInjectDelButtons();
+  _nvShowLetterEditBtn();
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
   document.getElementById('adm-trigger').style.opacity = '';
   document.getElementById('galleryViewer').classList.remove('adm-mode');
   _admHideCardEdits();
+  _nvHideLetterEditBtn();
   _admRemoveDelButtons();   // remove botões ✕ do DOM completamente
 }
 
@@ -2925,6 +2944,105 @@ async function admDeletePhoto(id, path, thumbEl) {
 
 /* Manter compatibilidade (admin bar ainda chama admDeleteCurrent em alguns contextos) */
 function admDeleteCurrent() {}
+
+/* ══════════════════════════════════════════════
+   CARTA — Edição inline pelo admin
+══════════════════════════════════════════════ */
+var _nvEditOriginal = null;
+
+function _nvShowLetterEditBtn() {
+  var btn = document.getElementById('nv-letter-edit-btn');
+  if (btn) btn.style.display = 'flex';
+}
+function _nvHideLetterEditBtn() {
+  nvCancelEdit();
+  var btn = document.getElementById('nv-letter-edit-btn');
+  if (btn) btn.style.display = 'none';
+}
+
+function nvStartEdit() {
+  var card = document.getElementById('nv-letter-card');
+  var body = card.querySelector('.nv-letter-body');
+  var sig  = card.querySelector('.nv-letter-signature');
+  /* Guarda original para cancelar */
+  _nvEditOriginal = { body: body.innerHTML, sig: sig.textContent };
+  /* Torna editável */
+  Array.from(body.querySelectorAll('p')).forEach(function(p) { p.contentEditable = 'true'; });
+  sig.contentEditable = 'true';
+  card.classList.add('editing');
+  /* Mostra toolbar, esconde lápis */
+  document.getElementById('nv-edit-toolbar').style.display = 'flex';
+  document.getElementById('nv-letter-edit-btn').style.display = 'none';
+  /* Foca no primeiro parágrafo */
+  var first = body.querySelector('p');
+  if (first) { first.focus(); placeCursorAtEnd(first); }
+}
+
+async function nvSaveEdit() {
+  var card = document.getElementById('nv-letter-card');
+  var body = card.querySelector('.nv-letter-body');
+  var sig  = card.querySelector('.nv-letter-signature');
+  /* Coleta parágrafos */
+  var paragraphs = Array.from(body.querySelectorAll('p')).map(function(p) {
+    p.contentEditable = 'false'; return p.innerHTML;
+  });
+  sig.contentEditable = 'false';
+  var payload = JSON.stringify({ paragraphs: paragraphs, signature: sig.textContent.trim() });
+  var saveBtn = document.querySelector('.nv-edit-save');
+  saveBtn.textContent = '...'; saveBtn.disabled = true;
+  try {
+    await _SB.from('project_configs').upsert([{ key:'letter_content', value:payload, updated_at:new Date().toISOString() }]);
+  } catch(e) { alert('Erro ao salvar: ' + (e.message || e)); saveBtn.textContent='💾 Salvar'; saveBtn.disabled=false; return; }
+  card.classList.remove('editing');
+  document.getElementById('nv-edit-toolbar').style.display = 'none';
+  saveBtn.textContent = '💾 Salvar'; saveBtn.disabled = false;
+  document.getElementById('nv-letter-edit-btn').style.display = 'flex';
+  _nvEditOriginal = null;
+}
+
+function nvCancelEdit() {
+  if (!_nvEditOriginal) return;
+  var card = document.getElementById('nv-letter-card');
+  var body = card.querySelector('.nv-letter-body');
+  var sig  = card.querySelector('.nv-letter-signature');
+  body.innerHTML = _nvEditOriginal.body;
+  sig.textContent = _nvEditOriginal.sig;
+  sig.contentEditable = 'false';
+  card.classList.remove('editing');
+  document.getElementById('nv-edit-toolbar').style.display = 'none';
+  if (_admSession) document.getElementById('nv-letter-edit-btn').style.display = 'flex';
+  _nvEditOriginal = null;
+}
+
+/* Coloca cursor no fim do elemento */
+function placeCursorAtEnd(el) {
+  try {
+    var r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  } catch(e) {}
+}
+
+/* Carrega texto salvo da carta ao iniciar */
+async function _nvLoadLetterContent() {
+  try {
+    var res = await _SB.from('project_configs').select('value').eq('key','letter_content').single();
+    if (!res.data || !res.data.value) return;
+    var content = JSON.parse(res.data.value);
+    var body = document.querySelector('#nv-letter-card .nv-letter-body');
+    var sig  = document.querySelector('#nv-letter-card .nv-letter-signature');
+    if (body && content.paragraphs && content.paragraphs.length) {
+      var ps = Array.from(body.querySelectorAll('p'));
+      /* Ajusta quantidade de parágrafos se necessário */
+      while (ps.length < content.paragraphs.length) {
+        var newP = document.createElement('p'); body.appendChild(newP); ps.push(newP);
+      }
+      content.paragraphs.forEach(function(html, i) { if (ps[i]) ps[i].innerHTML = html; });
+      /* Remove parágrafos excedentes */
+      for (var i = content.paragraphs.length; i < ps.length; i++) ps[i].remove();
+    }
+    if (sig && content.signature) sig.textContent = content.signature;
+  } catch(e) {}
+}
 
 /* ══════════════════════════════════════════════
    ENGAGEMENT — Sistema Noivamos!
