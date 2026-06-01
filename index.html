@@ -695,9 +695,19 @@
     #lb-next { right:1rem; }
     #lb-counter { position:absolute; bottom:1.2rem; left:50%; transform:translateX(-50%); font-size:.65rem; letter-spacing:.25em; color:rgba(255,255,255,.3); }
 
-    /* ══ FLIP CLOCK ══ */
-    .cd-num.flip { animation:flip-num .32s ease forwards; }
-    @keyframes flip-num { 0%{opacity:1;transform:translateY(0)} 38%{opacity:0;transform:translateY(-7px)} 62%{opacity:0;transform:translateY(7px)} 100%{opacity:1;transform:translateY(0)} }
+    /* ══ COUNTDOWN — slot machine GSAP ══ */
+    /* Linha central — visual flip clock clássico */
+    .cd-unit::after {
+      content:''; position:absolute; left:0; right:0; top:calc(50% + .6rem);
+      height:1px; background:rgba(0,0,0,.55); z-index:4; pointer-events:none;
+    }
+    /* Glow rose quando número muda */
+    @keyframes cd-pulse {
+      0%   { border-color:rgba(200,140,160,.14); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4); }
+      40%  { border-color:rgba(212,136,154,.55); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4),0 0 22px rgba(212,136,154,.32),0 0 44px rgba(212,136,154,.14); }
+      100% { border-color:rgba(200,140,160,.14); box-shadow:0 6px 28px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.055),0 0 0 1px rgba(0,0,0,.4); }
+    }
+    .cd-unit.cd-changed { animation:cd-pulse .65s ease forwards; }
 
     /* ══ MUSIC PROGRESS ══ */
     .music-progress-outer { width:160px; height:2px; background:rgba(255,255,255,.1); border-radius:2px; margin:.55rem auto 0; overflow:hidden; }
@@ -1532,16 +1542,35 @@ function toggleMusic() {
 ══════════════════════════════════════════════ */
 const START_DATE = new Date("2024-09-04T00:00:00"); // ← ALTERE AQUI
 
+/* Slot machine: número sai pra cima, novo entra de baixo */
+function _animateNumber(el, newVal) {
+  if (el.textContent === newVal) return;
+  var unit = el.closest ? el.closest('.cd-unit') : null;
+  if (unit) { unit.classList.remove('cd-changed'); void unit.offsetWidth; unit.classList.add('cd-changed'); }
+  if (!window.gsap) { el.textContent = newVal; return; }
+  gsap.killTweensOf(el);
+  gsap.to(el, {
+    y: -18, opacity: 0, duration: .14, ease: 'power2.in',
+    onComplete: function() {
+      el.textContent = newVal;
+      gsap.fromTo(el,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: .26, ease: 'back.out(2.4)' }
+      );
+    }
+  });
+}
+
 function updateCountdown() {
   const diff = Math.floor((new Date() - START_DATE) / 1000);
   if (diff < 0) return;
   const p = n => String(n).padStart(2, '0');
-  document.getElementById('cd-anos').textContent  = p(Math.floor(diff / (365.25*24*3600)));
-  document.getElementById('cd-meses').textContent = p(Math.floor(diff / (30.44*24*3600)) % 12);
-  document.getElementById('cd-dias').textContent  = p(Math.floor(diff / (24*3600)) % 30);
-  document.getElementById('cd-horas').textContent = p(Math.floor(diff / 3600) % 24);
-  document.getElementById('cd-min').textContent   = p(Math.floor(diff / 60) % 60);
-  document.getElementById('cd-seg').textContent   = p(diff % 60);
+  _animateNumber(document.getElementById('cd-anos'),  p(Math.floor(diff / (365.25*24*3600))));
+  _animateNumber(document.getElementById('cd-meses'), p(Math.floor(diff / (30.44*24*3600)) % 12));
+  _animateNumber(document.getElementById('cd-dias'),  p(Math.floor(diff / (24*3600)) % 30));
+  _animateNumber(document.getElementById('cd-horas'), p(Math.floor(diff / 3600) % 24));
+  _animateNumber(document.getElementById('cd-min'),   p(Math.floor(diff / 60) % 60));
+  _animateNumber(document.getElementById('cd-seg'),   p(diff % 60));
 }
 setInterval(updateCountdown, 1000);
 updateCountdown();
@@ -1987,20 +2016,6 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
   }
 });
 
-/* ══════════════════════════════════════════════
-   FLIP CLOCK — detecta mudança e anima
-══════════════════════════════════════════════ */
-(function() {
-  ['cd-anos','cd-meses','cd-dias','cd-horas','cd-min','cd-seg'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    new MutationObserver(function() {
-      el.classList.remove('flip');
-      void el.offsetWidth;
-      el.classList.add('flip');
-    }).observe(el, { childList: true, characterData: true, subtree: true });
-  });
-})();
 </script>
 <script>
 /* ══════════════════════════════════════════════
