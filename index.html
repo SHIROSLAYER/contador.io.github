@@ -318,7 +318,6 @@
       transition:background .2s; backdrop-filter:blur(4px);
     }
     .thumb-del:hover { background:rgba(200,0,0,.96); }
-    .gallery-viewer.adm-mode .thumb-del { display:flex; }
 
     /* Placeholder mosaico */
     .gallery-mosaic-ph {
@@ -2235,12 +2234,34 @@ function _admShowUI() {
   document.getElementById('adm-trigger').style.opacity = '0.45';
   document.getElementById('galleryViewer').classList.add('adm-mode');
   _admShowCardEdits();
+  _admInjectDelButtons();   // injeta botões ✕ nos thumbs agora
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
   document.getElementById('adm-trigger').style.opacity = '';
   document.getElementById('galleryViewer').classList.remove('adm-mode');
   _admHideCardEdits();
+  _admRemoveDelButtons();   // remove botões ✕ do DOM completamente
+}
+
+/* Injeta botão ✕ em cada thumb (chamado ao logar) */
+function _admInjectDelButtons() {
+  document.querySelectorAll('#galleryViewer .gallery-thumb').forEach(function(thumb) {
+    if (thumb.querySelector('.thumb-del')) return; // já tem
+    var id   = thumb.dataset.photoId;
+    var path = thumb.dataset.photoPath;
+    var btn  = document.createElement('button');
+    btn.className = 'thumb-del';
+    btn.innerHTML = '✕';
+    btn.title     = 'Remover foto';
+    btn.onclick   = function(e) { e.stopPropagation(); admDeletePhoto(id, path, thumb); };
+    thumb.appendChild(btn);
+  });
+}
+
+/* Remove todos os botões ✕ do DOM (chamado ao sair) */
+function _admRemoveDelButtons() {
+  document.querySelectorAll('#galleryViewer .thumb-del').forEach(function(b) { b.remove(); });
 }
 
 /* ════════════════════════════════════════════════════
@@ -2583,19 +2604,9 @@ async function _admLoadGallery(page) {
       badge.className = 'thumb-num';
       badge.textContent = '#' + String(photo.photo_number).padStart(4,'0');
 
-      /* Botão deletar (só visível em adm-mode) */
-      const del = document.createElement('button');
-      del.className = 'thumb-del';
-      del.innerHTML = '✕';
-      del.title = 'Remover foto';
-      del.onclick = function(e) {
-        e.stopPropagation();
-        admDeletePhoto(photo.id, photo.storage_path, thumb);
-      };
-
       thumb.appendChild(img);
       thumb.appendChild(badge);
-      thumb.appendChild(del);
+      // del button é injetado por _admShowUI — nunca fica no DOM para visitantes normais
       viewer.insertBefore(thumb, ph);
       newThumbs.push(thumb);
     });
