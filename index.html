@@ -3091,7 +3091,7 @@ function _esc(s) {
 /* Injeta botão 📷 em cada card (incluindo card-3 quando desbloqueado) */
 function _admShowCardEdits() {
   var toEdit = [0, 1, 2];
-  if (_engActivated || _engTestMode) toEdit.push(3);
+  if (_engActivated || _engTestUnlocked) toEdit.push(3);
   toEdit.forEach(function(idx) {
     var card = document.getElementById('card-' + idx);
     if (!card || card.style.display === 'none' || card.querySelector('.card-edit-btn')) return;
@@ -4055,9 +4055,10 @@ async function _nvLoadLetterContent() {
 /* ══════════════════════════════════════════════
    ENGAGEMENT — Sistema Noivamos!
 ══════════════════════════════════════════════ */
-var _engActivated        = false;
-var _engDate             = null;
-var _engTestMode         = false;
+var _engActivated         = false;
+var _engDate              = null;
+var _engTestMode          = false;
+var _engTestUnlocked      = false; /* test mode: usuário já passou pelo fluxo de desbloqueio */
 var _engCountdownInterval = null;
 
 async function _engLoadState() {
@@ -4125,66 +4126,70 @@ function engToggleTestMode() {
   var badge = document.getElementById('eng-test-badge');
   _engTestMode = !_engTestMode;
   if (_engTestMode) {
-    /* Data falsa: 2 dias e 7 horas atrás para mostrar valores não-zero */
-    var fakeDate = new Date(Date.now() - (2*24*3600 + 7*3600 + 42*60 + 18) * 1000).toISOString();
-    _engActivateVisuals(fakeDate);
-    _engRevealConstellationCard(true); /* mostra card constelação no modo teste */
+    /* Ativa modo teste — mantém tudo BLOQUEADO.
+       O desbloqueio acontece ao clicar "💍 Noivamos!" (pula o OTP). */
     btn.textContent = '🧪 Sair Teste';
     btn.style.borderColor = 'rgba(255,200,60,.55)';
     if (badge) badge.style.display = 'block';
-    var unlockBtn = document.getElementById('adm-unlock-btn');
-    if (unlockBtn) unlockBtn.style.display = '';
-    goTo('pg-noivado');
+    /* Não chama _engActivateVisuals nem _engRevealConstellationCard */
   } else {
-    /* Reverte tudo */
-    if (_engCountdownInterval) { clearInterval(_engCountdownInterval); _engCountdownInterval = null; }
-    _engDate = null;
-    /* Reinicia namoro */
-    if (!_countdownInterval) {
-      _countdownInterval = setInterval(updateCountdown, 1000);
-      updateCountdown();
-    }
-    /* Esconde frozen label */
-    var fl = document.getElementById('namoro-frozen-label');
-    if (fl) fl.style.display = 'none';
-    /* Reverte botão */
-    var engBtn = document.getElementById('eng-btn');
-    var quote  = document.getElementById('eng-quote');
-    if (engBtn) { engBtn.classList.remove('activated'); engBtn.textContent = '💍 Noivamos!'; engBtn.onclick = engOpenModal; }
-    if (quote)  { quote.innerHTML = '"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."'; }
-    /* Esconde contador */
-    var wrap  = document.getElementById('eng-countdown');
-    var label = document.getElementById('enc-label');
-    if (wrap)  wrap.style.display  = 'none';
-    if (label) label.style.display = 'none';
-    /* Esconde seção Aurora e para canvas */
-    var actSection = document.getElementById('nv-act-section');
-    if (actSection) {
-      if (window.gsap) {
-        gsap.to(actSection, { opacity:0, duration:.4, ease:'power2.in', onComplete:function() {
-          actSection.style.display = 'none';
-          gsap.set(actSection, { opacity:1 });
-        }});
-      } else { actSection.style.display = 'none'; }
-    }
-    if (typeof _nvAuroraRAF !== 'undefined' && _nvAuroraRAF) {
-      cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null;
-    }
-    _nvHideActMsgEdit();
-    /* Volta ao topo da página de noivado */
-    var pg = document.getElementById('pg-noivado');
-    if (pg) { if (window.gsap) { gsap.to(pg, { scrollTop:0, duration:.8, ease:'power2.inOut' }); } else { pg.scrollTop = 0; } }
+    /* Sai do modo teste — reverte tudo se o fluxo foi rodado */
+    _engTestMode = false;
+    if (_engTestUnlocked) { _engTestRevert(); }
+    _engTestUnlocked = false;
     btn.textContent = '🧪 Modo Teste';
     btn.style.borderColor = '';
     if (badge) badge.style.display = 'none';
-    var unlockBtn = document.getElementById('adm-unlock-btn');
-    if (unlockBtn) unlockBtn.style.display = 'none';
-    /* Remove card-3 do carousel e esconde */
-    var c3 = document.getElementById('card-3');
-    if (c3) { c3.style.display = 'none'; c3.classList.remove('unlocked'); }
-    cardOrder = cardOrder.filter(function(i) { return i !== 3; });
-    renderCards();
   }
+}
+
+/* Reverte todos os visuais ativados durante o teste */
+function _engTestRevert() {
+  if (_engCountdownInterval) { clearInterval(_engCountdownInterval); _engCountdownInterval = null; }
+  _engDate = null;
+  /* Reinicia countdown de namoro */
+  if (!_countdownInterval) {
+    _countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+  }
+  /* Esconde frozen label */
+  var fl = document.getElementById('namoro-frozen-label');
+  if (fl) fl.style.display = 'none';
+  /* Reverte botão Noivamos */
+  var engBtn = document.getElementById('eng-btn');
+  var quote  = document.getElementById('eng-quote');
+  if (engBtn) { engBtn.classList.remove('activated'); engBtn.textContent = '💍 Noivamos!'; engBtn.onclick = engOpenModal; }
+  if (quote)  { quote.innerHTML = '"Um capítulo que ainda está sendo escrito<br>com todo o amor do mundo..."'; }
+  /* Esconde countdown de noivado */
+  var wrap  = document.getElementById('eng-countdown');
+  var label = document.getElementById('enc-label');
+  if (wrap)  wrap.style.display  = 'none';
+  if (label) label.style.display = 'none';
+  /* Esconde seção Aurora e para canvas */
+  var actSection = document.getElementById('nv-act-section');
+  if (actSection) {
+    if (window.gsap) {
+      gsap.to(actSection, { opacity:0, duration:.4, ease:'power2.in', onComplete:function() {
+        actSection.style.display = 'none';
+        gsap.set(actSection, { opacity:1 });
+      }});
+    } else { actSection.style.display = 'none'; }
+  }
+  if (typeof _nvAuroraRAF !== 'undefined' && _nvAuroraRAF) {
+    cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null;
+  }
+  _nvHideActMsgEdit();
+  /* Volta ao topo da página de noivado */
+  var pg = document.getElementById('pg-noivado');
+  if (pg) { if (window.gsap) { gsap.to(pg, { scrollTop:0, duration:.8, ease:'power2.inOut' }); } else { pg.scrollTop = 0; } }
+  /* Esconde botão animação */
+  var unlockBtn = document.getElementById('adm-unlock-btn');
+  if (unlockBtn) unlockBtn.style.display = 'none';
+  /* Remove card-3 do carousel e esconde */
+  var c3 = document.getElementById('card-3');
+  if (c3) { c3.style.display = 'none'; c3.classList.remove('unlocked'); }
+  cardOrder = cardOrder.filter(function(i) { return i !== 3; });
+  renderCards();
 }
 
 /* ── Animação de desbloqueio (uma vez na vida real, replay no teste) ── */
@@ -4482,6 +4487,12 @@ function _engUnlockCanvas() {
 
 function engOpenModal() {
   if (_engActivated) return;
+  /* Modo teste: pula OTP e vai direto para a animação de desbloqueio */
+  if (_engTestMode && !_engTestUnlocked) {
+    _engPlayUnlock(function() { _engTestActivate(); });
+    return;
+  }
+  if (_engTestUnlocked) return; /* já desbloqueado no teste — não abre modal */
   var overlay = document.getElementById('eng-modal');
   overlay.classList.add('open');
   var inputs = Array.from(overlay.querySelectorAll('.eng-otp-input'));
@@ -4557,6 +4568,20 @@ async function _engActivate() {
   _engPlayCelebration(now);
 }
 
+/* Versão teste: idêntico a _engActivate mas SEM salvar no banco e SEM setar _engActivated */
+function _engTestActivate() {
+  /* Data falsa: 2 dias e 7 horas atrás para o contador mostrar valores não-zero */
+  var fakeDate = new Date(Date.now() - (2*24*3600 + 7*3600 + 42*60 + 18) * 1000).toISOString();
+  _engTestUnlocked = true;
+  _engDate = fakeDate;
+  _engActivateVisuals(fakeDate);
+  _engRevealConstellationCard(true);
+  _engPlayCelebration(fakeDate);
+  /* Mostra botão de replay da animação para o admin */
+  var unlockBtn = document.getElementById('adm-unlock-btn');
+  if (unlockBtn) unlockBtn.style.display = '';
+}
+
 /* ── Revela o card da Constelação no seletor ── */
 function _engRevealConstellationCard(firstTime) {
   var card = document.getElementById('card-3');
@@ -4620,12 +4645,12 @@ function engCloseCelebration() {
       onComplete:function(){
         cel.classList.remove('open');
         gsap.set(cel, {opacity:1});
-        if (_engActivated) _nvRevealActivatedSection();
+        if (_engActivated || _engTestUnlocked) _nvRevealActivatedSection();
       }
     });
   } else {
     cel.classList.remove('open');
-    if (_engActivated) _nvRevealActivatedSection();
+    if (_engActivated || _engTestUnlocked) _nvRevealActivatedSection();
   }
 }
 
