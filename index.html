@@ -780,6 +780,20 @@
     .letter-color-btn.active { transform:scale(1.22); border-color:rgba(255,255,255,.65); box-shadow:0 0 10px rgba(255,255,255,.4); }
     .letter-surprise-row { display:flex; align-items:center; gap:.55rem; margin:.2rem 0 .8rem; font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.1em; color:rgba(200,180,255,.65); cursor:pointer; }
     .letter-surprise-row input { accent-color:rgba(212,136,154,.9); width:14px; height:14px; cursor:pointer; }
+    /* ── Foto nas cartas ── */
+    .letter-photo-upload { display:block; width:100%; cursor:pointer; margin:.35rem 0 .3rem; position:relative; border-radius:10px; overflow:hidden; }
+    .letter-photo-upload input[type="file"] { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2; }
+    .letter-photo-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.32rem; padding:1rem; background:rgba(255,255,255,.04); border:1.5px dashed rgba(212,136,154,.28); border-radius:10px; transition:border-color .22s,background .22s; }
+    .letter-photo-upload:hover .letter-photo-placeholder { border-color:rgba(212,136,154,.55); background:rgba(212,136,154,.06); }
+    .letter-photo-icon { font-size:1.35rem; }
+    .letter-photo-placeholder span:last-child { font-family:'Josefin Sans',sans-serif; font-size:.5rem; letter-spacing:.18em; color:rgba(212,136,154,.4); text-transform:uppercase; }
+    img.letter-photo-preview { width:100%; max-height:160px; object-fit:cover; border-radius:8px; display:block; }
+    .letter-photo-clear { background:none; border:1px solid rgba(255,80,80,.25); color:rgba(255,110,110,.5); font-family:'Josefin Sans',sans-serif; font-size:.48rem; letter-spacing:.15em; padding:.26rem .7rem; cursor:pointer; border-radius:20px; transition:all .2s; margin-bottom:.55rem; }
+    .letter-photo-clear:hover { border-color:rgba(255,110,110,.5); color:rgba(255,150,150,.82); }
+    /* Foto exibida no card aberto */
+    .letter-open-photo { margin:.85rem 0 .4rem; border-radius:14px; overflow:hidden; box-shadow:0 6px 28px rgba(0,0,0,.6),0 0 0 1px rgba(212,136,154,.1); position:relative; }
+    .letter-open-photo::before { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 65%,rgba(10,3,20,.65)); pointer-events:none; z-index:1; }
+    .letter-open-photo img { width:100%; display:block; max-height:280px; object-fit:cover; }
 
     /* Admin edit overlay */
     .const-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
@@ -1835,6 +1849,9 @@
     <h3 class="letter-open-title" id="letter-open-title"></h3>
     <div class="letter-open-divider"></div>
     <div class="letter-open-text" id="letter-open-text"></div>
+    <div class="letter-open-photo" id="letter-open-photo" style="display:none">
+      <img id="letter-open-photo-img" alt="Foto da carta">
+    </div>
     <p class="letter-open-sig">Com todo o meu amor, Steven 💕</p>
   </div>
 
@@ -1875,6 +1892,16 @@
         <button class="letter-color-btn"        data-color="teal"   style="background:#4bb9b9" onclick="letterSelColor(this,'teal')"></button>
         <button class="letter-color-btn"        data-color="blue"   style="background:#6491dc" onclick="letterSelColor(this,'blue')"></button>
       </div>
+      <span class="letter-adm-label">Foto (opcional)</span>
+      <label class="letter-photo-upload" id="ladd-photo-label">
+        <input type="file" id="ladd-photo" accept="image/*" onchange="letterPhotoPreview(this)">
+        <div class="letter-photo-placeholder" id="ladd-photo-ph">
+          <span class="letter-photo-icon">📷</span>
+          <span>Toque para adicionar foto</span>
+        </div>
+        <img class="letter-photo-preview" id="ladd-photo-prev" alt="" style="display:none">
+      </label>
+      <button class="letter-photo-clear" id="ladd-photo-clear" onclick="letterPhotoClear()" style="display:none">✕ Remover foto</button>
       <label class="letter-surprise-row">
         <input type="checkbox" id="ladd-surprise">
         ✨ Carta surpresa — cartão holográfico especial
@@ -3715,6 +3742,18 @@ function _letterShowCard(idx) {
   document.getElementById('letter-open-seal').textContent  = letter.seal  || '💌';
   document.getElementById('letter-open-title').textContent = letter.title || '';
   document.getElementById('letter-open-text').textContent  = letter.content || '';
+  /* Foto da carta */
+  var _opPhoto    = document.getElementById('letter-open-photo');
+  var _opPhotoImg = document.getElementById('letter-open-photo-img');
+  if (_opPhoto && _opPhotoImg) {
+    if (letter.photo_url) {
+      _opPhotoImg.src = letter.photo_url;
+      _opPhoto.style.display = 'block';
+    } else {
+      _opPhoto.style.display = 'none';
+      _opPhotoImg.src = '';
+    }
+  }
   var card     = document.getElementById('letter-open-card');
   var backdrop = document.getElementById('letter-open-backdrop');
   if (backdrop) backdrop.classList.add('open');
@@ -3747,10 +3786,24 @@ function letterAdmOpen() {
   _letterData.forEach(function(letter, idx) {
     var item = document.createElement('div');
     item.className = 'letter-adm-item';
+    var photoHtml = '';
+    if (letter.photo_url) {
+      photoHtml = '<div style="margin:.35rem 0">'
+        + '<img src="'+_lEsc(letter.photo_url)+'" alt="" style="width:100%;max-height:100px;object-fit:cover;border-radius:7px;display:block;margin-bottom:.35rem">'
+        + '<button class="letter-photo-clear" onclick="letterAdmRemovePhoto('+idx+')" style="display:inline-block">✕ Remover foto</button>'
+        + '</div>';
+    }
     item.innerHTML = '<span class="letter-adm-label">Carta '+(idx+1)+'</span>'
       + '<input class="letter-adm-input" id="ladm-title-'+idx+'" type="text" placeholder="Título" value="'+_lEsc(letter.title)+'">'
       + '<input class="letter-adm-input" id="ladm-seal-'+idx+'"  type="text" placeholder="Emoji" value="'+_lEsc(letter.seal)+'" style="width:90px">'
       + '<textarea class="letter-adm-input" id="ladm-content-'+idx+'" rows="4" placeholder="Conteúdo...">'+_lEsc(letter.content)+'</textarea>'
+      + '<span class="letter-adm-label" style="margin-top:.35rem">Foto</span>'
+      + photoHtml
+      + '<label class="letter-photo-upload" style="margin:.2rem 0 .4rem">'
+      + '<input type="file" id="ladm-photo-'+idx+'" accept="image/*" onchange="letterAdmPhotoPreview(this,'+idx+')" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2">'
+      + '<div class="letter-photo-placeholder" id="ladm-photo-ph-'+idx+'" style="border-radius:8px"><span class="letter-photo-icon" style="font-size:1.1rem">📷</span><span style="font-family:\'Josefin Sans\',sans-serif;font-size:.48rem;letter-spacing:.15em;color:rgba(212,136,154,.4);text-transform:uppercase">'+(letter.photo_url?'Trocar foto':'Adicionar foto')+'</span></div>'
+      + '<img class="letter-photo-preview" id="ladm-photo-prev-'+idx+'" alt="" style="display:none">'
+      + '</label>'
       + '<div class="letter-adm-item-actions"><button class="letter-adm-save-btn" onclick="letterAdmSave('+idx+')">Salvar ✓</button></div>';
     list.appendChild(item);
   });
@@ -3769,20 +3822,66 @@ async function letterAdmSave(idx) {
   var content = document.getElementById('ladm-content-'+idx).value;
   if (!title || !content) { alert('Preencha título e conteúdo.'); return; }
   letter.title = title; letter.seal = seal; letter.content = content;
+
+  /* Upload de nova foto se selecionada */
+  var photoInput = document.getElementById('ladm-photo-'+idx);
+  if (photoInput && photoInput.files && photoInput.files[0]) {
+    try {
+      var webpBlob = await _toWebP(photoInput.files[0], 0.82);
+      var photoName = 'cartas/' + Date.now() + '_' + Math.random().toString(36).slice(2,7) + '.webp';
+      var upResult = await _SB.storage.from('gallery').upload(photoName, webpBlob, { contentType:'image/webp', upsert:false });
+      if (!upResult.error) {
+        var urlResult = _SB.storage.from('gallery').getPublicUrl(photoName);
+        letter.photo_url = urlResult.data.publicUrl;
+      }
+    } catch(e) { /* ignora erro de foto */ }
+  }
+
   try {
     await _SB.from('love_letters').upsert(
-      { id: letter.id, order_num: letter.order_num, title: title, content: content, seal: seal, color_key: letter.color_key, updated_at: new Date().toISOString() },
+      { id: letter.id, order_num: letter.order_num, title: title, content: content, seal: seal,
+        color_key: letter.color_key, photo_url: letter.photo_url || null, updated_at: new Date().toISOString() },
       { onConflict: 'id' }
     );
     if (_letterOpenIdx === idx) {
       document.getElementById('letter-open-title').textContent = title;
       document.getElementById('letter-open-text').textContent  = content;
       document.getElementById('letter-open-seal').textContent  = seal;
+      /* Atualiza foto no card aberto */
+      var _opPhoto    = document.getElementById('letter-open-photo');
+      var _opPhotoImg = document.getElementById('letter-open-photo-img');
+      if (_opPhoto && _opPhotoImg) {
+        if (letter.photo_url) { _opPhotoImg.src = letter.photo_url; _opPhoto.style.display = 'block'; }
+        else { _opPhoto.style.display = 'none'; _opPhotoImg.src = ''; }
+      }
     }
     _letterRender();
     var btns = document.querySelectorAll('.letter-adm-save-btn');
     if (btns[idx]) { btns[idx].textContent='Salvo! ✓'; setTimeout(function(){ btns[idx].textContent='Salvar ✓'; }, 2000); }
   } catch(e) { alert('Erro ao salvar: '+e.message); }
+}
+
+function letterAdmPhotoPreview(input, idx) {
+  var file = input && input.files && input.files[0]; if (!file) return;
+  var prev = document.getElementById('ladm-photo-prev-'+idx);
+  var ph   = document.getElementById('ladm-photo-ph-'+idx);
+  if (prev) { prev.src = URL.createObjectURL(file); prev.style.display = 'block'; }
+  if (ph)   ph.style.display = 'none';
+}
+
+async function letterAdmRemovePhoto(idx) {
+  var letter = _letterData[idx]; if (!letter) return;
+  letter.photo_url = null;
+  try {
+    await _SB.from('love_letters').update({ photo_url: null, updated_at: new Date().toISOString() }).eq('id', letter.id);
+  } catch(e) { /* silencioso */ }
+  /* Atualiza card aberto se estiver mostrando esta carta */
+  if (_letterOpenIdx === idx) {
+    var _opPhoto = document.getElementById('letter-open-photo');
+    if (_opPhoto) { _opPhoto.style.display = 'none'; document.getElementById('letter-open-photo-img').src = ''; }
+  }
+  /* Re-renderiza o painel */
+  letterAdmOpen();
 }
 
 function _lEsc(str) {
@@ -3799,6 +3898,7 @@ function letterAddOpen() {
   var x = document.getElementById('ladd-surprise'); if(x) x.checked=false;
   _lAddColor = 'rose';
   Array.from(document.querySelectorAll('.letter-color-btn')).forEach(function(b){ b.classList.toggle('active', b.dataset.color==='rose'); });
+  letterPhotoClear(); /* resetar foto */
   var ov = document.getElementById('letter-add-overlay');
   if (ov) ov.classList.add('open');
 }
@@ -3811,6 +3911,33 @@ function letterAddClose() {
 function letterSelColor(btn, color) {
   _lAddColor = color;
   Array.from(document.querySelectorAll('.letter-color-btn')).forEach(function(b){ b.classList.toggle('active', b===btn); });
+}
+
+/* ── Helpers de foto ── */
+var _lAddPhotoFile = null;
+
+function letterPhotoPreview(input) {
+  var file = input && input.files && input.files[0];
+  if (!file) return;
+  _lAddPhotoFile = file;
+  var prev = document.getElementById('ladd-photo-prev');
+  var ph   = document.getElementById('ladd-photo-ph');
+  var clr  = document.getElementById('ladd-photo-clear');
+  if (prev) { prev.src = URL.createObjectURL(file); prev.style.display = 'block'; }
+  if (ph)   ph.style.display = 'none';
+  if (clr)  clr.style.display = 'inline-block';
+}
+
+function letterPhotoClear() {
+  _lAddPhotoFile = null;
+  var input = document.getElementById('ladd-photo');
+  var prev  = document.getElementById('ladd-photo-prev');
+  var ph    = document.getElementById('ladd-photo-ph');
+  var clr   = document.getElementById('ladd-photo-clear');
+  if (input) input.value = '';
+  if (prev)  { prev.src = ''; prev.style.display = 'none'; }
+  if (ph)    { ph.style.display = 'flex'; }
+  if (clr)   clr.style.display = 'none';
 }
 
 async function letterAddSave() {
@@ -3827,8 +3954,22 @@ async function letterAddSave() {
     content:     content,
     color_key:   _lAddColor,
     is_surprise: isSurprise,
+    photo_url:   null,
     updated_at:  new Date().toISOString()
   };
+
+  /* Upload da foto se houver */
+  if (_lAddPhotoFile) {
+    try {
+      var webpBlob = await _toWebP(_lAddPhotoFile, 0.82);
+      var photoName = 'cartas/' + Date.now() + '_' + Math.random().toString(36).slice(2,7) + '.webp';
+      var upResult = await _SB.storage.from('gallery').upload(photoName, webpBlob, { contentType:'image/webp', upsert:false });
+      if (!upResult.error) {
+        var urlResult = _SB.storage.from('gallery').getPublicUrl(photoName);
+        newLetter.photo_url = urlResult.data.publicUrl;
+      }
+    } catch(e) { /* foto ignorada se falhar, carta salva normalmente */ }
+  }
 
   try {
     var res = await _SB.from('love_letters').insert(newLetter).select().single();
