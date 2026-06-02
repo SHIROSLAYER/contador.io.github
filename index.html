@@ -1204,6 +1204,21 @@
       100% { transform:translateY(113vh) translateX(-7px) rotate(-360deg); opacity:0; }
     }
 
+    /* ══ MOBILE PERFORMANCE — reduz efeitos GPU-caros ══ */
+    @media (max-width: 768px) {
+      /* Grain desativado (SVG turbulence + animação 8fps = lag no scroll) */
+      #grain { display: none; }
+      /* Backdrop blur reduzido: de 20px → 8px em todos os cards/modais */
+      .eng-box, .eng-adm-box, .const-mem-card, .const-edit-box,
+      .nv-letter-card, .nv-msg-card, .nv-act-content,
+      .adm-login-box, .adm-modal-box,
+      [style*="backdrop-filter"] { backdrop-filter: blur(8px) !important; }
+      /* Aurora canvas do noivado: esconde nebulosas pesadas */
+      #nv-aurora-canvas { opacity: .7; }
+      /* Orbs de fundo: menos blurs */
+      .orb { filter: blur(40px) !important; }
+    }
+
     /* ══ ESTRELAS (noivado) ══ */
     .star { position:absolute; border-radius:50%; animation:star-twinkle ease-in-out infinite alternate; }
     @keyframes star-twinkle { from{opacity:.12;transform:scale(.6)} to{opacity:1;transform:scale(1.2)} }
@@ -1900,6 +1915,9 @@ function goTo(id) {
   if (id === 'pg-noivado') {
     document.getElementById('pg-noivado').scrollTop = 0;
     setTimeout(initNoivadoAnimation, 400);
+  } else {
+    /* Para a aurora do noivado ao sair da página */
+    if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
   }
   if (id === 'pg-constellation') { setTimeout(constInit, 200); }
   else if (typeof constStop === 'function') constStop();
