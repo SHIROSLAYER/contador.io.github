@@ -3706,20 +3706,57 @@ var _constParallax      = { x:0, y:0, tx:0, ty:0 };
 var _constShootingStars = [];   /* estrelas cadentes ativas */
 var _constNextShoot     = 120;  /* frames até a próxima estrela cadente */
 
-/* Estrelas padrão — coração de 10 pontos */
-var _constDefStars = [
-  { x:.50, y:.26, label:'Nosso Começo',      date:'04/09/2024', text:'O dia em que tudo mudou para sempre — o início da melhor história.' },
-  { x:.32, y:.23, label:'O Primeiro Olhar',  date:'',           text:'Aquele momento em que os olhares se cruzaram e o coração acelerou.' },
-  { x:.19, y:.38, label:'Nos Conhecemos',    date:'',           text:'Os primeiros momentos juntos, descobrindo quem éramos um para o outro.' },
-  { x:.17, y:.57, label:'Primeiro Beijo',    date:'',           text:'O beijo que selou tudo entre nós.' },
-  { x:.32, y:.74, label:'Crescendo Juntos',  date:'',           text:'Cada dia aprendendo mais sobre o que é amar de verdade.' },
-  { x:.50, y:.83, label:'Steven & Vitória',  date:'',           text:'Dois corações que se escolheram entre todos os outros.' },
-  { x:.68, y:.74, label:'Nossa Força',       date:'',           text:'Juntos, somos mais do que qualquer um de nós seria sozinho.' },
-  { x:.83, y:.57, label:'A Promessa',        date:'',           text:'Prometemos estar um para o outro em todos os dias que vierem.' },
-  { x:.81, y:.38, label:'Noivamos',          date:'',           text:'O dia em que tornamos o amor oficial — a promessa eterna.' },
-  { x:.68, y:.23, label:'Para Sempre',       date:'',           text:'E assim começa o resto das nossas vidas, de mãos dadas.' },
+/* ─────────────────────────────────────────────────────────
+   Posições fixas — 15 slots pré-determinados que formam
+   uma constelação orgânica (estilo real, não geométrica).
+   Novos estrelas sempre aparecem no próximo slot livre.
+───────────────────────────────────────────────────────── */
+var _constSlots = [
+  {x:.52,y:.13}, /* 0  — apex               */
+  {x:.33,y:.22}, /* 1  — ombro esq          */
+  {x:.70,y:.19}, /* 2  — ombro dir          */
+  {x:.18,y:.38}, /* 3  — braço esq distante */
+  {x:.47,y:.34}, /* 4  — peito              */
+  {x:.78,y:.36}, /* 5  — braço dir          */
+  {x:.26,y:.52}, /* 6  — flanco esq         */
+  {x:.55,y:.49}, /* 7  — centro (brilhante) */
+  {x:.85,y:.51}, /* 8  — flanco dir         */
+  {x:.38,y:.65}, /* 9  — quadril esq        */
+  {x:.63,y:.63}, /* 10 — quadril dir        */
+  {x:.22,y:.78}, /* 11 — perna esq          */
+  {x:.50,y:.74}, /* 12 — centro inferior    */
+  {x:.72,y:.76}, /* 13 — perna dir          */
+  {x:.44,y:.88}  /* 14 — base / cauda       */
 ];
-var _constDefLines = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]];
+
+/* Ligações da constelação — reveladas conforme estrelas são adicionadas */
+var _constSlotLines = [
+  [0,1],[0,2],          /* apex para ombros           */
+  [1,3],[2,5],          /* ombros para braços externos */
+  [1,4],[4,5],          /* ponte superior              */
+  [3,6],[5,8],          /* braços para flancos         */
+  [4,7],[6,7],[7,8],    /* cintura / barra central     */
+  [6,9],[7,10],         /* cintura para quadril        */
+  [9,11],[10,13],       /* quadril para pernas         */
+  [9,12],[10,12],       /* convergem ao centro         */
+  [11,12],[12,13],      /* barra das pernas            */
+  [12,14]               /* cauda                       */
+];
+
+/* Estrelas padrão — usam as primeiras 10 posições dos slots */
+var _constDefStars = [
+  { x:_constSlots[0].x, y:_constSlots[0].y, label:'Nosso Começo',     date:'04/09/2024', text:'O dia em que tudo mudou para sempre — o início da melhor história.' },
+  { x:_constSlots[1].x, y:_constSlots[1].y, label:'O Primeiro Olhar', date:'',           text:'Aquele momento em que os olhares se cruzaram e o coração acelerou.' },
+  { x:_constSlots[2].x, y:_constSlots[2].y, label:'Nos Conhecemos',   date:'',           text:'Os primeiros momentos juntos, descobrindo quem éramos um para o outro.' },
+  { x:_constSlots[3].x, y:_constSlots[3].y, label:'Primeiro Beijo',   date:'',           text:'O beijo que selou tudo entre nós.' },
+  { x:_constSlots[4].x, y:_constSlots[4].y, label:'Crescendo Juntos', date:'',           text:'Cada dia aprendendo mais sobre o que é amar de verdade.' },
+  { x:_constSlots[5].x, y:_constSlots[5].y, label:'Steven & Vitória', date:'',           text:'Dois corações que se escolheram entre todos os outros.' },
+  { x:_constSlots[6].x, y:_constSlots[6].y, label:'Nossa Força',      date:'',           text:'Juntos, somos mais do que qualquer um de nós seria sozinho.' },
+  { x:_constSlots[7].x, y:_constSlots[7].y, label:'A Promessa',       date:'',           text:'Prometemos estar um para o outro em todos os dias que vierem.' },
+  { x:_constSlots[8].x, y:_constSlots[8].y, label:'Noivamos',         date:'',           text:'O dia em que tornamos o amor oficial — a promessa eterna.' },
+  { x:_constSlots[9].x, y:_constSlots[9].y, label:'Para Sempre',      date:'',           text:'E assim começa o resto das nossas vidas, de mãos dadas.' },
+];
+var _constDefLines = _constSlotLines; /* mesmas linhas para os defaults */
 
 
 /* ── Init ── */
@@ -3871,11 +3908,11 @@ function _constDraw() {
   }
 
   /* ── Constellation lines — dois passes: glow + core ── */
-  var lines = _constDefLines;
+  var lines = _constSlotLines; /* sempre usa o mapa completo; pula pares sem estrela */
   var lineBreath = 0.55 + Math.sin(_constT * .014) * 0.45; /* respiração lenta da linha */
   for (var l=0;l<lines.length;l++) {
     var s1=stars[lines[l][0]], s2=stars[lines[l][1]];
-    if (!s1||!s2) continue;
+    if (!s1||!s2) continue; /* só desenha quando ambas existem */
     var x1=s1.x*W+px*.12, y1=s1.y*H+py*.12, x2=s2.x*W+px*.12, y2=s2.y*H+py*.12;
     /* passo 1 — aura difusa rosa/lilás */
     var lg1=ctx.createLinearGradient(x1,y1,x2,y2);
@@ -4076,13 +4113,27 @@ function constExitEdit() {
   document.getElementById('pg-constellation').classList.remove('adm-adding');
 }
 function constStartAdd() {
-  _constAddPend=true;
-  document.getElementById('pg-constellation').classList.add('adm-adding');
+  if (!_constStarData) return;
+  var nextIdx = _constStarData.length;
+  if (nextIdx >= _constSlots.length) {
+    /* Todos os 15 slots preenchidos */
+    var btn = document.getElementById('const-add-btn');
+    if (btn) { var orig=btn.textContent; btn.textContent='✓ Constelação completa!'; setTimeout(function(){ btn.textContent=orig; },2200); }
+    return;
+  }
+  /* Coloca diretamente no próximo slot pré-determinado */
+  var slot = _constSlots[nextIdx];
+  _constStarData.push({ x:slot.x, y:slot.y, label:'Nova Memória', date:'', text:'' });
+  _constEditIdx = _constStarData.length - 1;
+  constOpenEdit(_constEditIdx);
 }
+/* Mantido por compatibilidade mas não mais acionado pelo fluxo principal */
 function _constPlaceNew(xPct, yPct) {
   _constAddPend=false;
   document.getElementById('pg-constellation').classList.remove('adm-adding');
-  _constStarData.push({ x:xPct, y:yPct, label:'Nova Memória', date:'', text:'' });
+  if (!_constStarData || _constStarData.length >= _constSlots.length) return;
+  var slot = _constSlots[_constStarData.length]; /* ignora xPct/yPct, usa slot */
+  _constStarData.push({ x:slot.x, y:slot.y, label:'Nova Memória', date:'', text:'' });
   _constEditIdx=_constStarData.length-1;
   constOpenEdit(_constEditIdx);
 }
