@@ -4312,7 +4312,11 @@ function _engTestRevert() {
   if (typeof _nvAuroraRAF !== 'undefined' && _nvAuroraRAF) {
     cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null;
   }
+  _nvHideGalAdd();
   _nvHideActMsgEdit();
+  /* Remove botão 📷 do card-3 se foi injetado */
+  var c3btn = document.querySelector('.card-edit-btn[data-card-idx="3"]');
+  if (c3btn) c3btn.remove();
   /* Limpa qualquer opacity inline deixado pelo GSAP e volta ao topo */
   var pg = document.getElementById('pg-noivado');
   if (pg) {
@@ -4716,6 +4720,12 @@ function _engTestActivate() {
   /* Mostra botão de replay da animação para o admin */
   var unlockBtn = document.getElementById('adm-unlock-btn');
   if (unlockBtn) unlockBtn.style.display = '';
+  /* Libera controles de edição das áreas que só aparecem após o noivado */
+  if (_admSession) {
+    _admShowCardEdits();   /* injeta 📷 no card-3 (constelação) */
+    _nvShowGalAdd();       /* botão + foto na galeria do noivado */
+    _nvShowActMsgEdit();   /* ✏️ na mensagem do noivado */
+  }
 }
 
 /* ── Revela o card da Constelação no seletor ── */
