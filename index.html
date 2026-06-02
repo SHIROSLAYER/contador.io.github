@@ -1480,6 +1480,7 @@
     -->
     <!-- Card 3 — Constelação: oculto até desbloquear o noivado -->
     <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)" style="display:none">
+      <img class="card-photo" id="card-3-photo" alt="Constelação" style="display:none" onerror="this.style.display='none'">
       <div class="card-stars"></div>
       <div class="card-overlay"></div>
       <div class="card-shimmer"></div>
@@ -2064,7 +2065,7 @@ function goTo(id) {
    índices: 0=Namoro, 1=Noivado, 2=Casamento
    Namoro (0) começa no CENTRO
 ══════════════════════════════════════════════ */
-let cardOrder = [2, 0, 1, 3]; // Casamento esq | Namoro centro | Noivado dir | Constelação hidden
+let cardOrder = [2, 0, 1]; // Casamento esq | Namoro centro | Noivado dir (card-3 entra ao desbloquear)
 const posClasses = ['pos-left', 'pos-center', 'pos-right', 'pos-hidden'];
 const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-constellation'];
 
@@ -2829,15 +2830,12 @@ async function _loadSeletorPhotos() {
       .select('url, display_order')
       .eq('page', 'seletor')
       .order('display_order', { ascending: true })
-      .limit(3);
-    if (!data || !data.length) return; // mantém imagens locais
-    const cards = [
-      document.querySelector('#card-0 .card-photo'),
-      document.querySelector('#card-1 .card-photo'),
-      document.querySelector('#card-2 .card-photo'),
-    ];
-    data.forEach(function(photo, i) {
-      if (cards[i]) { cards[i].src = photo.url; cards[i].style.display = ''; }
+      .limit(4); /* inclui card-3 (constelação) se existir */
+    if (!data || !data.length) return;
+    /* Mapeia por display_order em vez de índice — evita bugs com card-3 */
+    data.forEach(function(photo) {
+      var img = document.querySelector('#card-' + photo.display_order + ' .card-photo');
+      if (img) { img.src = photo.url; img.style.removeProperty('display'); }
     });
   } catch(e) {}
 }
@@ -3085,16 +3083,21 @@ function _esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* Injeta botão 📷 em cada card */
+/* Injeta botão 📷 em cada card (incluindo card-3 quando desbloqueado) */
 function _admShowCardEdits() {
-  [0, 1, 2].forEach(function(idx) {
-    const card = document.getElementById('card-' + idx);
-    if (!card || card.querySelector('.card-edit-btn')) return;
-    const btn = document.createElement('button');
-    btn.className = 'card-edit-btn';
-    btn.innerHTML  = '📷 Trocar';
-    btn.title      = 'Trocar foto deste card';
-    btn.onclick    = function(e) { e.stopPropagation(); _admPickCardPhoto(idx); };
+  var toEdit = [0, 1, 2];
+  if (_engActivated || _engTestMode) toEdit.push(3);
+  toEdit.forEach(function(idx) {
+    var card = document.getElementById('card-' + idx);
+    if (!card || card.style.display === 'none' || card.querySelector('.card-edit-btn')) return;
+    var btn = document.createElement('button');
+    btn.className       = 'card-edit-btn';
+    btn.innerHTML       = '📷 Trocar';
+    btn.title           = 'Trocar foto deste card';
+    btn.dataset.cardIdx = String(idx); /* usado para localizar o botão depois */
+    btn.onclick = (function(i, b) {
+      return function(e) { e.stopPropagation(); _admPickCardPhoto(i, b); };
+    })(idx, btn);
     card.appendChild(btn);
   });
 }
@@ -3105,8 +3108,10 @@ function _admHideCardEdits() {
 }
 
 /* Abre seletor de arquivo e faz upload da nova foto do card */
-async function _admPickCardPhoto(cardIdx) {
+async function _admPickCardPhoto(cardIdx, editBtn) {
   if (!_admSession) return;
+  /* Localiza o botão pelo data-attr se não foi passado por referência */
+  if (!editBtn) editBtn = document.querySelector('.card-edit-btn[data-card-idx="' + cardIdx + '"]');
   const input = document.createElement('input');
   input.type   = 'file';
   input.accept = 'image/*';
@@ -3116,8 +3121,7 @@ async function _admPickCardPhoto(cardIdx) {
     if (!file) return;
 
     const storageName = 'seletor_' + String(cardIdx).padStart(3, '0') + '.jpeg';
-    const btn = document.querySelectorAll('.card-edit-btn')[cardIdx];
-    if (btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
+    if (editBtn) { editBtn.innerHTML = '⏳'; editBtn.disabled = true; }
 
     /* ── Upload (substitui arquivo existente) ── */
     const { error: upErr } = await _SB.storage
@@ -3125,7 +3129,7 @@ async function _admPickCardPhoto(cardIdx) {
       .upload(storageName, file, { cacheControl: '3600', upsert: true });
 
     if (upErr) {
-      if (btn) { btn.innerHTML = '❌ Erro'; btn.disabled = false; setTimeout(function(){ btn.innerHTML = '📷 Trocar'; }, 2500); }
+      if (editBtn) { editBtn.innerHTML = '❌ Erro'; editBtn.disabled = false; setTimeout(function(){ editBtn.innerHTML = '📷 Trocar'; }, 2500); }
       return;
     }
 
@@ -3133,11 +3137,18 @@ async function _admPickCardPhoto(cardIdx) {
     const { data: urlData } = _SB.storage.from('gallery').getPublicUrl(storageName);
     const freshUrl = urlData.publicUrl + '?v=' + Date.now();
 
-    /* ── Atualiza registro no DB ── */
-    await _SB.from('gallery_photos')
-      .update({ url: urlData.publicUrl })
+    /* ── Salva no DB: update se existe, insert se for a primeira vez (ex: card-3) ── */
+    const { data: updated } = await _SB.from('gallery_photos')
+      .update({ url: urlData.publicUrl, storage_path: storageName })
       .eq('page', 'seletor')
-      .eq('display_order', cardIdx);
+      .eq('display_order', cardIdx)
+      .select('id');
+    if (!updated || updated.length === 0) {
+      await _SB.from('gallery_photos').insert({
+        url: urlData.publicUrl, storage_path: storageName,
+        page: 'seletor', display_order: cardIdx
+      });
+    }
 
     /* ── Atualiza o card visualmente na hora ── */
     const card = document.getElementById('card-' + cardIdx);
@@ -3145,10 +3156,10 @@ async function _admPickCardPhoto(cardIdx) {
       let img = card.querySelector('.card-photo');
       if (!img) { img = document.createElement('img'); img.className = 'card-photo'; card.insertBefore(img, card.firstChild); }
       img.src = freshUrl;
-      img.style.display = '';
+      img.style.removeProperty('display');
     }
 
-    if (btn) { btn.innerHTML = '✅ Salvo'; btn.disabled = false; setTimeout(function(){ btn.innerHTML = '📷 Trocar'; }, 2200); }
+    if (editBtn) { editBtn.innerHTML = '✅ Salvo'; editBtn.disabled = false; setTimeout(function(){ editBtn.innerHTML = '📷 Trocar'; }, 2200); }
   };
 
   input.click();
@@ -4163,9 +4174,11 @@ function engToggleTestMode() {
     if (badge) badge.style.display = 'none';
     var unlockBtn = document.getElementById('adm-unlock-btn');
     if (unlockBtn) unlockBtn.style.display = 'none';
-    /* Esconde card da constelação (cardOrder não precisa ser restaurado) */
+    /* Remove card-3 do carousel e esconde */
     var c3 = document.getElementById('card-3');
     if (c3) { c3.style.display = 'none'; c3.classList.remove('unlocked'); }
+    cardOrder = cardOrder.filter(function(i) { return i !== 3; });
+    renderCards();
   }
 }
 
@@ -4539,19 +4552,22 @@ async function _engActivate() {
   _engPlayCelebration(now);
 }
 
-/* ── Revela o card da Constelação no seletor ──
-   Não altera cardOrder — o card entra na rotação normal em pos-hidden
-   e aparece naturalmente quando o usuário desliza. */
+/* ── Revela o card da Constelação no seletor ── */
 function _engRevealConstellationCard(firstTime) {
   var card = document.getElementById('card-3');
   if (!card) return;
+  if (card.style.display !== 'none' && cardOrder.indexOf(3) >= 0) return; /* já revelado */
 
-  /* Remove display:none — card entra no carousel em pos-hidden (opacity:0) */
+  /* 1 — torna o card visível no DOM */
   card.style.removeProperty('display');
-  card.classList.add('unlocked'); /* ativa CSS animation const-card-glow */
+  card.classList.add('unlocked');
 
-  /* cardOrder NÃO é alterado — os 3 cards principais continuam nos lugares certos */
-  /* O usuário descobre a constelação deslizando naturalmente */
+  /* 2 — adiciona card-3 ao final do carousel (pos-hidden, opacity:0) */
+  if (cardOrder.indexOf(3) < 0) {
+    cardOrder.push(3);
+    renderCards();
+  }
+  /* O usuário descobre deslizando — sem mexer nas posições dos outros cards */
 }
 
 function _engPlayCelebration(isoDate) {
