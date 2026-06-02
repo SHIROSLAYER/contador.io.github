@@ -1,37 +1,61 @@
 name: 🚀 Deploy — Nossa Linha do Tempo
 
+# Dispara em push na main ou manualmente
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+# ──────────────────────────────────────────────────────────────
+#  Permissões necessárias para o deploy direto no GitHub Pages
+#  (sem criar branch gh-pages)
+# ──────────────────────────────────────────────────────────────
 permissions:
-  contents: write
+  contents:  read   # ler o repositório
+  pages:     write  # publicar no GitHub Pages
+  id-token:  write  # autenticação OIDC (exigida por deploy-pages)
+
+# Cancela runs anteriores da mesma branch para evitar conflito
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    # Vincula ao ambiente "github-pages" → URL aparece no painel do Actions
+    environment:
+      name: github-pages
+      url:  ${{ steps.deploy.outputs.page_url }}
+
     steps:
+      # 1 — Checkout do código
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
+      # 2 — Node.js 20 (sem cache de lock-file, pois usamos npm install)
       - name: ⚙️ Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      # 3 — Instala dependências
       - name: 📦 Instalar dependências
         run: npm install
 
+      # 4 — Build Vite → ./dist
       - name: 🏗️ Build Vite
         run: npm run build
 
-      - name: 🌐 Deploy → gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      # 5 — Empacota o artefato para o GitHub Pages (não usa branch gh-pages)
+      - name: 📤 Upload do artefato
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          force_orphan: true
-          commit_message: 'deploy: ${{ github.event.head_commit.message }}'
+          path: ./dist
+
+      # 6 — Deploy direto no GitHub Pages via OIDC
+      - name: 🌐 Deploy → GitHub Pages
+        uses: actions/deploy-pages@v4
+        id: deploy

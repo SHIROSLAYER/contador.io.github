@@ -24,6 +24,8 @@ let rotCurrent  = { x: 0, y: 0 }
 let lastDrag    = { x: 0, y: 0 }
 let onOpenCard  = null
 let mobile      = false
+let _lastFrame  = 0
+let _targetMs   = 1000 / 60   /* atualizado em init() após detectar mobile */
 
 /* ─────────────────────────────────────────
    API pública
@@ -32,6 +34,8 @@ let mobile      = false
 export function init(starData, openCardCb) {
   cleanup()
   mobile     = isMobile()
+  _targetMs  = mobile ? 1000 / 30 : 1000 / 60   /* throttle correto por tipo de device */
+  _lastFrame = 0
   onOpenCard = openCardCb
 
   const canvas = document.getElementById('const-canvas')
@@ -80,7 +84,8 @@ export function cleanup() {
   }
   scene = null; camera = null; clock = null
   starPoints = null; memoryMeta = []
-  rotTarget = { x:0, y:0 }; rotCurrent = { x:0, y:0 }
+  rotTarget  = { x:0, y:0 }; rotCurrent = { x:0, y:0 }
+  _lastFrame = 0
   window.removeEventListener('resize', _onResize)
 }
 
@@ -233,7 +238,11 @@ function _buildMemoryStars(starData) {
 }
 
 function _buildConstellationLines(starData) {
-  const pairs = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]]
+  /* Mobile: apenas 6 linhas-chave (menos draw calls = menos GPU/CPU) */
+  const allPairs  = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]]
+  const mobPairs  = [[0,1],[2,3],[3,4],[4,5],[5,6],[7,8]]
+  const pairs     = mobile ? mobPairs : allPairs
+
   pairs.forEach(([a, b]) => {
     if (!starData[a] || !starData[b]) return
     const geo = new THREE.BufferGeometry().setFromPoints([
@@ -241,9 +250,10 @@ function _buildConstellationLines(starData) {
       _mapPos(starData[b].x, starData[b].y),
     ])
     const mat = new THREE.LineBasicMaterial({
-      color: 0x9955ff, transparent: true,
-      opacity: mobile ? 0.28 : 0.22,
-      blending: THREE.AdditiveBlending,
+      color:       0x9955ff,
+      transparent: true,
+      opacity:     mobile ? 0.32 : 0.22,
+      blending:    THREE.AdditiveBlending,
     })
     scene.add(new THREE.Line(geo, mat))
   })
@@ -251,16 +261,14 @@ function _buildConstellationLines(starData) {
 
 /* ─────────────────────────────────────────
    Loop — throttle no mobile a ~30fps
+   _targetMs é definido em init() após detectar mobile corretamente.
 ───────────────────────────────────────── */
-
-let _lastFrame = 0
-const TARGET_MS = 1000 / (mobile ? 30 : 60)
 
 function _loop(ts = 0) {
   animId = requestAnimationFrame(_loop)
 
   /* Throttle: pula frames para economizar bateria no mobile */
-  if (mobile && ts - _lastFrame < TARGET_MS) return
+  if (mobile && ts - _lastFrame < _targetMs) return
   _lastFrame = ts
 
   const t = clock.getElapsedTime()
@@ -274,9 +282,10 @@ function _loop(ts = 0) {
     starPoints.rotation.x += mobile ? 0.00003 : 0.00004
   }
 
-  /* Lerp rotação por drag */
-  rotCurrent.x += (rotTarget.x - rotCurrent.x) * 0.06
-  rotCurrent.y += (rotTarget.y - rotCurrent.y) * 0.06
+  /* Lerp rotação por drag — fator menor no mobile = mais suave, menos CPU */
+  const lf = mobile ? 0.035 : 0.06
+  rotCurrent.x += (rotTarget.x - rotCurrent.x) * lf
+  rotCurrent.y += (rotTarget.y - rotCurrent.y) * lf
   if (scene) { scene.rotation.x = rotCurrent.x; scene.rotation.y = rotCurrent.y }
 
   /* Pulso das estrelas-memória — menos frequente no mobile */
