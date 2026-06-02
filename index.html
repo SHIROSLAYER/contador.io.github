@@ -3991,7 +3991,8 @@ function engToggleTestMode() {
 }
 
 /* ── Animação de desbloqueio (uma vez na vida real, replay no teste) ── */
-var _engUnlockRAF = null;
+var _engUnlockRAF   = null;
+var _engUnlockTimer = null;   /* gsap.delayedCall — fecha em 7s */
 
 function engPreviewUnlock() {
   _engPlayUnlock(null);
@@ -4026,37 +4027,44 @@ function _engPlayUnlock(onDone) {
   /* ── Canvas ── */
   _engUnlockCanvas();
 
-  var tl = gsap.timeline({
-    onComplete: function() {
-      gsap.to(overlay, {
-        opacity: 0, duration: 1.3, delay: 1.4, ease: 'power2.in',
-        onComplete: function() {
-          overlay.classList.remove('active');
-          gsap.set(overlay, { opacity:1 });
-          if (orb1) orb1.style.animationPlayState = 'paused';
-          if (orb2) orb2.style.animationPlayState = 'paused';
-          if (orb3) orb3.style.animationPlayState = 'paused';
-          if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
-          if (onDone) onDone();
-        }
-      });
-    }
-  });
+  /* ── Cancela timers anteriores (replay no modo teste) ── */
+  if (_engUnlockTimer) { _engUnlockTimer.kill(); _engUnlockTimer = null; }
+  gsap.killTweensOf(ring);
 
-  /* 1 — Flash branco estoura do centro */
+  /* ── Função de fechar chamada em exatos 7s ── */
+  function _doClose() {
+    gsap.killTweensOf(ring, { y: true });
+    gsap.to(overlay, {
+      opacity: 0, duration: 1.2, ease: 'power2.in',
+      onComplete: function() {
+        overlay.classList.remove('active');
+        gsap.set(overlay, { opacity:1 });
+        if (orb1) orb1.style.animationPlayState = 'paused';
+        if (orb2) orb2.style.animationPlayState = 'paused';
+        if (orb3) orb3.style.animationPlayState = 'paused';
+        if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
+        if (onDone) onDone();
+      }
+    });
+  }
+
+  /* ── Timeline de entrada (sem repeat:-1 aqui — não bloqueia onComplete) ── */
+  var tl = gsap.timeline();
+
+  /* 1 — Flash */
   if (flash) {
     tl.to(flash, { opacity:1, duration:0.1, ease:'power4.in'  }, 0);
     tl.to(flash, { opacity:0, duration:0.7, ease:'power3.out' }, 0.1);
   }
 
-  /* 2 — Background glow sobe */
+  /* 2 — Glow de fundo */
   if (bg) tl.to(bg, { opacity:1, scale:1, duration:1.5, ease:'power2.out' }, 0.04);
 
   /* 3 — Anel gira e pousa com overshoot */
-  tl.to(ring, { scale:1.25, opacity:1, rotation:18,  duration:0.58, ease:'power3.out'        }, 0.07);
-  tl.to(ring, { scale:1,    rotation:0,              duration:0.52, ease:'elastic.out(1.1,.5)'}, 0.65);
+  tl.to(ring, { scale:1.25, opacity:1, rotation:18,  duration:0.58, ease:'power3.out'         }, 0.07);
+  tl.to(ring, { scale:1,    rotation:0,              duration:0.52, ease:'elastic.out(1.1,.5)' }, 0.65);
 
-  /* 4 — Glow explosivo logo após pousar */
+  /* 4 — Glow explosivo */
   tl.to(ring, {
     filter:'drop-shadow(0 0 68px rgba(212,136,154,1)) drop-shadow(0 0 140px rgba(180,100,255,1))',
     duration:0.36, ease:'power2.out'
@@ -4066,49 +4074,64 @@ function _engPlayUnlock(onDone) {
     duration:0.75, ease:'power2.in'
   }, 1.22);
 
-  /* 5 — Anel flutua infinitamente */
-  tl.to(ring, { y:-11, duration:0.88, ease:'sine.inOut', yoyo:true, repeat:-1 }, 1.05);
-
-  /* 6 — Orbits ligam em sequência */
+  /* 5 — Orbits ligam */
   tl.add(function() {
     if (orb1) { orb1.style.animationPlayState = 'running'; gsap.to(orb1, { opacity:1, duration:0.45 }); }
     if (orb2) { orb2.style.animationPlayState = 'running'; gsap.to(orb2, { opacity:1, duration:0.45, delay:0.18 }); }
     if (orb3) { orb3.style.animationPlayState = 'running'; gsap.to(orb3, { opacity:1, duration:0.45, delay:0.36 }); }
   }, 0.70);
 
-  /* 7 — Palavras entram em stagger */
-  tl.to(spans, {
-    opacity:1, y:0, scale:1,
-    duration:0.52, stagger:0.13, ease:'power3.out'
-  }, 1.52);
+  /* 6 — Palavras em stagger */
+  tl.to(spans, { opacity:1, y:0, scale:1, duration:0.52, stagger:0.13, ease:'power3.out' }, 1.52);
 
-  /* 8 — Subtítulo */
-  tl.to(sub, { opacity:1, y:0, duration:0.72, ease:'power2.out' }, 2.28);
+  /* 7 — Subtítulo */
+  tl.to(sub,  { opacity:1, y:0, duration:0.72, ease:'power2.out' }, 2.28);
 
-  /* 9 — Emojis flutuantes sobem ao fundo */
-  tl.add(function() {
-    if (!hearts) return;
-    var emojis = ['💕','✨','💖','🌸','💫','💗','⭐','💞','🌹','✨','💝','🌟'];
-    for (var i = 0; i < 14; i++) {
-      (function(idx) {
-        var el  = document.createElement('span');
-        el.className = 'eng-unlock-heart';
-        el.textContent = emojis[idx % emojis.length];
-        var sz  = 0.85 + Math.random() * 1.15;
-        var lft = 3 + Math.random() * 94;
-        el.style.cssText = 'font-size:'+sz+'rem;left:'+lft+'%;bottom:-8%;position:absolute;opacity:0;';
-        hearts.appendChild(el);
-        var dl  = Math.random() * 2.0;
-        var dur = 3.8 + Math.random() * 2.8;
-        var tY  = -(window.innerHeight * (0.55 + Math.random() * 0.55));
-        var tX  = (Math.random() - 0.5) * 90;
-        gsap.to(el, { y:tY, x:tX, opacity:0.7, duration:dur, delay:dl, ease:'power1.out',
-          onComplete:function(){ if(el.parentNode) el.parentNode.removeChild(el); }
-        });
-        gsap.to(el, { opacity:0, duration:1.3, delay:dl + dur - 1.3 });
-      })(i);
-    }
-  }, 2.5);
+  /* ── Fora do tl: animações infinitas e eventos temporizados ── */
+
+  /* Anel flutua suavemente para sempre (FORA do tl para não travar onComplete) */
+  gsap.to(ring, { y:-11, duration:0.88, ease:'sine.inOut', yoyo:true, repeat:-1, delay:1.05 });
+
+  /* Primeira onda de emojis (t=2.5s) */
+  gsap.delayedCall(2.5,  function() { _engSpawnHearts(hearts, 14); });
+
+  /* Pulso no anel + brilho nas palavras no meio da espera (t=4.5s) */
+  gsap.delayedCall(4.5,  function() {
+    gsap.to(ring,  { scale:1.14, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
+    gsap.to(spans, { textShadow:'0 0 80px rgba(212,136,154,.95)', duration:0.45,
+                     ease:'power2.out', stagger:0.07, yoyo:true, repeat:1 });
+  });
+
+  /* Segunda onda de emojis (t=5.2s) */
+  gsap.delayedCall(5.2,  function() { _engSpawnHearts(hearts, 10); });
+
+  /* ── Fechamento automático em 7s ── */
+  _engUnlockTimer = gsap.delayedCall(7, _doClose);
+}
+
+/* Spawna N emojis flutuantes no container */
+function _engSpawnHearts(container, count) {
+  if (!container) return;
+  var emojis = ['💕','✨','💖','🌸','💫','💗','⭐','💞','🌹','✨','💝','🌟','💍','🕊️'];
+  for (var i = 0; i < count; i++) {
+    (function(idx) {
+      var el = document.createElement('span');
+      el.className = 'eng-unlock-heart';
+      el.textContent = emojis[idx % emojis.length];
+      var sz  = 0.85 + Math.random() * 1.2;
+      var lft = 3 + Math.random() * 94;
+      el.style.cssText = 'font-size:'+sz+'rem;left:'+lft+'%;bottom:-8%;position:absolute;opacity:0;';
+      container.appendChild(el);
+      var dl  = Math.random() * 1.6;
+      var dur = 3.5 + Math.random() * 2.8;
+      var tY  = -(window.innerHeight * (0.55 + Math.random() * 0.55));
+      var tX  = (Math.random() - 0.5) * 90;
+      gsap.to(el, { y:tY, x:tX, opacity:0.72, duration:dur, delay:dl, ease:'power1.out',
+        onComplete: function() { if (el.parentNode) el.parentNode.removeChild(el); }
+      });
+      gsap.to(el, { opacity:0, duration:1.3, delay:dl + dur - 1.3 });
+    })(i);
+  }
 }
 
 function _engUnlockCanvas() {
