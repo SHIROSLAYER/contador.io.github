@@ -1,9 +1,10 @@
 /**
  * letters-3d.js — Caixa de Cartas 3D
  *
- * Mesa realista com velinha que tremeluz e ilumina as cartas.
- * As cartas usam MeshStandardMaterial (desktop) / MeshLambertMaterial (mobile)
- * para reagir à luz dinâmica da vela.
+ * Mesa iluminada por velinha com tremeluz natural.
+ * Iluminação: ambient + hemisphere + candle PointLight.
+ * Materiais com emissive para garantir visibilidade em qualquer dispositivo.
+ * Camera responsiva: FOV e posição se ajustam pelo aspect ratio.
  */
 
 import * as THREE from 'three'
@@ -22,31 +23,50 @@ let _targetMs    = 1000 / 60
 let _lastFrame   = 0
 
 /* ── Vela: referências para animação ── */
-let candleLight      = null   /* PointLight principal da vela */
-let candleLight2     = null   /* glow secundário na superfície */
-let candleFlame      = null   /* cone externo laranja */
-let candleFlameCore  = null   /* cone interno amarelo/branco */
-let candleGlow       = null   /* sprite de glow aditivo */
-let candleEmbers     = null   /* partículas de brasa subindo */
-let candleEmbersPos  = null
-const CANDLE = { x: -4.1, y: -0.32, z: -3.0 }  /* posição na mesa */
+let candleLight     = null
+let candleLight2    = null
+let candleFlame     = null
+let candleFlameCore = null
+let candleGlow      = null
+let candleEmbers    = null
+let candleEmbersPos = null
+const CANDLE = { x: -4.1, y: -0.32, z: -2.5 }
 
 /* ── Paleta dos envelopes ── */
 const COLORS = {
-  rose:   { body:0x220c14, flap:0x2e1020, seal:0xd4889a, emissive:0x5a1a30 },
-  violet: { body:0x12082a, flap:0x1a0c38, seal:0xb464ff, emissive:0x3a1a5a },
-  gold:   { body:0x1e1408, flap:0x281c08, seal:0xc4a850, emissive:0x5a3a10 },
-  teal:   { body:0x081818, flap:0x0c2020, seal:0x4bb9b9, emissive:0x0a3838 },
-  blue:   { body:0x080c20, flap:0x0c1030, seal:0x6491dc, emissive:0x101840 },
+  rose:   { body:0x2a1018, flap:0x3a1828, seal:0xd4889a, emissive:0x6a2030 },
+  violet: { body:0x180a30, flap:0x220e42, seal:0xb464ff, emissive:0x4a2070 },
+  gold:   { body:0x261808, flap:0x30200c, seal:0xc4a850, emissive:0x6a4010 },
+  teal:   { body:0x081e1e, flap:0x0c2828, seal:0x4bb9b9, emissive:0x0a4242 },
+  blue:   { body:0x080e28, flap:0x0c1438, seal:0x6491dc, emissive:0x102050 },
 }
 
 /* ── Layout na mesa ── */
 const TABLE_POS = [
-  { x:-3.5, z:-1.6 }, { x:0,    z:-1.9 }, { x:3.5,  z:-1.6 },
-  { x:-3.8, z: 0.6 }, { x:0,    z: 0.8 }, { x:3.8,  z: 0.6 },
-  { x:-2.2, z: 2.8 }, { x:1.6,  z: 2.9 }, { x:-3.8, z: 2.5 }, { x:3.6,  z: 2.6 },
+  { x:-3.2, z:-1.4 }, { x: 0,   z:-1.8 }, { x: 3.2, z:-1.4 },
+  { x:-3.5, z: 0.8 }, { x: 0,   z: 0.9 }, { x: 3.5, z: 0.8 },
+  { x:-2.0, z: 2.6 }, { x: 1.5, z: 2.7 }, { x:-3.5, z: 2.3 }, { x: 3.4, z: 2.4 },
 ]
 const TABLE_ROT = [-0.12, 0.07, -0.06, 0.14, -0.09, 0.11, -0.05, 0.08, 0.13, -0.10]
+
+/* ── Camera: ajustada por aspect ratio ── */
+function _getCameraSetup() {
+  const W = window.innerWidth, H = window.innerHeight
+  const aspect = W / H
+  if (aspect < 0.65) {
+    // Retrato muito estreito (celular vertical)
+    return { pos:[0, 10, 15], fov:56, lookAt:[0, -0.5, 0] }
+  } else if (aspect < 1.0) {
+    // Retrato moderado
+    return { pos:[0, 9, 13], fov:52, lookAt:[0, -0.3, 0] }
+  } else if (aspect < 1.4) {
+    // Paisagem ou tablet
+    return { pos:[0, 7.5, 11], fov:46, lookAt:[0, -0.2, 0] }
+  } else {
+    // Desktop wide
+    return { pos:[0, 7.2, 10.5], fov:44, lookAt:[0, -0.2, 0] }
+  }
+}
 
 /* ═══════════════════════════════════════
    API pública
@@ -65,17 +85,17 @@ export function init(letterData, openCb) {
   const W = canvas.clientWidth  || window.innerWidth
   const H = canvas.clientHeight || window.innerHeight
 
-  /* Cena */
   scene = new THREE.Scene()
-  scene.fog = new THREE.FogExp2(0x01000a, 0.025)
+  scene.fog = new THREE.FogExp2(0x01000a, mobile ? 0.018 : 0.022)
   clock = new THREE.Clock()
 
-  /* Câmera inclinada sobre a mesa */
-  camera = new THREE.PerspectiveCamera(44, W / H, 0.1, 80)
-  camera.position.set(0, 7.2, 10.5)
-  camera.lookAt(0, -0.2, 0)
+  /* ── Camera com setup responsivo ── */
+  const cs = _getCameraSetup()
+  camera = new THREE.PerspectiveCamera(cs.fov, W / H, 0.1, 100)
+  camera.position.set(...cs.pos)
+  camera.lookAt(...cs.lookAt)
 
-  /* Renderer */
+  /* ── Renderer ── */
   renderer = new THREE.WebGLRenderer({
     canvas,
     antialias:       !mobile,
@@ -84,25 +104,34 @@ export function init(letterData, openCb) {
   })
   renderer.setSize(W, H)
   renderer.setPixelRatio(mobile ? 1 : Math.min(window.devicePixelRatio, 2))
-  renderer.setClearColor(0x01000a)
+  renderer.setClearColor(0x02000e)
   if (!mobile) {
-    renderer.shadowMap.enabled  = true
-    renderer.shadowMap.type     = THREE.PCFSoftShadowMap
-    renderer.toneMapping        = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.15
+    renderer.shadowMap.enabled   = true
+    renderer.shadowMap.type      = THREE.PCFSoftShadowMap
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.2
   }
 
-  /* ── ILUMINAÇÃO — dominada pela vela ── */
+  /* ═══════════════════════════════════════
+     ILUMINAÇÃO — visibilidade garantida
+     Hierarquia:
+       1. Ambient (escura mas visível)
+       2. Hemisphere (gradiente natural)
+       3. Fill direcional (preenchimento suave)
+       4. PointLight da vela (atmosfera quente)
+  ═══════════════════════════════════════ */
 
-  /* Ambiente muito escuro — vela é a principal fonte */
-  scene.add(new THREE.AmbientLight(0x050018, mobile ? 0.7 : 0.45))
+  /* 1. Ambient — viola escura mas não preta, garante base mínima */
+  scene.add(new THREE.AmbientLight(0x2a1540, mobile ? 1.0 : 0.72))
 
-  /* Fill frio no lado oposto à vela (muito sutil) */
-  if (!mobile) {
-    const fill = new THREE.DirectionalLight(0x1a1060, 0.2)
-    fill.position.set(5, 3, 5)
-    scene.add(fill)
-  }
+  /* 2. Hemisphere — céu violeta quente, chão roxo escuro */
+  const hemi = new THREE.HemisphereLight(0x3a1858, 0x180828, mobile ? 0.75 : 0.55)
+  scene.add(hemi)
+
+  /* 3. Fill light direcional suave (lado oposto à vela) */
+  const fill = new THREE.DirectionalLight(0x2a1060, mobile ? 0.38 : 0.48)
+  fill.position.set(4.5, 5, 4)
+  scene.add(fill)
 
   /* ── Constrói cena ── */
   _buildTable()
@@ -170,25 +199,36 @@ export function closeLetter(idx) {
 ═══════════════════════════════════════ */
 
 function _buildTable() {
-  /* Superfície */
-  const geo = new THREE.PlaneGeometry(26, 18)
-  const mat = mobile
-    ? new THREE.MeshLambertMaterial({ color: 0x0c0418 })
-    : new THREE.MeshStandardMaterial({ color: 0x0c0418, roughness: 0.97, metalness: 0.02 })
-  const table = new THREE.Mesh(geo, mat)
+  /* Superfície — cor mais visível + emissive sutil para que não desapareça no escuro */
+  const tableMat = mobile
+    ? new THREE.MeshLambertMaterial({
+        color: 0x1a0c28,
+        emissive: new THREE.Color(0x0c0618),
+      })
+    : new THREE.MeshStandardMaterial({
+        color: 0x1a0c28,
+        roughness: 0.97,
+        metalness: 0.02,
+        emissive: new THREE.Color(0x080312),
+        emissiveIntensity: 0.55,
+      })
+  const tableGeo = new THREE.PlaneGeometry(28, 20)
+  const table    = new THREE.Mesh(tableGeo, tableMat)
   table.rotation.x = -Math.PI / 2
   table.position.y = -0.32
   if (!mobile) table.receiveShadow = true
   scene.add(table)
 
-  /* Borda da mesa (bordas decorativas) */
+  /* Bordas decorativas (apenas desktop — mobile já está pesado) */
   if (!mobile) {
-    const edgeMat = new THREE.MeshStandardMaterial({ color: 0x1a0a28, roughness: 0.9 })
+    const edgeMat = new THREE.MeshStandardMaterial({
+      color: 0x28103c, roughness: 0.9, emissive: new THREE.Color(0x100820), emissiveIntensity: 0.4,
+    })
     const edges = [
-      { w:26.2, h:0.12, d:0.28, x:0,   z: 9.1 },
-      { w:26.2, h:0.12, d:0.28, x:0,   z:-9.1 },
-      { w:0.28, h:0.12, d:18.2, x: 13.1, z:0  },
-      { w:0.28, h:0.12, d:18.2, x:-13.1, z:0  },
+      { w:28.2, h:0.14, d:0.32, x:0,     z: 10.1 },
+      { w:28.2, h:0.14, d:0.32, x:0,     z:-10.1 },
+      { w:0.32, h:0.14, d:20.2, x: 14.1, z:0     },
+      { w:0.32, h:0.14, d:20.2, x:-14.1, z:0     },
     ]
     edges.forEach(e => {
       const eg = new THREE.BoxGeometry(e.w, e.h, e.d)
@@ -207,105 +247,106 @@ function _buildTable() {
 function _buildCandle() {
   const cx = CANDLE.x, cy = CANDLE.y, cz = CANDLE.z
 
-  /* ── Prato / suporte ── */
-  const plateGeo = new THREE.CylinderGeometry(0.24, 0.26, 0.045, 18)
-  const plateMat = new THREE.MeshStandardMaterial({
-    color: 0xb08030, metalness: 0.78, roughness: 0.28,
-  })
-  const plate = new THREE.Mesh(plateGeo, plateMat)
+  /* Prato */
+  const plate = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.24, 0.26, 0.045, 18),
+    new THREE.MeshStandardMaterial({ color: 0xb08030, metalness: 0.78, roughness: 0.28 })
+  )
   plate.position.set(cx, cy + 0.022, cz)
   if (!mobile) { plate.castShadow = true; plate.receiveShadow = true }
   scene.add(plate)
 
-  /* ── Corpo da vela ── */
-  const bodyGeo = new THREE.CylinderGeometry(0.07, 0.082, 0.9, 14)
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0xfff3e0, roughness: 0.72, metalness: 0.0,
-    emissive: new THREE.Color(0x1a0800), emissiveIntensity: 0.4,
-  })
-  const body = new THREE.Mesh(bodyGeo, bodyMat)
+  /* Corpo */
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.07, 0.082, 0.9, 14),
+    new THREE.MeshStandardMaterial({
+      color: 0xfff3e0, roughness: 0.72, metalness: 0,
+      emissive: new THREE.Color(0x2a1000), emissiveIntensity: 0.55,
+    })
+  )
   body.position.set(cx, cy + 0.045 + 0.45, cz)
-  if (!mobile) { body.castShadow = true; body.receiveShadow = true }
+  if (!mobile) { body.castShadow = true }
   scene.add(body)
 
-  /* ── Gotículas de cera (detalhes) ── */
+  /* Gotículas (apenas desktop) */
   if (!mobile) {
     const dripMat = new THREE.MeshStandardMaterial({ color: 0xfff0d8, roughness: 0.65 })
-    const dripData = [
+    ;[
       { rx:0.055, ry:-0.02, h:0.12, side: 0.6 },
-      { rx:0.048, ry:-0.01, h:0.08, side: -1.1 },
-      { rx:0.04,  ry:0.02,  h:0.06, side: 2.1 },
-    ]
-    dripData.forEach(d => {
-      const dg = new THREE.CylinderGeometry(0.015, 0.025, d.h, 8)
-      const dm = new THREE.Mesh(dg, dripMat)
+      { rx:0.048, ry:-0.01, h:0.08, side:-1.1 },
+      { rx:0.040, ry: 0.02, h:0.06, side: 2.1 },
+    ].forEach(d => {
+      const dm = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.025, d.h, 8), dripMat)
       dm.position.set(cx + 0.065 * Math.cos(d.side), cy + 0.45 + d.ry, cz + 0.065 * Math.sin(d.side))
       dm.castShadow = true
       scene.add(dm)
     })
   }
 
-  /* ── Piscina de cera no topo ── */
-  const waxGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.012, 14)
-  const waxMat = new THREE.MeshStandardMaterial({ color: 0xfff5e0, roughness: 0.55, transparent:true, opacity:0.92 })
-  const wax = new THREE.Mesh(waxGeo, waxMat)
+  /* Piscina de cera */
+  const wax = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.075, 0.075, 0.012, 14),
+    new THREE.MeshStandardMaterial({ color: 0xfff5e0, roughness: 0.55, transparent:true, opacity:0.92 })
+  )
   wax.position.set(cx, cy + 0.945, cz)
   scene.add(wax)
 
-  /* ── Pavio ── */
-  const wickGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.045, 6)
-  const wickMat = new THREE.MeshBasicMaterial({ color: 0x1a0e00 })
-  const wick = new THREE.Mesh(wickGeo, wickMat)
+  /* Pavio */
+  const wick = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.005, 0.005, 0.045, 6),
+    new THREE.MeshBasicMaterial({ color: 0x1a0e00 })
+  )
   wick.position.set(cx, cy + 0.968, cz)
   scene.add(wick)
 
-  /* ── Chama externa (cone laranja) ── */
-  const flameGeo = new THREE.ConeGeometry(0.05, 0.20, 10)
-  const flameMat = new THREE.MeshBasicMaterial({ color: 0xff6010, transparent: true, opacity: 0.85 })
-  candleFlame = new THREE.Mesh(flameGeo, flameMat)
-  candleFlame.rotation.x = Math.PI       /* ponta para cima */
+  /* Chama externa */
+  candleFlame = new THREE.Mesh(
+    new THREE.ConeGeometry(0.05, 0.20, 10),
+    new THREE.MeshBasicMaterial({ color: 0xff6010, transparent:true, opacity:0.88 })
+  )
+  candleFlame.rotation.x = Math.PI
   candleFlame.position.set(cx, cy + 0.99 + 0.10, cz)
   scene.add(candleFlame)
 
-  /* ── Chama interna (cone brilhante) ── */
-  const coreGeo = new THREE.ConeGeometry(0.028, 0.12, 8)
-  const coreMat = new THREE.MeshBasicMaterial({ color: 0xfff0a0, transparent: true, opacity: 0.96 })
-  candleFlameCore = new THREE.Mesh(coreGeo, coreMat)
+  /* Chama interna */
+  candleFlameCore = new THREE.Mesh(
+    new THREE.ConeGeometry(0.028, 0.12, 8),
+    new THREE.MeshBasicMaterial({ color: 0xfff0a0, transparent:true, opacity:0.98 })
+  )
   candleFlameCore.rotation.x = Math.PI
   candleFlameCore.position.set(cx, cy + 0.99 + 0.07, cz)
   scene.add(candleFlameCore)
 
-  /* ── Glow aditivo ao redor da chama ── */
+  /* Glow sprite */
   const glowCanvas = document.createElement('canvas')
   glowCanvas.width = glowCanvas.height = 64
   const gc = glowCanvas.getContext('2d')
   const gr = gc.createRadialGradient(32, 32, 0, 32, 32, 32)
-  gr.addColorStop(0, 'rgba(255,180,60,1)')
+  gr.addColorStop(0,    'rgba(255,180,60,1)')
   gr.addColorStop(0.35, 'rgba(255,100,20,0.6)')
-  gr.addColorStop(1, 'rgba(255,60,0,0)')
+  gr.addColorStop(1,    'rgba(255,60,0,0)')
   gc.fillStyle = gr; gc.fillRect(0, 0, 64, 64)
-  const glowTex = new THREE.CanvasTexture(glowCanvas)
-  const glowMat = new THREE.SpriteMaterial({
-    map: glowTex, transparent: true, opacity: 0.55,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  })
-  candleGlow = new THREE.Sprite(glowMat)
-  candleGlow.scale.set(0.85, 0.85, 1)
+  candleGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(glowCanvas),
+    transparent:true, opacity:0.58,
+    blending: THREE.AdditiveBlending, depthWrite:false,
+  }))
+  candleGlow.scale.set(0.9, 0.9, 1)
   candleGlow.position.set(cx, cy + 1.08, cz)
   scene.add(candleGlow)
 
-  /* ── Luz da vela — PointLight quente que tremeluz ── */
-  candleLight = new THREE.PointLight(0xffaa40, mobile ? 3.0 : 4.0, mobile ? 10 : 13, 1.5)
+  /* PointLight principal — tremeluz quente */
+  candleLight = new THREE.PointLight(0xffaa40, mobile ? 3.5 : 5.0, mobile ? 12 : 16, 1.2)
   candleLight.position.set(cx, cy + 1.1, cz)
   if (!mobile) candleLight.castShadow = true
   scene.add(candleLight)
 
-  /* Segundo PointLight mais fraco na superfície da mesa (halo de cera) */
-  candleLight2 = new THREE.PointLight(0xff7020, mobile ? 0.6 : 0.9, mobile ? 4 : 5, 2)
+  /* PointLight secundário — halo de cera na superfície */
+  candleLight2 = new THREE.PointLight(0xff7020, mobile ? 0.8 : 1.1, mobile ? 5 : 6, 2)
   candleLight2.position.set(cx, cy + 0.6, cz)
   scene.add(candleLight2)
 
-  /* ── Partículas de brasa subindo ── */
+  /* Partículas de brasa */
   _buildEmbers(cx, cy + 1.1, cz)
 }
 
@@ -313,17 +354,16 @@ function _buildEmbers(ex, ey, ez) {
   const N = mobile ? 8 : 18
   const pos = new Float32Array(N * 3)
   for (let i = 0; i < N; i++) {
-    pos[i * 3    ] = ex + (Math.random() - 0.5) * 0.08
-    pos[i * 3 + 1] = ey + Math.random() * 0.4
-    pos[i * 3 + 2] = ez + (Math.random() - 0.5) * 0.08
+    pos[i*3]   = ex + (Math.random()-0.5)*0.08
+    pos[i*3+1] = ey + Math.random()*0.4
+    pos[i*3+2] = ez + (Math.random()-0.5)*0.08
   }
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-  const mat = new THREE.PointsMaterial({
-    size: 0.028, color: 0xff8020, transparent: true, opacity: 0.55,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  })
-  candleEmbers    = new THREE.Points(geo, mat)
+  candleEmbers    = new THREE.Points(geo, new THREE.PointsMaterial({
+    size:0.028, color:0xff8020, transparent:true, opacity:0.6,
+    blending:THREE.AdditiveBlending, depthWrite:false,
+  }))
   candleEmbersPos = pos
   scene.add(candleEmbers)
 }
@@ -346,79 +386,93 @@ function _createLetterObj(ld, idx) {
   const isSurprise = !!ld.is_surprise
   const group      = new THREE.Group()
 
-  /* Usa MeshLambertMaterial no mobile (reage à luz, mais leve que Standard) */
-  function _mat(opts) {
-    if (mobile) return new THREE.MeshLambertMaterial({ color: opts.color, emissive: new THREE.Color(opts.emissive || 0x000000) })
-    return new THREE.MeshStandardMaterial({ ...opts, roughness: opts.roughness ?? 0.88, metalness: opts.metalness ?? 0.08 })
+  /* Materiais:
+     - mobile: MeshLambertMaterial com emissive forte — visível mesmo com pouca luz
+     - desktop: MeshStandardMaterial PBR completo                                  */
+  function _mat(params) {
+    if (mobile) {
+      return new THREE.MeshLambertMaterial({
+        color:    params.color,
+        emissive: new THREE.Color(params.emissive || params.color).multiplyScalar(0.55),
+      })
+    }
+    return new THREE.MeshStandardMaterial({
+      color:             params.color,
+      emissive:          new THREE.Color(params.emissive || params.color),
+      emissiveIntensity: params.emissiveIntensity ?? 0.22,
+      roughness:         params.roughness ?? 0.88,
+      metalness:         params.metalness ?? 0.08,
+    })
   }
 
-  /* ── Corpo ── */
-  const bodyGeo = new THREE.BoxGeometry(2.2, 1.55, 0.055)
+  /* Corpo */
   let bodyMat
   if (isSurprise && !mobile) {
     bodyMat = _buildHoloMat()
   } else {
     bodyMat = _mat({
       color: col.body, emissive: col.emissive,
-      emissiveIntensity: isSurprise ? 0.35 : 0.07,
+      emissiveIntensity: isSurprise ? 0.42 : 0.22,
       metalness: isSurprise ? 0.45 : 0.08,
     })
   }
-  const body = new THREE.Mesh(bodyGeo, bodyMat)
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.55, 0.055), bodyMat)
   if (!mobile) body.castShadow = true
   group.add(body)
 
-  /* ── Flap com pivô no topo ── */
+  /* Flap com pivô no topo */
   const flapPivot = new THREE.Group()
   flapPivot.position.y = 0.775
   group.add(flapPivot)
 
-  const flapGeo = new THREE.BoxGeometry(2.2, 0.78, 0.048)
-  const flapMat = _mat({
-    color: col.flap, emissive: col.emissive,
-    emissiveIntensity: isSurprise ? 0.28 : 0.05,
-    metalness: isSurprise ? 0.5 : 0.05,
-  })
-  const flap = new THREE.Mesh(flapGeo, flapMat)
+  const flap = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.78, 0.048),
+    _mat({
+      color: col.flap, emissive: col.emissive,
+      emissiveIntensity: isSurprise ? 0.35 : 0.18,
+      metalness: isSurprise ? 0.5 : 0.05,
+    })
+  )
   flap.position.y = -0.39
   if (!mobile) flap.castShadow = true
   flapPivot.add(flap)
 
-  /* ── Cera / selo ── */
-  const sealGeo = new THREE.SphereGeometry(mobile ? 0.1 : 0.13, 10, 8)
+  /* Selo / cera */
   const sealMat = mobile
-    ? new THREE.MeshLambertMaterial({ color: col.seal, emissive: new THREE.Color(col.seal) })
-    : new THREE.MeshStandardMaterial({
-        color: col.seal, emissive: new THREE.Color(col.seal),
-        emissiveIntensity: isSurprise ? 0.9 : 0.3, roughness: 0.5, metalness: 0.3,
+    ? new THREE.MeshLambertMaterial({
+        color: col.seal,
+        emissive: new THREE.Color(col.seal).multiplyScalar(0.5),
       })
-  const seal = new THREE.Mesh(sealGeo, sealMat)
+    : new THREE.MeshStandardMaterial({
+        color: col.seal,
+        emissive: new THREE.Color(col.seal),
+        emissiveIntensity: isSurprise ? 0.9 : 0.45,
+        roughness: 0.5, metalness: 0.3,
+      })
+  const seal = new THREE.Mesh(new THREE.SphereGeometry(mobile ? 0.1 : 0.13, 10, 8), sealMat)
   seal.position.set(0, -0.1, 0.04)
   group.add(seal)
 
-  /* ── Anel rotativo nas surpresas ── */
+  /* Anel rotativo (cartas surpresa — desktop) */
   if (isSurprise && !mobile) {
-    const ringGeo = new THREE.RingGeometry(0.18, 0.24, 28)
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: col.seal, transparent: true, opacity: 0.65, side: THREE.DoubleSide,
-    })
-    const ring = new THREE.Mesh(ringGeo, ringMat)
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.18, 0.24, 28),
+      new THREE.MeshBasicMaterial({ color: col.seal, transparent:true, opacity:0.7, side:THREE.DoubleSide })
+    )
     ring.position.set(0, -0.1, 0.046)
     group.add(ring)
     group.userData.ring = ring
   }
 
-  /* ── Posição na mesa ── */
+  /* Posição na mesa */
   const p   = TABLE_POS[idx % TABLE_POS.length]
   const rot = TABLE_ROT[idx % TABLE_ROT.length]
   group.position.set(p.x, -0.29, p.z)
   group.rotation.y = rot
   group.rotation.x = -0.04
 
-  const baseY = -0.29
-  group.userData = { flapPivot, seal, isSurprise, isOpen: false, idx }
-
-  return { group, body, flapPivot, seal, data: ld, idx, baseY, isSurprise }
+  group.userData = { flapPivot, seal, isSurprise, isOpen:false, idx }
+  return { group, body, flapPivot, seal, data:ld, idx, baseY:-0.29, isSurprise }
 }
 
 /* Shader holográfico para cartões surpresa */
@@ -447,8 +501,8 @@ function _buildHoloMat() {
         float fr = 1.0 - max(0.0, dot(vd, vNormal));
         float h  = vUv.x * 0.7 + vUv.y * 0.4 + uTime * 0.22 + fr * 0.65;
         vec3 col = 0.55 + 0.45 * cos(6.2832 * (h + vec3(0.0, 0.33, 0.67)));
-        col = mix(vec3(0.06, 0.03, 0.12), col, fr * 0.78 + 0.22);
-        col += vec3(0.12, 0.06, 0.20) * (1.0 - fr) * 0.45;
+        col = mix(vec3(0.08, 0.04, 0.16), col, fr * 0.80 + 0.25);
+        col += vec3(0.15, 0.08, 0.25) * (1.0 - fr) * 0.5;
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -456,7 +510,7 @@ function _buildHoloMat() {
 }
 
 /* ═══════════════════════════════════════
-   Loop de animação — tremeluz da vela + reações
+   Loop de animação
 ═══════════════════════════════════════ */
 
 function _loop(ts = 0) {
@@ -468,85 +522,72 @@ function _loop(ts = 0) {
 
   /* ── Tremeluz da vela ── */
   if (candleLight) {
-    /* Ruído de alta frequência simulando vento + chama viva */
-    const noise = 0.22 * Math.sin(t * 11.3)
-                + 0.09 * Math.sin(t * 29.7)
-                + 0.05 * Math.sin(t * 67.1)
-                + 0.03 * Math.sin(t * 113.4)
+    const noise = 0.22*Math.sin(t*11.3) + 0.09*Math.sin(t*29.7)
+                + 0.05*Math.sin(t*67.1) + 0.03*Math.sin(t*113.4)
     const fi = Math.max(0.12, 1 + noise)
 
-    candleLight.intensity  = (mobile ? 3.0 : 4.0) * fi
-    candleLight2.intensity = (mobile ? 0.6 : 0.9) * fi
+    candleLight.intensity  = (mobile ? 3.5 : 5.0) * fi
+    candleLight2.intensity = (mobile ? 0.8 : 1.1) * fi
 
-    /* Movimento da chama (oscillação natural) */
-    const swX = 0.025 * Math.sin(t * 8.2) + 0.012 * Math.sin(t * 17.1)
-    const swZ = 0.020 * Math.sin(t * 6.5) + 0.010 * Math.sin(t * 14.8)
-    const scY = 1 + 0.14 * Math.sin(t * 13.7)
+    const swX = 0.025*Math.sin(t*8.2) + 0.012*Math.sin(t*17.1)
+    const swZ = 0.020*Math.sin(t*6.5) + 0.010*Math.sin(t*14.8)
+    const scY = 1 + 0.14*Math.sin(t*13.7)
 
     if (candleFlame) {
-      candleFlame.position.x  = CANDLE.x + swX
-      candleFlame.position.z  = CANDLE.z + swZ
-      candleFlame.scale.y     = scY
-      candleFlame.scale.x     = 1 - 0.07 * Math.sin(t * 13.7)
-      /* Cor varia: laranja ↔ amarelo */
-      const flk = 0.4 + 0.35 * Math.sin(t * 19.8)
-      candleFlame.material.color.setRGB(1, 0.22 + flk * 0.5, 0.02 + flk * 0.08)
-      candleFlame.material.opacity = 0.72 + 0.24 * fi
+      candleFlame.position.x = CANDLE.x + swX
+      candleFlame.position.z = CANDLE.z + swZ
+      candleFlame.scale.y    = scY
+      candleFlame.scale.x    = 1 - 0.07*Math.sin(t*13.7)
+      const flk = 0.4 + 0.35*Math.sin(t*19.8)
+      candleFlame.material.color.setRGB(1, 0.22+flk*0.5, 0.02+flk*0.08)
+      candleFlame.material.opacity = 0.72 + 0.24*fi
     }
     if (candleFlameCore) {
-      candleFlameCore.position.x = CANDLE.x + swX * 0.65
-      candleFlameCore.position.z = CANDLE.z + swZ * 0.65
-      candleFlameCore.scale.y    = scY * 0.88
-      candleFlameCore.scale.x    = 1 - 0.04 * Math.sin(t * 13.7 + 0.4)
+      candleFlameCore.position.x = CANDLE.x + swX*0.65
+      candleFlameCore.position.z = CANDLE.z + swZ*0.65
+      candleFlameCore.scale.y    = scY*0.88
+      candleFlameCore.scale.x    = 1 - 0.04*Math.sin(t*13.7+0.4)
     }
     if (candleGlow) {
-      candleGlow.position.x  = CANDLE.x + swX * 0.5
-      candleGlow.position.z  = CANDLE.z + swZ * 0.5
-      const gs = 0.62 + 0.28 * fi
+      candleGlow.position.x  = CANDLE.x + swX*0.5
+      candleGlow.position.z  = CANDLE.z + swZ*0.5
+      const gs = 0.65 + 0.30*fi
       candleGlow.scale.set(gs, gs, 1)
-      candleGlow.material.opacity = 0.32 * fi + 0.15
+      candleGlow.material.opacity = 0.35*fi + 0.15
     }
-    /* Light position oscila sutilmente */
-    candleLight.position.x = CANDLE.x + swX * 0.4
-    candleLight.position.z = CANDLE.z + swZ * 0.4
+    candleLight.position.x = CANDLE.x + swX*0.4
+    candleLight.position.z = CANDLE.z + swZ*0.4
   }
 
-  /* ── Partículas de brasa subindo ── */
+  /* ── Brasas subindo ── */
   if (candleEmbers && candleEmbersPos) {
     const buf = candleEmbers.geometry.attributes.position
     const N   = candleEmbersPos.length / 3
     for (let i = 0; i < N; i++) {
-      candleEmbersPos[i * 3 + 1] += 0.006 + 0.003 * Math.sin(t * 3 + i)
-      candleEmbersPos[i * 3]     += 0.003 * Math.sin(t * 5.2 + i * 1.3)
-      /* Reseta quando sai do topo da chama */
-      if (candleEmbersPos[i * 3 + 1] > CANDLE.y + 1.8) {
-        candleEmbersPos[i * 3    ] = CANDLE.x + (Math.random() - 0.5) * 0.07
-        candleEmbersPos[i * 3 + 1] = CANDLE.y + 1.08
-        candleEmbersPos[i * 3 + 2] = CANDLE.z + (Math.random() - 0.5) * 0.07
+      candleEmbersPos[i*3+1] += 0.006 + 0.003*Math.sin(t*3+i)
+      candleEmbersPos[i*3  ] += 0.003*Math.sin(t*5.2+i*1.3)
+      if (candleEmbersPos[i*3+1] > CANDLE.y + 1.8) {
+        candleEmbersPos[i*3  ] = CANDLE.x + (Math.random()-0.5)*0.07
+        candleEmbersPos[i*3+1] = CANDLE.y + 1.08
+        candleEmbersPos[i*3+2] = CANDLE.z + (Math.random()-0.5)*0.07
       }
     }
     buf.array.set(candleEmbersPos)
     buf.needsUpdate = true
   }
 
-  /* ── Cartas: reações ao ambiente ── */
+  /* ── Cartas: reações e hover ── */
   letterObjs.forEach(lo => {
     if (!lo) return
-    /* Holographic time */
     if (lo.body.material?.uniforms?.uTime) lo.body.material.uniforms.uTime.value = t
-    /* Surprise ring */
     if (lo.group.userData.ring) lo.group.userData.ring.rotation.z = t * 1.5
-    /* Hover float */
     if (hoveredIdx === lo.idx && !lo.group.userData.isOpen) {
-      lo.group.position.y = lo.baseY + 0.18 + Math.sin(t * 3.2) * 0.04
+      lo.group.position.y = lo.baseY + 0.18 + Math.sin(t*3.2)*0.04
     }
-    /* Selo de cartas surpresa pulsa */
-    if (lo.isSurprise && lo.seal.material) {
-      const sp = 1 + 0.1 * Math.sin(t * 2.5 + lo.idx)
+    if (lo.isSurprise && lo.seal.material?.emissiveIntensity !== undefined) {
+      const sp = 1 + 0.1*Math.sin(t*2.5+lo.idx)
       lo.seal.scale.setScalar(sp)
-      if (lo.seal.material.emissiveIntensity !== undefined) {
-        lo.seal.material.emissiveIntensity = 0.7 + 0.3 * Math.sin(t * 2.5 + lo.idx)
-      }
+      lo.seal.material.emissiveIntensity = 0.7 + 0.3*Math.sin(t*2.5+lo.idx)
     }
   })
 
@@ -560,7 +601,7 @@ function _loop(ts = 0) {
 function _bindEvents(canvas) {
   const raycaster = new THREE.Raycaster()
   const pointer   = new THREE.Vector2()
-  let   tapStart  = { x: 0, y: 0 }
+  let tapStart    = { x:0, y:0 }
 
   function _hit(cx, cy) {
     const r = canvas.getBoundingClientRect()
@@ -597,9 +638,9 @@ function _bindEvents(canvas) {
     if (hoveredIdx >= 0) { _unhover(hoveredIdx); hoveredIdx = -1 }
   })
 
-  canvas.addEventListener('mousedown', e => { tapStart = { x: e.clientX, y: e.clientY } })
+  canvas.addEventListener('mousedown', e => { tapStart = { x:e.clientX, y:e.clientY } })
   canvas.addEventListener('mouseup',   e => {
-    if (Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 6) return
+    if (Math.hypot(e.clientX-tapStart.x, e.clientY-tapStart.y) > 6) return
     const hits = _hit(e.clientX, e.clientY)
     if (hits.length > 0) {
       const lo = _find(hits[0].object)
@@ -607,11 +648,11 @@ function _bindEvents(canvas) {
     }
   })
   canvas.addEventListener('touchstart', e => {
-    tapStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-  }, { passive: true })
+    tapStart = { x:e.touches[0].clientX, y:e.touches[0].clientY }
+  }, { passive:true })
   canvas.addEventListener('touchend', e => {
     const t = e.changedTouches[0]
-    if (Math.hypot(t.clientX - tapStart.x, t.clientY - tapStart.y) > 12) return
+    if (Math.hypot(t.clientX-tapStart.x, t.clientY-tapStart.y) > 12) return
     const hits = _hit(t.clientX, t.clientY)
     if (hits.length > 0) {
       const lo = _find(hits[0].object)
@@ -622,16 +663,16 @@ function _bindEvents(canvas) {
 
 function _hover(lo) {
   if (!window.gsap || lo.group.userData.isOpen) return
-  gsap.to(lo.group.position, { y: lo.baseY + 0.22, duration: 0.32, ease: 'power2.out' })
-  gsap.to(lo.group.rotation, { x: -0.09, duration: 0.32, ease: 'power2.out' })
+  gsap.to(lo.group.position, { y: lo.baseY + 0.22, duration:0.32, ease:'power2.out' })
+  gsap.to(lo.group.rotation, { x: -0.09, duration:0.32, ease:'power2.out' })
 }
 
 function _unhover(idx) {
   const lo = letterObjs.find(o => o && o.idx === idx)
   if (!lo || lo.group.userData.isOpen) return
   if (window.gsap) {
-    gsap.to(lo.group.position, { y: lo.baseY, duration: 0.4, ease: 'power2.out' })
-    gsap.to(lo.group.rotation, { x: -0.04,   duration: 0.4, ease: 'power2.out' })
+    gsap.to(lo.group.position, { y: lo.baseY, duration:0.4, ease:'power2.out' })
+    gsap.to(lo.group.rotation, { x: -0.04,   duration:0.4, ease:'power2.out' })
   }
 }
 
@@ -640,11 +681,11 @@ function _openLetter(lo) {
   lo.group.userData.isOpen = true; hoveredIdx = -1
 
   const fp = lo.group.userData.flapPivot
-  gsap.to(lo.group.position, { y: lo.baseY + 2.0, duration: 0.48, ease: 'power3.out' })
-  gsap.to(lo.group.rotation, { x: -0.24, duration: 0.48, ease: 'power2.out' })
+  gsap.to(lo.group.position, { y: lo.baseY + 2.0, duration:0.48, ease:'power3.out' })
+  gsap.to(lo.group.rotation, { x: -0.24, duration:0.48, ease:'power2.out' })
   gsap.to(fp.rotation, {
     x: -Math.PI * 0.88,
-    duration: 0.55, delay: 0.42, ease: 'power2.inOut',
+    duration:0.55, delay:0.42, ease:'power2.inOut',
     onComplete: () => { if (onOpen) onOpen(lo.idx) }
   })
 }
@@ -652,8 +693,11 @@ function _openLetter(lo) {
 function _onResize() {
   const canvas = document.getElementById('letters-canvas')
   if (!canvas || !renderer || !camera) return
-  const W = canvas.clientWidth, H = canvas.clientHeight
+  const W = canvas.clientWidth  || window.innerWidth
+  const H = canvas.clientHeight || window.innerHeight
+  const cs = _getCameraSetup()
   camera.aspect = W / H
+  camera.fov    = cs.fov
   camera.updateProjectionMatrix()
   renderer.setSize(W, H)
 }
