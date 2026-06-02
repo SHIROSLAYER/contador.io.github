@@ -157,9 +157,13 @@
     .sel-card .card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.1) 55%,transparent 100%); z-index:1; }
 
     /* fallback de cor quando não há foto */
-    .card-namoro    { background:linear-gradient(160deg,#6b0030,#1a0030); }
-    .card-noivado   { background:linear-gradient(160deg,#2a0060,#0d001a); }
-    .card-casamento      { background:linear-gradient(160deg,#3a2000,#1a0c00); }
+    .card-namoro        { background:linear-gradient(160deg,#6b0030,#1a0030); }
+    .card-noivado       { background:linear-gradient(160deg,#2a0060,#0d001a); }
+    .card-casamento     { background:linear-gradient(160deg,#3a2000,#1a0c00); }
+    .card-constellation { background:linear-gradient(160deg,#0d0025,#1a0840); }
+    /* Brilho especial no card da constelação quando desbloqueado */
+    .card-constellation.unlocked { box-shadow:0 16px 60px rgba(0,0,0,.8),0 0 0 1px rgba(0,0,0,.4),0 0 40px rgba(140,80,255,.3); }
+    @keyframes const-card-glow { 0%,100%{box-shadow:0 16px 60px rgba(0,0,0,.8),0 0 40px rgba(140,80,255,.2)} 50%{box-shadow:0 16px 60px rgba(0,0,0,.8),0 0 60px rgba(180,100,255,.5),0 0 100px rgba(140,80,255,.2)} }
     .sel-card.pos-hidden { left:50%; top:50%; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; z-index:0; }
 
     .sel-card .card-content { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 1.2rem 1.2rem; z-index:2; text-align:center; }
@@ -1432,6 +1436,16 @@
     Exemplo: src="segundapagina/arquivosimagens/unidade00014.jpeg"
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     -->
+    <!-- Card 3 — Constelação: oculto até desbloquear o noivado -->
+    <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)" style="display:none">
+      <div class="card-overlay"></div>
+      <div class="card-content">
+        <span class="card-icon">🌟</span>
+        <h2>Constelação</h2>
+        <p>Nossa estrela especial</p>
+      </div>
+    </div>
+
     <div class="sel-card card-casamento pos-left" id="card-2" onclick="handleCardClick(2)">
       <img class="card-photo"
            src="segundapagina/arquivosimagens/unidade00014.jpeg"
@@ -1743,6 +1757,65 @@
 </div>
 
 
+<!-- ════════════════════════════════════════
+     PÁGINA — CONSTELAÇÃO
+     Visível apenas após desbloquear o noivado
+════════════════════════════════════════ -->
+<div class="page" id="pg-constellation">
+  <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
+
+  <!-- Canvas Three.js -->
+  <canvas id="const-canvas"></canvas>
+
+  <!-- Título flutuante -->
+  <div class="const-overlay">
+    <h2 class="const-title">Nossa Constelação</h2>
+    <p class="const-hint">toque nas estrelas para ver os momentos</p>
+  </div>
+
+  <!-- Backdrop do card de memória -->
+  <div id="const-mem-backdrop" onclick="constCloseCard()"></div>
+
+  <!-- Card de memória (aparece ao clicar numa estrela) -->
+  <div class="const-mem-card" id="const-mem-card">
+    <button class="letter-open-close" onclick="constCloseCard()" style="position:absolute;top:.6rem;right:.72rem;background:none;border:none;color:rgba(255,255,255,.22);font-size:.75rem;cursor:pointer;transition:color .2s;padding:.3rem">✕</button>
+    <div class="const-mem-badge">
+      <div class="const-mem-badge-ring">
+        <span class="const-mem-badge-icon" id="const-mem-icon">🌟</span>
+      </div>
+    </div>
+    <p class="const-mem-label" id="const-mem-label"></p>
+    <div class="const-mem-date-row">
+      <div class="const-mem-date-line"></div>
+      <span class="const-mem-date" id="const-mem-date"></span>
+      <div class="const-mem-date-line r"></div>
+    </div>
+    <p class="const-mem-text" id="const-mem-text"></p>
+    <div class="const-mem-dots" id="const-mem-dots"></div>
+  </div>
+
+  <!-- Admin bar -->
+  <div class="const-adm-bar" id="const-adm-bar">
+    <button class="const-adm-btn" id="const-edit-btn" onclick="constToggleEdit()">✏️ Editar</button>
+    <button class="const-adm-btn" id="const-add-btn" onclick="constStartAdd()" style="display:none">+ Estrela</button>
+  </div>
+
+  <!-- Edit overlay -->
+  <div class="const-edit-overlay" id="const-edit-overlay">
+    <div class="const-edit-box">
+      <h3>Editar Memória</h3>
+      <input  class="const-edit-input" id="cedit-label" placeholder="Nome do momento">
+      <input  class="const-edit-input" id="cedit-date"  placeholder="Data (ex: 14 fev 2022)" type="text">
+      <textarea class="const-edit-input" id="cedit-text" placeholder="O que aconteceu nesse dia..." rows="4"></textarea>
+      <div class="const-edit-row">
+        <button class="const-edit-save"   onclick="constSaveEdit()">Salvar ✓</button>
+        <button class="const-edit-cancel" onclick="constCloseEdit()">Cancelar</button>
+        <button class="const-edit-del"    onclick="constDeleteStar()">Apagar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ BOTÃO ADMIN OCULTO ══ -->
 <!-- ══ ENGAGEMENT — Unlock Animation Overlay ══ -->
 <div id="eng-unlock-overlay">
@@ -1933,6 +2006,11 @@ function goTo(id) {
     /* Para a aurora do noivado ao sair da página */
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
   }
+  if (id === 'pg-constellation') {
+    if (typeof window.constInit === 'function') setTimeout(window.constInit, 200);
+  } else {
+    if (typeof window.constStop === 'function') window.constStop();
+  }
   currentPage = id;
 }
 
@@ -1942,9 +2020,9 @@ function goTo(id) {
    índices: 0=Namoro, 1=Noivado, 2=Casamento
    Namoro (0) começa no CENTRO
 ══════════════════════════════════════════════ */
-let cardOrder = [2, 0, 1]; // Casamento esq | Namoro centro | Noivado dir
-const posClasses = ['pos-left', 'pos-center', 'pos-right'];
-const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento'];
+let cardOrder = [2, 0, 1, 3]; // Casamento esq | Namoro centro | Noivado dir | Constelação hidden
+const posClasses = ['pos-left', 'pos-center', 'pos-right', 'pos-hidden'];
+const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-constellation'];
 
 function renderCards() {
   cardOrder.forEach((cardIdx, posIdx) => {
@@ -3930,7 +4008,10 @@ async function _engLoadState() {
       if (r.key === 'engagement_activated' && r.value === 'true') _engActivated = true;
       if (r.key === 'engagement_date') _engDate = r.value;
     });
-    if (_engActivated && _engDate) _engActivateVisuals(_engDate);
+    if (_engActivated && _engDate) {
+      _engActivateVisuals(_engDate);
+      _engRevealConstellationCard(false); /* boot silencioso — sem animação de entrada */
+    }
   } catch(e) {}
 }
 
@@ -4406,7 +4487,35 @@ async function _engActivate() {
     ]);
   } catch(e) {}
   _engActivateVisuals(now);
+  _engRevealConstellationCard(true); /* primeira vez — com animação especial */
   _engPlayCelebration(now);
+}
+
+/* ── Revela o card da Constelação no seletor ── */
+function _engRevealConstellationCard(firstTime) {
+  var card = document.getElementById('card-3');
+  if (!card) return;
+  card.style.removeProperty('display'); /* torna visível */
+  card.classList.add('unlocked');
+
+  if (firstTime && window.gsap) {
+    /* Animação de entrada: escala do zero direto para a posição hidden,
+       depois pulsa o glow para o usuário notar ao voltar ao seletor */
+    gsap.fromTo(card,
+      { scale: 0.1, opacity: 0 },
+      { scale: 0.4, opacity: 1, duration: 0.7, ease: 'back.out(2)',
+        onComplete: function() {
+          gsap.to(card, {
+            boxShadow: '0 16px 60px rgba(0,0,0,.8), 0 0 60px rgba(180,100,255,.55), 0 0 120px rgba(140,80,255,.25)',
+            duration: 0.9, yoyo: true, repeat: 5, ease: 'power2.inOut',
+            onComplete: function() { card.style.animation = 'const-card-glow 3s ease-in-out infinite'; }
+          });
+        }
+      }
+    );
+  } else {
+    card.style.animation = 'const-card-glow 3s ease-in-out infinite';
+  }
 }
 
 function _engPlayCelebration(isoDate) {
