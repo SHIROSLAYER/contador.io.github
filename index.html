@@ -590,11 +590,24 @@
     /* ══ UNLOCK overlay ══ */
     #eng-unlock-overlay { position:fixed; inset:0; z-index:99998; background:#02000a; display:none; align-items:center; justify-content:center; overflow:hidden; }
     #eng-unlock-overlay.active { display:flex; }
-    #eng-unlock-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-    .eng-unlock-inner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
-    .eng-unlock-ring { font-size:4.5rem; line-height:1; filter:drop-shadow(0 0 28px rgba(212,136,154,.85)); display:block; }
-    .eng-unlock-label { font-family:'Great Vibes',cursive; font-size:clamp(2rem,8vw,3.4rem); color:var(--blush); text-align:center; line-height:1.25; text-shadow:0 0 50px rgba(212,136,154,.75),0 0 100px rgba(212,136,154,.3); opacity:0; }
-    .eng-unlock-sub { font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(180,100,255,.55); opacity:0; }
+    #eng-unlock-canvas  { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+    #eng-unlock-flash   { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 50%, rgba(255,240,248,1) 0%, rgba(212,136,154,.35) 42%, transparent 70%); opacity:0; pointer-events:none; z-index:1; }
+    #eng-unlock-bg      { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 50%, rgba(80,10,140,.42) 0%, rgba(30,5,70,.22) 52%, transparent 82%); opacity:0; pointer-events:none; z-index:1; }
+    #eng-unlock-hearts  { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:1; }
+    .eng-unlock-heart   { position:absolute; opacity:0; pointer-events:none; will-change:transform; }
+    /* ─ orbits ─ */
+    #eng-unlock-orbit-root { position:absolute; width:0; height:0; pointer-events:none; }
+    .eng-unlock-orb { position:absolute; border-radius:50%; will-change:transform; }
+    @keyframes _euo1 { from{transform:rotate(0deg)   translate(44px) rotate(0deg)  } to{transform:rotate(360deg)  translate(44px) rotate(-360deg)  } }
+    @keyframes _euo2 { from{transform:rotate(130deg) translate(60px) rotate(-130deg)} to{transform:rotate(490deg)  translate(60px) rotate(-490deg)  } }
+    @keyframes _euo3 { from{transform:rotate(255deg) translate(76px) rotate(-255deg)} to{transform:rotate(615deg)  translate(76px) rotate(-615deg)  } }
+    /* ─ inner ─ */
+    .eng-unlock-inner     { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
+    .eng-unlock-ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
+    .eng-unlock-ring      { font-size:4.5rem; line-height:1; filter:drop-shadow(0 0 28px rgba(212,136,154,.85)); display:block; will-change:transform,filter; }
+    .eng-unlock-label     { font-family:'Great Vibes',cursive; font-size:clamp(2rem,8vw,3.4rem); color:var(--blush); text-align:center; line-height:1.35; text-shadow:0 0 50px rgba(212,136,154,.75),0 0 100px rgba(212,136,154,.3); }
+    .eng-unlock-label span { display:inline-block; opacity:0; }
+    .eng-unlock-sub       { font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(180,100,255,.55); opacity:0; }
 
     /* Celebration fullscreen */
     .eng-celebrate { position:fixed; inset:0; z-index:900; display:none; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 40%,rgba(80,10,160,.96),rgba(8,2,22,.99)); overflow:hidden; }
@@ -1743,10 +1756,20 @@
 <!-- ══ ENGAGEMENT — Unlock Animation Overlay ══ -->
 <div id="eng-unlock-overlay">
   <canvas id="eng-unlock-canvas"></canvas>
+  <div id="eng-unlock-flash"></div>
+  <div id="eng-unlock-bg"></div>
+  <div id="eng-unlock-hearts"></div>
   <div class="eng-unlock-inner">
-    <span class="eng-unlock-ring" id="eng-unlock-ring">💍</span>
-    <p class="eng-unlock-label" id="eng-unlock-label">Nossa história<br>mudou para sempre</p>
-    <span class="eng-unlock-sub" id="eng-unlock-sub">para sempre e além</span>
+    <div class="eng-unlock-ring-wrap">
+      <span class="eng-unlock-ring" id="eng-unlock-ring">💍</span>
+      <div id="eng-unlock-orbit-root">
+        <div class="eng-unlock-orb" id="eng-unlock-orb1" style="width:7px;height:7px;margin:-3.5px;background:rgba(212,136,154,.95);box-shadow:0 0 10px 3px rgba(212,136,154,.7);animation:_euo1 2.1s linear infinite paused"></div>
+        <div class="eng-unlock-orb" id="eng-unlock-orb2" style="width:6px;height:6px;margin:-3px;background:rgba(180,100,255,.95);box-shadow:0 0 9px 3px rgba(180,100,255,.7);animation:_euo2 2.9s linear infinite paused"></div>
+        <div class="eng-unlock-orb" id="eng-unlock-orb3" style="width:5px;height:5px;margin:-2.5px;background:rgba(240,192,207,.95);box-shadow:0 0 8px 2px rgba(240,192,207,.7);animation:_euo3 3.7s linear infinite paused"></div>
+      </div>
+    </div>
+    <p class="eng-unlock-label" id="eng-unlock-label"><span>Nossa</span> <span>história</span><br><span>mudou</span> <span>para</span> <span>sempre</span></p>
+    <span class="eng-unlock-sub" id="eng-unlock-sub">para sempre e além ✨</span>
   </div>
 </div>
 
@@ -3979,25 +4002,40 @@ function _engPlayUnlock(onDone) {
   var ring    = document.getElementById('eng-unlock-ring');
   var label   = document.getElementById('eng-unlock-label');
   var sub     = document.getElementById('eng-unlock-sub');
+  var flash   = document.getElementById('eng-unlock-flash');
+  var bg      = document.getElementById('eng-unlock-bg');
+  var hearts  = document.getElementById('eng-unlock-hearts');
+  var orb1    = document.getElementById('eng-unlock-orb1');
+  var orb2    = document.getElementById('eng-unlock-orb2');
+  var orb3    = document.getElementById('eng-unlock-orb3');
   if (!overlay || !window.gsap) { if (onDone) onDone(); return; }
 
-  /* Reset */
+  /* ── Reset ── */
   overlay.classList.add('active');
-  gsap.set(ring,  { scale:0,  opacity:0, rotation:-180, y:0 });
-  gsap.set(label, { opacity:0, y:40 });
-  gsap.set(sub,   { opacity:0, y:20 });
+  if (hearts) hearts.innerHTML = '';
+  var spans = Array.from(label.querySelectorAll('span'));
+  gsap.set(spans,  { opacity:0, y:34, scale:.87 });
+  gsap.set(sub,    { opacity:0, y:18 });
+  gsap.set(ring,   { scale:0, opacity:0, rotation:-210, y:0 });
+  if (flash) gsap.set(flash, { opacity:0 });
+  if (bg)    gsap.set(bg,    { opacity:0, scale:.65 });
+  if (orb1)  { orb1.style.animationPlayState = 'paused'; gsap.set(orb1, { opacity:0 }); }
+  if (orb2)  { orb2.style.animationPlayState = 'paused'; gsap.set(orb2, { opacity:0 }); }
+  if (orb3)  { orb3.style.animationPlayState = 'paused'; gsap.set(orb3, { opacity:0 }); }
 
-  /* Canvas: ripples + partículas */
+  /* ── Canvas ── */
   _engUnlockCanvas();
 
   var tl = gsap.timeline({
     onComplete: function() {
-      /* Espera 0.9s exibindo tudo antes de sair */
       gsap.to(overlay, {
-        opacity: 0, duration: 1, delay: 0.9, ease: 'power2.in',
+        opacity: 0, duration: 1.3, delay: 1.4, ease: 'power2.in',
         onComplete: function() {
           overlay.classList.remove('active');
           gsap.set(overlay, { opacity:1 });
+          if (orb1) orb1.style.animationPlayState = 'paused';
+          if (orb2) orb2.style.animationPlayState = 'paused';
+          if (orb3) orb3.style.animationPlayState = 'paused';
           if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
           if (onDone) onDone();
         }
@@ -4005,30 +4043,72 @@ function _engPlayUnlock(onDone) {
     }
   });
 
-  /* 1 — Anel entra com elastic bounce */
+  /* 1 — Flash branco estoura do centro */
+  if (flash) {
+    tl.to(flash, { opacity:1, duration:0.1, ease:'power4.in'  }, 0);
+    tl.to(flash, { opacity:0, duration:0.7, ease:'power3.out' }, 0.1);
+  }
+
+  /* 2 — Background glow sobe */
+  if (bg) tl.to(bg, { opacity:1, scale:1, duration:1.5, ease:'power2.out' }, 0.04);
+
+  /* 3 — Anel gira e pousa com overshoot */
+  tl.to(ring, { scale:1.25, opacity:1, rotation:18,  duration:0.58, ease:'power3.out'        }, 0.07);
+  tl.to(ring, { scale:1,    rotation:0,              duration:0.52, ease:'elastic.out(1.1,.5)'}, 0.65);
+
+  /* 4 — Glow explosivo logo após pousar */
   tl.to(ring, {
-    scale: 1, opacity: 1, rotation: 0, y: 0,
-    duration: 1.1, ease: 'elastic.out(1, .48)'
-  }, 0.1);
-
-  /* 2 — Anel brilha intensamente */
+    filter:'drop-shadow(0 0 68px rgba(212,136,154,1)) drop-shadow(0 0 140px rgba(180,100,255,1))',
+    duration:0.36, ease:'power2.out'
+  }, 0.86);
   tl.to(ring, {
-    filter: 'drop-shadow(0 0 55px rgba(212,136,154,1)) drop-shadow(0 0 110px rgba(180,100,255,.9))',
-    duration: 0.45, ease: 'power2.out'
-  }, 1.0);
-  tl.to(ring, {
-    filter: 'drop-shadow(0 0 28px rgba(212,136,154,.85))',
-    duration: 0.5, ease: 'power2.in'
-  }, 1.45);
+    filter:'drop-shadow(0 0 28px rgba(212,136,154,.85))',
+    duration:0.75, ease:'power2.in'
+  }, 1.22);
 
-  /* 3 — Anel pulsa levemente antes do texto */
-  tl.to(ring, { scale: 1.12, duration: 0.25, ease: 'power1.out', yoyo: true, repeat: 1 }, 1.1);
+  /* 5 — Anel flutua infinitamente */
+  tl.to(ring, { y:-11, duration:0.88, ease:'sine.inOut', yoyo:true, repeat:-1 }, 1.05);
 
-  /* 4 — Texto principal sobe */
-  tl.to(label, { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }, 1.55);
+  /* 6 — Orbits ligam em sequência */
+  tl.add(function() {
+    if (orb1) { orb1.style.animationPlayState = 'running'; gsap.to(orb1, { opacity:1, duration:0.45 }); }
+    if (orb2) { orb2.style.animationPlayState = 'running'; gsap.to(orb2, { opacity:1, duration:0.45, delay:0.18 }); }
+    if (orb3) { orb3.style.animationPlayState = 'running'; gsap.to(orb3, { opacity:1, duration:0.45, delay:0.36 }); }
+  }, 0.70);
 
-  /* 5 — Subtítulo sobe */
-  tl.to(sub, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 2.1);
+  /* 7 — Palavras entram em stagger */
+  tl.to(spans, {
+    opacity:1, y:0, scale:1,
+    duration:0.52, stagger:0.13, ease:'power3.out'
+  }, 1.52);
+
+  /* 8 — Subtítulo */
+  tl.to(sub, { opacity:1, y:0, duration:0.72, ease:'power2.out' }, 2.28);
+
+  /* 9 — Emojis flutuantes sobem ao fundo */
+  tl.add(function() {
+    if (!hearts) return;
+    var emojis = ['💕','✨','💖','🌸','💫','💗','⭐','💞','🌹','✨','💝','🌟'];
+    for (var i = 0; i < 14; i++) {
+      (function(idx) {
+        var el  = document.createElement('span');
+        el.className = 'eng-unlock-heart';
+        el.textContent = emojis[idx % emojis.length];
+        var sz  = 0.85 + Math.random() * 1.15;
+        var lft = 3 + Math.random() * 94;
+        el.style.cssText = 'font-size:'+sz+'rem;left:'+lft+'%;bottom:-8%;position:absolute;opacity:0;';
+        hearts.appendChild(el);
+        var dl  = Math.random() * 2.0;
+        var dur = 3.8 + Math.random() * 2.8;
+        var tY  = -(window.innerHeight * (0.55 + Math.random() * 0.55));
+        var tX  = (Math.random() - 0.5) * 90;
+        gsap.to(el, { y:tY, x:tX, opacity:0.7, duration:dur, delay:dl, ease:'power1.out',
+          onComplete:function(){ if(el.parentNode) el.parentNode.removeChild(el); }
+        });
+        gsap.to(el, { opacity:0, duration:1.3, delay:dl + dur - 1.3 });
+      })(i);
+    }
+  }, 2.5);
 }
 
 function _engUnlockCanvas() {
@@ -4042,76 +4122,138 @@ function _engUnlockCanvas() {
   var cy = cv.height / 2;
   var t  = 0;
 
-  /* Anéis de ripple expandindo a partir do centro */
+  /* ── Ripples: 5 ondas com glow duplo ── */
   var ripples = [
-    { r:0, a:0.75, col:'212,136,154', spd:14, delay:0  },
-    { r:0, a:0.60, col:'180,100,255', spd:16, delay:6  },
-    { r:0, a:0.50, col:'240,192,207', spd:13, delay:12 },
-    { r:0, a:0.40, col:'196,168,112', spd:18, delay:18 }
+    { r:0, a:.88, col:'212,136,154', spd:16, delay:0  },
+    { r:0, a:.72, col:'180,100,255', spd:19, delay:5  },
+    { r:0, a:.62, col:'240,192,207', spd:14, delay:10 },
+    { r:0, a:.52, col:'196,168,112', spd:21, delay:16 },
+    { r:0, a:.42, col:'212,136,154', spd:12, delay:24 }
   ];
 
-  /* Partículas do burst (disparadas no frame 16) */
+  /* ── Partículas ── */
   var particles = [];
-  var burst = false;
+  var burst1 = false, burst2 = false, burst3 = false;
   var COLS = ['212,136,154','180,100,255','240,192,207','196,168,112','255,240,250'];
 
-  function spawnBurst() {
-    for (var i = 0; i < 85; i++) {
-      var ang   = Math.random() * Math.PI * 2;
-      var spd   = 2.5 + Math.random() * 9.5;
-      var big   = i > 65;
+  /* Coração pequeno centrado em (px,py) */
+  function drawHeart(px, py, r) {
+    ctx.save();
+    ctx.translate(px, py - r * 0.28);
+    var s = r * 0.115;
+    ctx.scale(s, s);
+    ctx.beginPath();
+    ctx.moveTo(0, -3);
+    ctx.bezierCurveTo( 2,-6, 6,-4,  6, 0);
+    ctx.bezierCurveTo( 6, 3, 4, 5,  0, 8);
+    ctx.bezierCurveTo(-4, 5,-6, 3, -6, 0);
+    ctx.bezierCurveTo(-6,-4,-2,-6,  0,-3);
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  /* Estrela de 8 pontas centrada em (px,py) */
+  function drawSparkle(px, py, r) {
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.beginPath();
+    for (var i = 0; i < 8; i++) {
+      var ang = (i / 8) * Math.PI * 2;
+      var len = (i % 2 === 0) ? r : r * 0.38;
+      if (i === 0) ctx.moveTo(Math.cos(ang)*len, Math.sin(ang)*len);
+      else          ctx.lineTo(Math.cos(ang)*len, Math.sin(ang)*len);
+    }
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  function spawnBurst(count, mode) {
+    for (var i = 0; i < count; i++) {
+      var ang  = Math.random() * Math.PI * 2;
+      var spd  = (mode === 'gentle') ? (1.5 + Math.random()*5) : (3 + Math.random()*12);
+      var big  = i > count * 0.68;
+      var type = (mode === 'hearts') ? (Math.random()<.65 ? 1 : 0)
+               : (mode === 'gentle') ? (Math.random()<.45 ? 2 : 0)
+               : Math.floor(Math.random()*3);
       particles.push({
         x:cx, y:cy,
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd - (big ? Math.random()*2 : 0),
-        r:  big ? 3 + Math.random()*5 : 1.2 + Math.random()*3.2,
+        vx: Math.cos(ang)*spd,
+        vy: Math.sin(ang)*spd - (big ? Math.random()*2.5 : 0),
+        r:  big ? 3.8 + Math.random()*6.5 : 1.5 + Math.random()*4.2,
         a:  1,
-        da: big ? 0.008 + Math.random()*0.01 : 0.012 + Math.random()*0.016,
+        da: big ? 0.007 + Math.random()*.009 : 0.011 + Math.random()*.016,
         col: COLS[Math.floor(Math.random()*COLS.length)],
-        g:  big ? 0.08 + Math.random()*0.14 : 0
+        g:  big ? 0.06 + Math.random()*.1 : 0,
+        type: type
       });
     }
   }
 
   function frame() {
-    ctx.clearRect(0, 0, cv.width, cv.height);
+    /* Trail leve — cada frame apaga 18% em vez de limpar tudo */
+    ctx.fillStyle = 'rgba(2,0,10,.18)';
+    ctx.fillRect(0, 0, cv.width, cv.height);
     t++;
 
-    /* Ripples */
+    /* ── Ripples com 3 camadas de glow ── */
     for (var i = 0; i < ripples.length; i++) {
       var rp = ripples[i];
       if (t < rp.delay) continue;
       rp.r += rp.spd;
-      rp.a -= 0.016;
+      rp.a -= 0.013;
       if (rp.a > 0) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, rp.r, 0, Math.PI*2);
-        ctx.strokeStyle = 'rgba(' + rp.col + ',' + rp.a.toFixed(2) + ')';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
+        var layers = [
+          { w:22, a: rp.a * 0.11 },
+          { w: 9, a: rp.a * 0.42 },
+          { w: 2, a: rp.a * 0.92 }
+        ];
+        for (var li = 0; li < 3; li++) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, rp.r, 0, Math.PI*2);
+          ctx.strokeStyle = 'rgba('+rp.col+','+layers[li].a.toFixed(2)+')';
+          ctx.lineWidth   = layers[li].w;
+          ctx.stroke();
+        }
       }
     }
 
-    /* Lança burst quando o anel aparece */
-    if (t === 16 && !burst) { burst = true; spawnBurst(); }
+    /* ── 3 ondas de burst ── */
+    if (t ===  8 && !burst1) { burst1 = true; spawnBurst(120, 'mixed');  }
+    if (t === 30 && !burst2) { burst2 = true; spawnBurst(70,  'hearts'); }
+    if (t === 68 && !burst3) { burst3 = true; spawnBurst(45,  'gentle'); }
 
-    /* Partículas */
+    /* ── Partículas ── */
     var anyAlive = ripples.some(function(rp){ return rp.a > 0; });
     for (var k = 0; k < particles.length; k++) {
       var p = particles[k];
       if (p.a <= 0) continue;
       anyAlive = true;
-      p.x  += p.vx; p.y  += p.vy;
-      p.vy += p.g || 0;
-      p.vx *= 0.975; p.vy *= 0.975;
+      p.x  += p.vx; p.y += p.vy;
+      p.vy += p.g  || 0;
+      p.vx *= 0.972; p.vy *= 0.972;
       p.a  -= p.da;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(' + p.col + ',' + Math.max(0, p.a).toFixed(2) + ')';
-      ctx.fill();
+      var al = Math.max(0, p.a);
+      ctx.fillStyle = 'rgba('+p.col+','+al.toFixed(2)+')';
+      if (p.type === 1) {
+        drawHeart(p.x, p.y, p.r * 2.6);
+        ctx.fill();
+      } else if (p.type === 2) {
+        drawSparkle(p.x, p.y, p.r * 1.6);
+        ctx.fill();
+      } else {
+        /* Círculo com glow radial */
+        var g2 = ctx.createRadialGradient(p.x,p.y,0, p.x,p.y,p.r);
+        g2.addColorStop(0,   'rgba('+p.col+','+al.toFixed(2)+')');
+        g2.addColorStop(0.45,'rgba('+p.col+','+(al*.65).toFixed(2)+')');
+        g2.addColorStop(1,   'rgba('+p.col+',0)');
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = g2;
+        ctx.fill();
+      }
     }
 
-    if (anyAlive || t < 50) _engUnlockRAF = requestAnimationFrame(frame);
+    if (anyAlive || t < 72) _engUnlockRAF = requestAnimationFrame(frame);
     else _engUnlockRAF = null;
   }
 
