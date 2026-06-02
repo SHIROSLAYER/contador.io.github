@@ -3761,8 +3761,8 @@ var _constShootingStars = [];   /* estrelas cadentes ativas */
 var _constNextShoot     = 120;  /* frames até a próxima estrela cadente */
 var _constIntroActive   = false; /* intro de ascensão ativo */
 var _constIntroFrame    = 0;     /* frame atual do intro */
-var _INTRO_STRIDE       = 28;    /* frames entre cada estrela (≈ 0.46s) */
-var _INTRO_DUR          = 22;    /* frames de duração do reveal de cada estrela */
+var _INTRO_STRIDE       = 12;    /* frames entre cada estrela (≈ 0.20s a 60fps) */
+var _INTRO_DUR          = 18;    /* frames de duração do reveal de cada estrela (≈ 0.30s) */
 
 /* ─────────────────────────────────────────────────────────
    Posições fixas — 15 slots pré-determinados que formam
@@ -4237,10 +4237,16 @@ function constCloseEdit() { document.getElementById('const-edit-overlay').classL
 async function constSaveStar() {
   var stars=_constStarData||_constDefStars;
   if (_constEditIdx<0||_constEditIdx>=stars.length) return;
+  var isNew = !stars[_constEditIdx].label || stars[_constEditIdx].label === 'Nova Memória';
   stars[_constEditIdx].label=document.getElementById('cedit-label').value;
   stars[_constEditIdx].date =document.getElementById('cedit-date').value;
   stars[_constEditIdx].text =document.getElementById('cedit-text').value;
   constCloseEdit();
+  /* Aciona animação de ascensão apenas para a estrela nova (recém adicionada) */
+  if (isNew && _constEditIdx >= 0) {
+    _constIntroFrame  = _constEditIdx * _INTRO_STRIDE; /* pula para o frame exato desta estrela */
+    _constIntroActive = true;
+  }
   try { await _SB.from('project_configs').upsert({key:'constellation_stars',value:JSON.stringify({stars:stars}),updated_at:new Date().toISOString()}); } catch(e){}
 }
 async function constDeleteStar() {
