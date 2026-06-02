@@ -658,19 +658,66 @@
     .const-title { font-family:'Great Vibes',cursive; font-size:clamp(2rem,6vw,3.2rem); color:rgba(190,165,255,.65); text-shadow:0 0 50px rgba(150,110,255,.45); text-align:center; }
     .const-hint  { font-size:.52rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(180,150,255,.28); margin-top:.4rem; }
 
-    /* Memory card — desliza de baixo */
-    .const-mem-card { position:absolute; bottom:0; left:0; right:0; z-index:10; background:linear-gradient(180deg,rgba(8,3,24,.94),rgba(3,0,12,.98)); backdrop-filter:blur(22px); border-top:1px solid rgba(150,100,255,.2); padding:1.6rem 1.8rem 2.4rem; transform:translateY(100%); transition:transform .5s cubic-bezier(.22,.68,0,1.2); }
-    .const-mem-card.open { transform:translateY(0); }
-    .const-mem-close { position:absolute; top:.8rem; right:1rem; background:none; border:none; color:rgba(255,255,255,.28); font-size:.9rem; cursor:pointer; line-height:1; padding:.3rem; transition:color .2s; }
-    .const-mem-close:hover { color:rgba(255,255,255,.7); }
-    .const-mem-icon  { font-size:1.6rem; text-align:center; display:block; filter:drop-shadow(0 0 14px rgba(200,160,255,.9)); margin-bottom:.3rem; }
-    .const-mem-label { font-family:'Great Vibes',cursive; font-size:2rem; color:rgba(212,136,154,.9); text-align:center; text-shadow:0 0 28px rgba(212,136,154,.5); }
-    .const-mem-date  { font-size:.52rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(160,120,255,.5); text-align:center; margin:.25rem 0 .7rem; }
-    .const-mem-text  { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.98rem; color:rgba(220,195,255,.62); text-align:center; line-height:1.85; }
-    .const-mem-nav   { display:flex; align-items:center; justify-content:center; gap:1.2rem; margin-top:1rem; }
-    .const-mem-nav-btn  { background:none; border:1px solid rgba(150,100,255,.22); color:rgba(150,100,255,.5); font-size:.6rem; letter-spacing:.18em; padding:.3rem .75rem; cursor:pointer; border-radius:20px; transition:all .2s; }
-    .const-mem-nav-btn:hover { border-color:rgba(212,136,154,.45); color:rgba(212,136,154,.75); }
-    .const-mem-counter { font-size:.55rem; letter-spacing:.2em; color:rgba(255,255,255,.2); }
+    /* ── Memory card — carta estelar centralizada ── */
+    #const-mem-backdrop { position:absolute; inset:0; z-index:9; background:rgba(2,0,12,.52); opacity:0; pointer-events:none; transition:opacity .35s ease; }
+    #const-mem-backdrop.open { opacity:1; pointer-events:auto; }
+
+    .const-mem-card {
+      position:absolute; top:50%; left:50%; z-index:10;
+      transform:translate(-50%,-50%);
+      opacity:0; pointer-events:none;
+      width:min(358px,88vw);
+      background:linear-gradient(155deg,rgba(22,8,52,.93) 0%,rgba(8,2,20,.97) 100%);
+      backdrop-filter:blur(28px) saturate(1.5);
+      border:1px solid rgba(180,110,255,.16);
+      border-radius:22px;
+      box-shadow:0 0 0 1px rgba(212,136,154,.07) inset,0 28px 90px rgba(0,0,0,.7),0 0 70px rgba(140,70,255,.1);
+      padding:2rem 1.8rem 1.6rem;
+    }
+    .const-mem-card.open { opacity:1; pointer-events:auto; }
+
+    /* Badge pulsante */
+    .const-mem-badge { display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+    .const-mem-badge-ring {
+      width:44px; height:44px; border-radius:50%;
+      border:1px solid rgba(212,136,154,.30);
+      box-shadow:0 0 20px rgba(212,136,154,.2),inset 0 0 14px rgba(180,100,255,.1);
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(40,15,70,.6);
+      animation:cmb-pulse 3.2s ease-in-out infinite;
+    }
+    @keyframes cmb-pulse {
+      0%,100%{ box-shadow:0 0 20px rgba(212,136,154,.2),inset 0 0 14px rgba(180,100,255,.1); }
+      50%    { box-shadow:0 0 38px rgba(212,136,154,.52),inset 0 0 22px rgba(180,100,255,.26); }
+    }
+    .const-mem-badge-icon { font-size:1.05rem; filter:drop-shadow(0 0 9px rgba(212,136,154,.85)); }
+
+    /* Título */
+    .const-mem-label { font-family:'Great Vibes',cursive; font-size:2.1rem; color:rgba(212,136,154,.95); text-align:center; text-shadow:0 0 32px rgba(212,136,154,.4); line-height:1.2; margin-bottom:.35rem; }
+
+    /* Data decorada */
+    .const-mem-date-row { display:flex; align-items:center; justify-content:center; gap:.5rem; margin:.25rem 0 .85rem; }
+    .const-mem-date-line   { flex:1; max-width:42px; height:1px; background:linear-gradient(90deg,transparent,rgba(180,100,255,.38)); }
+    .const-mem-date-line.r { background:linear-gradient(270deg,transparent,rgba(180,100,255,.38)); }
+    .const-mem-date { font-size:.46rem; letter-spacing:.44em; text-transform:uppercase; color:rgba(160,120,255,.55); white-space:nowrap; }
+
+    /* Texto */
+    .const-mem-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.98rem; color:rgba(225,205,255,.68); text-align:center; line-height:1.9; margin-bottom:1.2rem; }
+
+    /* Dots */
+    .const-mem-dots { display:flex; gap:.36rem; justify-content:center; flex-wrap:wrap; max-width:220px; margin:0 auto .6rem; }
+    .const-mem-dot  { width:5px; height:5px; border-radius:50%; background:rgba(180,100,255,.2); transition:all .3s ease; flex-shrink:0; }
+    .const-mem-dot.active { background:rgba(212,136,154,.85); transform:scale(1.32); box-shadow:0 0 7px rgba(212,136,154,.55); }
+
+    /* Setas */
+    .const-mem-arrows { display:flex; align-items:center; justify-content:center; gap:1.6rem; }
+    .const-mem-nav-btn { background:none; border:none; color:rgba(180,100,255,.38); font-size:1.4rem; cursor:pointer; transition:all .22s; padding:.15rem .4rem; line-height:1; }
+    .const-mem-nav-btn:hover { color:rgba(212,136,154,.85); transform:scale(1.25); }
+    .const-mem-counter { font-size:.48rem; letter-spacing:.22em; color:rgba(255,255,255,.18); }
+
+    /* Fechar */
+    .const-mem-close { position:absolute; top:.6rem; right:.7rem; background:none; border:none; color:rgba(255,255,255,.18); font-size:.75rem; cursor:pointer; line-height:1; padding:.3rem; transition:color .2s; }
+    .const-mem-close:hover { color:rgba(255,255,255,.6); }
 
     /* Admin edit overlay */
     .const-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
@@ -1722,17 +1769,27 @@
     <p class="const-hint">toque nas estrelas especiais ✦</p>
   </div>
 
-  <!-- Memory card (bottom sheet) -->
+  <!-- Memory card — carta estelar centralizada -->
+  <div id="const-mem-backdrop" onclick="constCloseCard()"></div>
   <div class="const-mem-card" id="const-mem-card">
     <button class="const-mem-close" onclick="constCloseCard()">✕</button>
-    <span class="const-mem-icon">✦</span>
+    <div class="const-mem-badge">
+      <div class="const-mem-badge-ring">
+        <span class="const-mem-badge-icon">✦</span>
+      </div>
+    </div>
     <p class="const-mem-label" id="const-mem-label"></p>
-    <p class="const-mem-date"  id="const-mem-date"></p>
-    <p class="const-mem-text"  id="const-mem-text"></p>
-    <div class="const-mem-nav">
-      <button class="const-mem-nav-btn" onclick="constNavStar(-1)">←</button>
+    <div class="const-mem-date-row">
+      <span class="const-mem-date-line"></span>
+      <span class="const-mem-date" id="const-mem-date"></span>
+      <span class="const-mem-date-line r"></span>
+    </div>
+    <p class="const-mem-text" id="const-mem-text"></p>
+    <div class="const-mem-dots" id="const-mem-dots"></div>
+    <div class="const-mem-arrows">
+      <button class="const-mem-nav-btn" onclick="constNavStar(-1)">‹</button>
       <span class="const-mem-counter" id="const-mem-counter"></span>
-      <button class="const-mem-nav-btn" onclick="constNavStar(1)">→</button>
+      <button class="const-mem-nav-btn" onclick="constNavStar(1)">›</button>
     </div>
   </div>
 
@@ -3651,20 +3708,80 @@ function _constBindEvents(cv) {
   }, {passive:true});
 }
 
-/* ── Memory card ── */
+/* ── Memory card — carta estelar ── */
 function constOpenCard(idx) {
-  var stars=_constStarData||_constDefStars;
-  var s=stars[idx]; if(!s) return;
-  _constOpenIdx=idx;
-  document.getElementById('const-mem-label').textContent  = s.label||'';
-  document.getElementById('const-mem-date').textContent   = s.date||'';
-  document.getElementById('const-mem-text').textContent   = s.text||'';
-  document.getElementById('const-mem-counter').textContent= (idx+1)+' / '+stars.length;
-  document.getElementById('const-mem-card').classList.add('open');
+  var stars = _constStarData || _constDefStars;
+  var s = stars[idx]; if (!s) return;
+  var prev = _constOpenIdx;
+  _constOpenIdx = idx;
+
+  /* Conteúdo */
+  document.getElementById('const-mem-label').textContent   = s.label || '';
+  document.getElementById('const-mem-date').textContent    = s.date  || '';
+  document.getElementById('const-mem-text').textContent    = s.text  || '';
+  document.getElementById('const-mem-counter').textContent = (idx + 1) + ' / ' + stars.length;
+
+  /* Esconde data row quando não há data */
+  var dateRow = document.querySelector('.const-mem-date-row');
+  if (dateRow) dateRow.style.display = (s.date && s.date.trim()) ? 'flex' : 'none';
+
+  /* Dots — cria na primeira abertura e atualiza ativo */
+  var dotsEl = document.getElementById('const-mem-dots');
+  if (dotsEl) {
+    if (!dotsEl.children.length) {
+      stars.forEach(function() {
+        var d = document.createElement('span');
+        d.className = 'const-mem-dot';
+        dotsEl.appendChild(d);
+      });
+    }
+    Array.from(dotsEl.children).forEach(function(d, i) {
+      d.classList.toggle('active', i === idx);
+    });
+  }
+
+  var card     = document.getElementById('const-mem-card');
+  var backdrop = document.getElementById('const-mem-backdrop');
+  if (backdrop) backdrop.classList.add('open');
+  card.classList.add('open');
+  card.style.pointerEvents = 'auto';
+
+  if (window.gsap) {
+    if (prev === -1) {
+      /* Primeira abertura — entra com scale + fade */
+      gsap.fromTo(card,
+        { scale:.84, opacity:0, y:16 },
+        { scale:1,   opacity:1, y:0,  duration:.44, ease:'back.out(1.7)' }
+      );
+    } else {
+      /* Navegação — slide lateral sutil */
+      var dir = (idx > prev) ? 1 : -1;
+      gsap.fromTo(card,
+        { x: dir * 18, opacity:.55 },
+        { x: 0,        opacity:1,   duration:.26, ease:'power2.out' }
+      );
+    }
+  }
 }
+
 function constCloseCard() {
-  _constOpenIdx=-1;
-  document.getElementById('const-mem-card').classList.remove('open');
+  var card     = document.getElementById('const-mem-card');
+  var backdrop = document.getElementById('const-mem-backdrop');
+  if (backdrop) backdrop.classList.remove('open');
+  if (window.gsap) {
+    gsap.to(card, {
+      scale:.84, opacity:0, y:12, duration:.28, ease:'power2.in',
+      onComplete: function() {
+        _constOpenIdx = -1;
+        card.classList.remove('open');
+        card.style.pointerEvents = 'none';
+        gsap.set(card, { scale:1, y:0 }); /* reset para próxima abertura */
+      }
+    });
+  } else {
+    _constOpenIdx = -1;
+    card.classList.remove('open');
+  }
 }
 function constNavStar(dir) {
   var stars=_constStarData||_constDefStars;
