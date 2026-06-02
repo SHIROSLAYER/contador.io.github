@@ -1837,6 +1837,11 @@
     </div>
     <p class="const-mem-text" id="const-mem-text"></p>
     <div class="const-mem-dots" id="const-mem-dots"></div>
+    <div class="const-mem-arrows">
+      <button class="const-mem-nav-btn" onclick="constNavStar(-1)">←</button>
+      <span class="const-mem-counter" id="const-mem-counter"></span>
+      <button class="const-mem-nav-btn" onclick="constNavStar(1)">→</button>
+    </div>
   </div>
 
   <!-- Admin bar -->
@@ -1853,7 +1858,7 @@
       <input  class="const-edit-input" id="cedit-date"  placeholder="Data (ex: 14 fev 2022)" type="text">
       <textarea class="const-edit-input" id="cedit-text" placeholder="O que aconteceu nesse dia..." rows="4"></textarea>
       <div class="const-edit-row">
-        <button class="const-edit-save"   onclick="constSaveEdit()">Salvar ✓</button>
+        <button class="const-edit-save"   onclick="constSaveStar()">Salvar ✓</button>
         <button class="const-edit-cancel" onclick="constCloseEdit()">Cancelar</button>
         <button class="const-edit-del"    onclick="constDeleteStar()">Apagar</button>
       </div>
