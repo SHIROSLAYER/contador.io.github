@@ -4570,14 +4570,12 @@ async function _engActivate() {
 
 /* Versão teste: idêntico a _engActivate mas SEM salvar no banco e SEM setar _engActivated */
 function _engTestActivate() {
-  var now = new Date().toISOString();
-  /* fakeDate usada APENAS para o countdown mostrar valores não-zero (2d 7h atrás) */
-  var fakeDate = new Date(Date.now() - (2*24*3600 + 7*3600 + 42*60 + 18) * 1000).toISOString();
+  var now = new Date().toISOString(); /* tudo usa a data/hora real de agora */
   _engTestUnlocked = true;
-  _engDate = fakeDate;              /* countdown roda com fakeDate */
-  _engActivateVisuals(fakeDate);
+  _engDate = now;
+  _engActivateVisuals(now);
   _engRevealConstellationCard(true);
-  _engPlayCelebration(now);         /* celebração mostra a data REAL de hoje */
+  _engPlayCelebration(now);
   /* Mostra botão de replay da animação para o admin */
   var unlockBtn = document.getElementById('adm-unlock-btn');
   if (unlockBtn) unlockBtn.style.display = '';
