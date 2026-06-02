@@ -3759,6 +3759,10 @@ var _constAddPend       = false;
 var _constParallax      = { x:0, y:0, tx:0, ty:0 };
 var _constShootingStars = [];   /* estrelas cadentes ativas */
 var _constNextShoot     = 120;  /* frames até a próxima estrela cadente */
+var _constIntroActive   = false; /* intro de ascensão ativo */
+var _constIntroFrame    = 0;     /* frame atual do intro */
+var _INTRO_STRIDE       = 28;    /* frames entre cada estrela (≈ 0.46s) */
+var _INTRO_DUR          = 22;    /* frames de duração do reveal de cada estrela */
 
 /* ─────────────────────────────────────────────────────────
    Posições fixas — 15 slots pré-determinados que formam
@@ -3830,6 +3834,15 @@ function constStop() {
   if (_constRAF) { cancelAnimationFrame(_constRAF); _constRAF = null; }
 }
 
+/* ── Progresso de reveal de cada estrela no intro (0→1) ── */
+function _constRevealT(idx) {
+  if (!_constIntroActive) return 1;
+  var elapsed = _constIntroFrame - idx * _INTRO_STRIDE;
+  if (elapsed <= 0) return 0;
+  var t = Math.min(elapsed / _INTRO_DUR, 1);
+  return t * t * (3 - 2 * t); /* smoothstep: suave no início e no fim */
+}
+
 /* ── Spawn estrela cadente ── */
 function _constSpawnShootingStar(W, H) {
   /* Ângulo diagonal suave: 25°–55° */
@@ -3872,6 +3885,9 @@ async function _constLoadStars() {
     }
   } catch(e) {}
   if (!_constStarData) _constStarData = _constDefStars.map(function(s){ return Object.assign({},s); });
+  /* Inicia animação de ascensão: estrelas sobem uma a uma */
+  _constIntroActive = true;
+  _constIntroFrame  = 0;
   _constStartLoop();
 }
 
@@ -3961,67 +3977,80 @@ function _constDraw() {
     ctx.restore();
   }
 
-  /* ── Constellation lines — dois passes: glow + core ── */
-  var lines = _constSlotLines; /* sempre usa o mapa completo; pula pares sem estrela */
-  var lineBreath = 0.55 + Math.sin(_constT * .014) * 0.45; /* respiração lenta da linha */
-  for (var l=0;l<lines.length;l++) {
-    var s1=stars[lines[l][0]], s2=stars[lines[l][1]];
-    if (!s1||!s2) continue; /* só desenha quando ambas existem */
-    var x1=s1.x*W+px*.12, y1=s1.y*H+py*.12, x2=s2.x*W+px*.12, y2=s2.y*H+py*.12;
-    /* passo 1 — aura difusa rosa/lilás */
+  /* ── Avança frame do intro e verifica se terminou ── */
+  if (_constIntroActive) {
+    _constIntroFrame++;
+    var lastFrame = (stars.length - 1) * _INTRO_STRIDE + _INTRO_DUR + 20;
+    if (_constIntroFrame > lastFrame) _constIntroActive = false;
+  }
+
+  /* ── Constellation lines — glow + core, aparece conforme reveladas ── */
+  var lineBreath = 0.55 + Math.sin(_constT * .014) * 0.45;
+  for (var l=0;l<_constSlotLines.length;l++) {
+    var ai=_constSlotLines[l][0], bi=_constSlotLines[l][1];
+    if (!stars[ai]||!stars[bi]) continue;
+    var rt = Math.min(_constRevealT(ai), _constRevealT(bi));
+    if (rt <= 0) continue;
+    var x1=stars[ai].x*W+px*.12, y1=stars[ai].y*H+py*.12;
+    var x2=stars[bi].x*W+px*.12, y2=stars[bi].y*H+py*.12;
+    var br = lineBreath * rt;
     var lg1=ctx.createLinearGradient(x1,y1,x2,y2);
-    lg1.addColorStop(0,'rgba(212,136,154,'+(0.08*lineBreath).toFixed(2)+')');
-    lg1.addColorStop(.5,'rgba(212,136,154,'+(0.18*lineBreath).toFixed(2)+')');
-    lg1.addColorStop(1,'rgba(212,136,154,'+(0.08*lineBreath).toFixed(2)+')');
+    lg1.addColorStop(0,'rgba(212,136,154,'+(0.08*br).toFixed(2)+')');
+    lg1.addColorStop(.5,'rgba(212,136,154,'+(0.18*br).toFixed(2)+')');
+    lg1.addColorStop(1,'rgba(212,136,154,'+(0.08*br).toFixed(2)+')');
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
     ctx.strokeStyle=lg1; ctx.lineWidth=3.5; ctx.stroke();
-    /* passo 2 — núcleo mais nítido */
     var lg2=ctx.createLinearGradient(x1,y1,x2,y2);
-    lg2.addColorStop(0,'rgba(220,160,200,'+(0.28*lineBreath).toFixed(2)+')');
-    lg2.addColorStop(.5,'rgba(212,136,154,'+(0.52*lineBreath).toFixed(2)+')');
-    lg2.addColorStop(1,'rgba(220,160,200,'+(0.28*lineBreath).toFixed(2)+')');
+    lg2.addColorStop(0,'rgba(220,160,200,'+(0.28*br).toFixed(2)+')');
+    lg2.addColorStop(.5,'rgba(212,136,154,'+(0.52*br).toFixed(2)+')');
+    lg2.addColorStop(1,'rgba(220,160,200,'+(0.28*br).toFixed(2)+')');
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
     ctx.strokeStyle=lg2; ctx.lineWidth=1.1; ctx.stroke();
   }
 
-  /* ── Memory stars — aura rosa pulsante ── */
+  /* ── Memory stars — ascendem uma a uma no intro, depois pulsam ── */
   for (var j=0;j<stars.length;j++) {
+    var rt = _constRevealT(j);
+    if (rt <= 0) continue; /* ainda não revelada */
     var st=stars[j];
-    var sx=st.x*W+px*.12, sy=st.y*H+py*.12;
-    var pulse = 1 + Math.sin(_constT*.022 + j*.68) * .18;
+    var sx=st.x*W+px*.12;
+    var sy=(st.y*H+py*.12) + (1-rt)*58; /* ascende 58px durante o reveal */
+    var pulse = (1 + Math.sin(_constT*.022+j*.68)*.18) * rt;
     var isOpen=(j===_constOpenIdx), isEdit=(_constEditMode);
 
-    /* camada 1 — aurora externa suave (rosa ampla) */
-    var auraR = (isOpen ? 42 : 28) * pulse;
-    var ag = ctx.createRadialGradient(sx,sy,0,sx,sy,auraR);
-    ag.addColorStop(0,   isOpen ? 'rgba(212,136,154,.22)' : 'rgba(212,136,154,.10)');
-    ag.addColorStop(0.5, isOpen ? 'rgba(212,136,154,.10)' : 'rgba(212,136,154,.04)');
-    ag.addColorStop(1,   'rgba(0,0,0,0)');
+    /* aurora rosa externa */
+    var auraR=(isOpen?42:28)*pulse;
+    var ag=ctx.createRadialGradient(sx,sy,0,sx,sy,auraR);
+    ag.addColorStop(0,  'rgba(212,136,154,'+(isOpen?.22:.10*rt).toFixed(2)+')');
+    ag.addColorStop(.5, 'rgba(212,136,154,'+(isOpen?.10:.04*rt).toFixed(2)+')');
+    ag.addColorStop(1,  'rgba(0,0,0,0)');
     ctx.beginPath(); ctx.arc(sx,sy,auraR,0,Math.PI*2); ctx.fillStyle=ag; ctx.fill();
 
-    /* camada 2 — halo interno brilhante */
-    var haloR = (isOpen ? 18 : 10) * pulse;
-    var hg = ctx.createRadialGradient(sx,sy,0,sx,sy,haloR);
-    hg.addColorStop(0,   isOpen ? 'rgba(255,200,220,.75)' : 'rgba(240,160,190,.55)');
-    hg.addColorStop(0.6, isOpen ? 'rgba(212,136,154,.30)' : 'rgba(212,136,154,.18)');
-    hg.addColorStop(1,   'rgba(0,0,0,0)');
+    /* halo interno */
+    var haloR=(isOpen?18:10)*pulse;
+    var hg=ctx.createRadialGradient(sx,sy,0,sx,sy,haloR);
+    hg.addColorStop(0,  'rgba(255,200,220,'+(isOpen?.75:.55*rt).toFixed(2)+')');
+    hg.addColorStop(.6, 'rgba(212,136,154,'+(isOpen?.30:.18*rt).toFixed(2)+')');
+    hg.addColorStop(1,  'rgba(0,0,0,0)');
     ctx.beginPath(); ctx.arc(sx,sy,haloR,0,Math.PI*2); ctx.fillStyle=hg; ctx.fill();
 
-    /* camada 3 — núcleo branco-rosado */
-    var coreR = (isOpen ? 5.5 : 3.8) * pulse;
+    /* núcleo */
+    var coreR=(isOpen?5.5:3.8)*pulse;
     ctx.beginPath(); ctx.arc(sx,sy,coreR,0,Math.PI*2);
-    ctx.fillStyle = isOpen ? 'rgba(255,230,238,1)' : 'rgba(255,215,228,.97)'; ctx.fill();
+    ctx.fillStyle=isOpen?'rgba(255,230,238,'+rt.toFixed(2)+')':'rgba(255,215,228,'+rt.toFixed(2)+')';
+    ctx.fill();
 
     if (isEdit) {
       ctx.beginPath(); ctx.arc(sx,sy,coreR+6,0,Math.PI*2);
-      ctx.strokeStyle='rgba(255,200,60,.5)'; ctx.lineWidth=1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle='rgba(255,200,60,.5)'; ctx.lineWidth=1;
+      ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
     }
 
-    /* Label */
+    /* label */
     if (st.label) {
       ctx.font='400 8.5px "Josefin Sans",sans-serif';
-      ctx.fillStyle='rgba(240,180,210,'+(isOpen?.82:.42)+')';
-      ctx.textAlign='center'; ctx.fillText(st.label.toUpperCase(), sx, sy+22);
+      ctx.fillStyle='rgba(240,180,210,'+(isOpen?.82:(.42*rt)).toFixed(2)+')';
+      ctx.textAlign='center'; ctx.fillText(st.label.toUpperCase(),sx,sy+22);
     }
   }
   ctx.textAlign='left';
