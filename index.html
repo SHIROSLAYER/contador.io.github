@@ -148,7 +148,9 @@
     /* fallback de cor quando não há foto */
     .card-namoro    { background:linear-gradient(160deg,#6b0030,#1a0030); }
     .card-noivado   { background:linear-gradient(160deg,#2a0060,#0d001a); }
-    .card-casamento { background:linear-gradient(160deg,#3a2000,#1a0c00); }
+    .card-casamento      { background:linear-gradient(160deg,#3a2000,#1a0c00); }
+    .card-constellation  { background:linear-gradient(160deg,#00103a,#060020); }
+    .sel-card.pos-hidden { left:50%; top:50%; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; z-index:0; }
 
     .sel-card .card-content { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 1.2rem 1.2rem; z-index:2; text-align:center; }
     .sel-card .card-icon { font-size:2rem; margin-bottom:.5rem; display:block; }
@@ -620,6 +622,52 @@
     .namoro-frozen-label { text-align:center; font-size:.5rem; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.18); margin-top:.5rem; }
     /* Badge modo teste admin */
     #eng-test-badge { display:none; position:fixed; top:.8rem; left:50%; transform:translateX(-50%); z-index:600; background:rgba(120,80,0,.92); border:1px solid rgba(255,200,60,.45); border-radius:20px; padding:.3rem 1.1rem; font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,220,80,.9); white-space:nowrap; backdrop-filter:blur(10px); pointer-events:none; }
+
+    /* ══════════════════════
+       PÁGINA — CONSTELAÇÃO
+    ══════════════════════ */
+    #pg-constellation { overflow:hidden; }
+    #const-canvas { position:absolute; inset:0; width:100%; height:100%; cursor:default; }
+    #pg-constellation.adm-adding #const-canvas { cursor:crosshair; }
+
+    .const-overlay { position:absolute; bottom:4rem; left:0; right:0; z-index:2; display:flex; flex-direction:column; align-items:center; pointer-events:none; }
+    .const-title { font-family:'Great Vibes',cursive; font-size:clamp(2rem,6vw,3.2rem); color:rgba(190,165,255,.65); text-shadow:0 0 50px rgba(150,110,255,.45); text-align:center; }
+    .const-hint  { font-size:.52rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(180,150,255,.28); margin-top:.4rem; }
+
+    /* Memory card — desliza de baixo */
+    .const-mem-card { position:absolute; bottom:0; left:0; right:0; z-index:10; background:linear-gradient(180deg,rgba(8,3,24,.94),rgba(3,0,12,.98)); backdrop-filter:blur(22px); border-top:1px solid rgba(150,100,255,.2); padding:1.6rem 1.8rem 2.4rem; transform:translateY(100%); transition:transform .5s cubic-bezier(.22,.68,0,1.2); }
+    .const-mem-card.open { transform:translateY(0); }
+    .const-mem-close { position:absolute; top:.8rem; right:1rem; background:none; border:none; color:rgba(255,255,255,.28); font-size:.9rem; cursor:pointer; line-height:1; padding:.3rem; transition:color .2s; }
+    .const-mem-close:hover { color:rgba(255,255,255,.7); }
+    .const-mem-icon  { font-size:1.6rem; text-align:center; display:block; filter:drop-shadow(0 0 14px rgba(200,160,255,.9)); margin-bottom:.3rem; }
+    .const-mem-label { font-family:'Great Vibes',cursive; font-size:2rem; color:rgba(212,136,154,.9); text-align:center; text-shadow:0 0 28px rgba(212,136,154,.5); }
+    .const-mem-date  { font-size:.52rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(160,120,255,.5); text-align:center; margin:.25rem 0 .7rem; }
+    .const-mem-text  { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.98rem; color:rgba(220,195,255,.62); text-align:center; line-height:1.85; }
+    .const-mem-nav   { display:flex; align-items:center; justify-content:center; gap:1.2rem; margin-top:1rem; }
+    .const-mem-nav-btn  { background:none; border:1px solid rgba(150,100,255,.22); color:rgba(150,100,255,.5); font-size:.6rem; letter-spacing:.18em; padding:.3rem .75rem; cursor:pointer; border-radius:20px; transition:all .2s; }
+    .const-mem-nav-btn:hover { border-color:rgba(212,136,154,.45); color:rgba(212,136,154,.75); }
+    .const-mem-counter { font-size:.55rem; letter-spacing:.2em; color:rgba(255,255,255,.2); }
+
+    /* Admin edit overlay */
+    .const-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
+    .const-adm-bar.visible { display:flex; }
+    .const-adm-btn { background:rgba(8,3,22,.88); border:1px solid rgba(150,100,255,.28); color:rgba(150,100,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.55rem; letter-spacing:.15em; padding:.38rem .85rem; cursor:pointer; border-radius:20px; transition:all .22s; backdrop-filter:blur(8px); }
+    .const-adm-btn:hover { border-color:rgba(212,136,154,.45); color:rgba(212,136,154,.8); }
+    .const-adm-btn.on { border-color:rgba(255,200,60,.45); color:rgba(255,210,80,.8); }
+
+    /* Edit modal */
+    .const-edit-overlay { position:absolute; inset:0; z-index:50; background:rgba(3,0,12,.88); backdrop-filter:blur(18px); display:none; align-items:center; justify-content:center; }
+    .const-edit-overlay.open { display:flex; }
+    .const-edit-box { background:rgba(12,4,28,.96); border:1px solid rgba(150,100,255,.22); border-radius:6px; padding:1.8rem; width:min(340px,88vw); display:flex; flex-direction:column; gap:.9rem; }
+    .const-edit-box h3 { font-family:'Great Vibes',cursive; font-size:1.7rem; color:rgba(212,136,154,.8); text-align:center; margin-bottom:.2rem; }
+    .const-edit-input { background:rgba(18,6,38,.75); border:1px solid rgba(150,100,255,.22); border-radius:4px; color:rgba(215,195,255,.85); font-family:'Josefin Sans',sans-serif; font-size:.72rem; letter-spacing:.05em; padding:.6rem .85rem; width:100%; outline:none; transition:border-color .2s; }
+    .const-edit-input:focus { border-color:rgba(160,110,255,.5); }
+    .const-edit-input::placeholder { color:rgba(140,100,200,.35); }
+    textarea.const-edit-input { resize:vertical; min-height:76px; line-height:1.6; font-family:'Cormorant Garamond',serif; font-size:.9rem; }
+    .const-edit-row { display:flex; gap:.6rem; margin-top:.3rem; }
+    .const-edit-save { flex:1; background:linear-gradient(135deg,rgba(90,50,190,.5),rgba(170,55,115,.4)); border:1px solid rgba(170,110,255,.35); color:white; font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.2em; padding:.6rem; cursor:pointer; border-radius:20px; transition:all .22s; }
+    .const-edit-cancel { background:none; border:1px solid rgba(255,255,255,.13); color:rgba(255,255,255,.38); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.18em; padding:.6rem 1rem; cursor:pointer; border-radius:20px; transition:all .22s; }
+    .const-edit-del { background:none; border:1px solid rgba(255,70,70,.18); color:rgba(255,100,100,.45); font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.12em; padding:.55rem .9rem; cursor:pointer; border-radius:20px; transition:all .22s; }
 
     /* ══════════════════════
        PÁGINA 5 — CASAMENTO
@@ -1312,6 +1360,15 @@
       </div>
     </div>
 
+    <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)">
+      <div class="card-overlay"></div>
+      <div class="card-content">
+        <span class="card-icon">🌟</span>
+        <h2>Constelação</h2>
+        <p>Nossas estrelas</p>
+      </div>
+    </div>
+
   </div>
 
   <div class="nav-arrows">
@@ -1607,6 +1664,55 @@
   </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     PÁGINA — NOSSA CONSTELAÇÃO
+════════════════════════════════════════ -->
+<div class="page" id="pg-constellation">
+  <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
+  <canvas id="const-canvas"></canvas>
+
+  <!-- Admin controls -->
+  <div class="const-adm-bar" id="const-adm-bar">
+    <button class="const-adm-btn" id="const-edit-btn" onclick="constToggleEdit()">✏️ Editar</button>
+    <button class="const-adm-btn" id="const-add-btn" onclick="constStartAdd()" style="display:none">➕ Estrela</button>
+  </div>
+
+  <!-- Title -->
+  <div class="const-overlay">
+    <h2 class="const-title">Nossa Constelação</h2>
+    <p class="const-hint">toque nas estrelas especiais ✦</p>
+  </div>
+
+  <!-- Memory card (bottom sheet) -->
+  <div class="const-mem-card" id="const-mem-card">
+    <button class="const-mem-close" onclick="constCloseCard()">✕</button>
+    <span class="const-mem-icon">✦</span>
+    <p class="const-mem-label" id="const-mem-label"></p>
+    <p class="const-mem-date"  id="const-mem-date"></p>
+    <p class="const-mem-text"  id="const-mem-text"></p>
+    <div class="const-mem-nav">
+      <button class="const-mem-nav-btn" onclick="constNavStar(-1)">←</button>
+      <span class="const-mem-counter" id="const-mem-counter"></span>
+      <button class="const-mem-nav-btn" onclick="constNavStar(1)">→</button>
+    </div>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="const-edit-overlay" id="const-edit-overlay">
+    <div class="const-edit-box">
+      <h3>Memória Estelar</h3>
+      <input  class="const-edit-input" id="cedit-label" type="text" placeholder="Nome desta estrela">
+      <input  class="const-edit-input" id="cedit-date"  type="text" placeholder="Data (ex: 04/09/2024)">
+      <textarea class="const-edit-input" id="cedit-text" placeholder="A memória por trás desta estrela..."></textarea>
+      <div class="const-edit-row">
+        <button class="const-edit-del"    onclick="constDeleteStar()">🗑</button>
+        <button class="const-edit-cancel" onclick="constCloseEdit()">Cancelar</button>
+        <button class="const-edit-save"   onclick="constSaveStar()">Salvar ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ BOTÃO ADMIN OCULTO ══ -->
 <!-- ══ ENGAGEMENT — Unlock Animation Overlay ══ -->
 <div id="eng-unlock-overlay">
@@ -1784,6 +1890,8 @@ function goTo(id) {
     document.getElementById('pg-noivado').scrollTop = 0;
     setTimeout(initNoivadoAnimation, 400);
   }
+  if (id === 'pg-constellation') { setTimeout(constInit, 200); }
+  else if (typeof constStop === 'function') constStop();
   currentPage = id;
 }
 
@@ -1793,9 +1901,9 @@ function goTo(id) {
    índices: 0=Namoro, 1=Noivado, 2=Casamento
    Namoro (0) começa no CENTRO
 ══════════════════════════════════════════════ */
-let cardOrder = [2, 0, 1]; // Casamento esq | Namoro centro | Noivado dir
-const posClasses = ['pos-left', 'pos-center', 'pos-right'];
-const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento'];
+let cardOrder = [2, 0, 1, 3]; // Casamento esq | Namoro centro | Noivado dir | Constelação hidden
+const posClasses = ['pos-left', 'pos-center', 'pos-right', 'pos-hidden'];
+const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-constellation'];
 
 function renderCards() {
   cardOrder.forEach((cardIdx, posIdx) => {
@@ -1805,18 +1913,16 @@ function renderCards() {
 }
 
 function shiftCards(dir) {
-  // dir=1 → gira para frente (seta direita), dir=-1 → seta esquerda
-  cardOrder = dir === 1
-    ? [cardOrder[1], cardOrder[2], cardOrder[0]]
-    : [cardOrder[2], cardOrder[0], cardOrder[1]];
+  if (dir === 1) { cardOrder.push(cardOrder.shift()); }
+  else           { cardOrder.unshift(cardOrder.pop()); }
   renderCards();
 }
 
 function handleCardClick(cardIdx) {
   const posIdx = cardOrder.indexOf(cardIdx);
-  if (posIdx === 1) goTo(cardDest[cardIdx]); // centro → abre
-  else if (posIdx === 0) shiftCards(-1);      // esquerda → traz pra frente
-  else shiftCards(1);                         // direita → traz pra frente
+  if (posIdx === 1) goTo(cardDest[cardIdx]);
+  else if (posIdx === 0) shiftCards(-1);
+  else if (posIdx === 2) shiftCards(1);
 }
 
 // Swipe no carrossel (mobile)
@@ -2628,6 +2734,8 @@ function _admShowUI() {
   _admInjectDelButtons();
   _nvShowLetterEditBtn();
   if (_engActivated) { _nvShowGalAdd(); _nvShowActMsgEdit(); }
+  var cab = document.getElementById('const-adm-bar');
+  if (cab) cab.classList.add('visible');
 }
 function _admHideUI() {
   document.getElementById('adm-bar').classList.add('hidden');
@@ -2637,7 +2745,10 @@ function _admHideUI() {
   _nvHideLetterEditBtn();
   _nvHideGalAdd();
   _nvHideActMsgEdit();
-  _admRemoveDelButtons();   // remove botões ✕ do DOM completamente
+  _admRemoveDelButtons();
+  var cab = document.getElementById('const-adm-bar');
+  if (cab) cab.classList.remove('visible');
+  if (typeof constExitEdit === 'function') constExitEdit();
 }
 
 /* Injeta botão ✕ em cada thumb (chamado ao logar) */
@@ -3299,6 +3410,270 @@ function _nvHideGalAdd() {
   if (btn) btn.style.display = 'none';
   /* Remove del buttons */
   document.querySelectorAll('#nv-gal-grid .nv-gal-del').forEach(function(b){ b.remove(); });
+}
+
+/* ══════════════════════════════════════════════
+   NOSSA CONSTELAÇÃO
+══════════════════════════════════════════════ */
+var _constRAF      = null;
+var _constT        = 0;
+var _constBgStars  = [];
+var _constStarData = null;
+var _constOpenIdx  = -1;
+var _constEditIdx  = -1;
+var _constEditMode = false;
+var _constAddPend  = false;
+var _constParallax = { x:0, y:0, tx:0, ty:0 };
+
+/* Estrelas padrão — coração de 10 pontos */
+var _constDefStars = [
+  { x:.50, y:.26, label:'Nosso Começo',      date:'04/09/2024', text:'O dia em que tudo mudou para sempre — o início da melhor história.' },
+  { x:.32, y:.23, label:'O Primeiro Olhar',  date:'',           text:'Aquele momento em que os olhares se cruzaram e o coração acelerou.' },
+  { x:.19, y:.38, label:'Nos Conhecemos',    date:'',           text:'Os primeiros momentos juntos, descobrindo quem éramos um para o outro.' },
+  { x:.17, y:.57, label:'Primeiro Beijo',    date:'',           text:'O beijo que selou tudo entre nós.' },
+  { x:.32, y:.74, label:'Crescendo Juntos',  date:'',           text:'Cada dia aprendendo mais sobre o que é amar de verdade.' },
+  { x:.50, y:.83, label:'Steven & Vitória',  date:'',           text:'Dois corações que se escolheram entre todos os outros.' },
+  { x:.68, y:.74, label:'Nossa Força',       date:'',           text:'Juntos, somos mais do que qualquer um de nós seria sozinho.' },
+  { x:.83, y:.57, label:'A Promessa',        date:'',           text:'Prometemos estar um para o outro em todos os dias que vierem.' },
+  { x:.81, y:.38, label:'Noivamos',          date:'',           text:'O dia em que tornamos o amor oficial — a promessa eterna.' },
+  { x:.68, y:.23, label:'Para Sempre',       date:'',           text:'E assim começa o resto das nossas vidas, de mãos dadas.' },
+];
+var _constDefLines = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]];
+
+/* ── Init ── */
+function constInit() {
+  if (_constRAF) { cancelAnimationFrame(_constRAF); _constRAF = null; }
+  var cv = document.getElementById('const-canvas');
+  if (!cv) return;
+  cv.width  = cv.offsetWidth  || window.innerWidth;
+  cv.height = cv.offsetHeight || window.innerHeight;
+  _constGenBg(cv.width, cv.height);
+  _constBindEvents(cv);
+  _constLoadStars();
+}
+function constStop() {
+  if (_constRAF) { cancelAnimationFrame(_constRAF); _constRAF = null; }
+}
+
+/* ── Background stars ── */
+function _constGenBg(W, H) {
+  _constBgStars = [];
+  for (var i = 0; i < 230; i++) {
+    _constBgStars.push({ x:Math.random()*W, y:Math.random()*H,
+      r:.12+Math.random()*.8, base:.08+Math.random()*.55,
+      spd:.25+Math.random()*1.1, ph:Math.random()*Math.PI*2 });
+  }
+}
+
+/* ── Load stars from Supabase ── */
+async function _constLoadStars() {
+  try {
+    var res = await _SB.from('project_configs').select('value').eq('key','constellation_stars').maybeSingle();
+    if (res.data && res.data.value) {
+      var parsed = JSON.parse(res.data.value);
+      _constStarData = parsed.stars || _constDefStars;
+    }
+  } catch(e) {}
+  if (!_constStarData) _constStarData = _constDefStars.map(function(s){ return Object.assign({},s); });
+  _constStartLoop();
+}
+
+/* ── Animation loop ── */
+function _constStartLoop() {
+  _constT = 0;
+  function frame() {
+    _constDraw();
+    _constT++;
+    _constRAF = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function _constDraw() {
+  var cv  = document.getElementById('const-canvas');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  var stars = _constStarData || _constDefStars;
+
+  /* Lerp parallax */
+  _constParallax.x += (_constParallax.tx - _constParallax.x) * .055;
+  _constParallax.y += (_constParallax.ty - _constParallax.y) * .055;
+  var px = _constParallax.x, py = _constParallax.y;
+
+  ctx.clearRect(0, 0, W, H);
+
+  /* Space gradient */
+  var bg = ctx.createRadialGradient(W*.5, H*.42, 0, W*.5, H*.42, W*.75);
+  bg.addColorStop(0,  'rgba(6,2,22,1)');
+  bg.addColorStop(.5, 'rgba(3,0,12,1)');
+  bg.addColorStop(1,  'rgba(1,0,5,1)');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  /* Nebula wisps */
+  var wisps = [{cx:.28,cy:.35,r:.48,h:255,a:.16},{cx:.72,cy:.58,r:.42,h:215,a:.13},{cx:.50,cy:.48,r:.6,h:270,a:.09}];
+  for (var n=0;n<wisps.length;n++) {
+    var wp=wisps[n];
+    var wx=W*wp.cx+Math.sin(_constT*.003+n)*W*.022, wy=H*wp.cy+Math.cos(_constT*.0035+n)*H*.018;
+    var gr=ctx.createRadialGradient(wx,wy,0,wx,wy,Math.min(W,H)*wp.r);
+    gr.addColorStop(0,'hsla('+(wp.h+Math.sin(_constT*.002)*12)+',55%,16%,'+wp.a+')');
+    gr.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(wx,wy,Math.min(W,H)*wp.r,0,Math.PI*2);
+    ctx.fillStyle=gr; ctx.fill();
+  }
+
+  /* BG stars */
+  for (var i=0;i<_constBgStars.length;i++) {
+    var bs=_constBgStars[i];
+    var a=bs.base+Math.sin(_constT*.007*bs.spd+bs.ph)*(bs.base*.55);
+    ctx.beginPath(); ctx.arc(bs.x+px*.35, bs.y+py*.35, bs.r, 0, Math.PI*2);
+    ctx.fillStyle='rgba(210,195,255,'+a.toFixed(2)+')'; ctx.fill();
+  }
+
+  /* Constellation lines */
+  var lines = _constDefLines;
+  for (var l=0;l<lines.length;l++) {
+    var s1=stars[lines[l][0]], s2=stars[lines[l][1]];
+    if (!s1||!s2) continue;
+    var x1=s1.x*W+px*.12, y1=s1.y*H+py*.12, x2=s2.x*W+px*.12, y2=s2.y*H+py*.12;
+    var lg=ctx.createLinearGradient(x1,y1,x2,y2);
+    lg.addColorStop(0,'rgba(170,110,255,.2)'); lg.addColorStop(.5,'rgba(212,136,154,.16)'); lg.addColorStop(1,'rgba(170,110,255,.2)');
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle=lg; ctx.lineWidth=.9; ctx.stroke();
+  }
+
+  /* Memory stars */
+  for (var j=0;j<stars.length;j++) {
+    var st=stars[j];
+    var sx=st.x*W+px*.12, sy=st.y*H+py*.12;
+    var pulse=1+Math.sin(_constT*.022+j*.68)*.13;
+    var isOpen=(j===_constOpenIdx), isEdit=(_constEditMode);
+    var haloR=(isOpen?22:14)*pulse;
+    var hg=ctx.createRadialGradient(sx,sy,0,sx,sy,haloR);
+    hg.addColorStop(0,isOpen?'rgba(212,136,154,.5)':'rgba(170,120,255,.32)');
+    hg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(sx,sy,haloR,0,Math.PI*2); ctx.fillStyle=hg; ctx.fill();
+    var coreR=(isOpen?5:3.5)*pulse;
+    ctx.beginPath(); ctx.arc(sx,sy,coreR,0,Math.PI*2);
+    ctx.fillStyle=isOpen?'rgba(255,210,225,1)':'rgba(200,175,255,.95)'; ctx.fill();
+    if (isEdit) { /* edit ring */
+      ctx.beginPath(); ctx.arc(sx,sy,coreR+5,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,200,60,.45)'; ctx.lineWidth=1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    /* Label */
+    if (st.label) {
+      ctx.font='400 8.5px "Josefin Sans",sans-serif';
+      ctx.fillStyle='rgba(175,145,255,'+(isOpen?.65:.3)+')';
+      ctx.textAlign='center'; ctx.fillText(st.label.toUpperCase(), sx, sy+20);
+    }
+  }
+  ctx.textAlign='left';
+}
+
+/* ── Events ── */
+function _constBindEvents(cv) {
+  cv.onclick = function(e) {
+    var rect=cv.getBoundingClientRect();
+    var cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+    if (_constAddPend) { _constPlaceNew(cx/cv.width, cy/cv.height); return; }
+    var stars=_constStarData||_constDefStars;
+    var hitR=28, px=_constParallax.x*.12, py=_constParallax.y*.12;
+    for (var i=0;i<stars.length;i++) {
+      var sx=stars[i].x*cv.width+px, sy=stars[i].y*cv.height+py;
+      if ((cx-sx)**2+(cy-sy)**2<hitR**2) {
+        if (_constEditMode) constOpenEdit(i);
+        else constOpenCard(i);
+        return;
+      }
+    }
+    if (!_constEditMode) constCloseCard();
+  };
+  cv.addEventListener('mousemove', function(e) {
+    _constParallax.tx = (e.clientX/window.innerWidth  - .5) * 28;
+    _constParallax.ty = (e.clientY/window.innerHeight - .5) * 28;
+  });
+  cv.addEventListener('touchmove', function(e) {
+    if (e.touches.length!==1) return;
+    _constParallax.tx = (e.touches[0].clientX/window.innerWidth  - .5) * 18;
+    _constParallax.ty = (e.touches[0].clientY/window.innerHeight - .5) * 18;
+  }, {passive:true});
+}
+
+/* ── Memory card ── */
+function constOpenCard(idx) {
+  var stars=_constStarData||_constDefStars;
+  var s=stars[idx]; if(!s) return;
+  _constOpenIdx=idx;
+  document.getElementById('const-mem-label').textContent  = s.label||'';
+  document.getElementById('const-mem-date').textContent   = s.date||'';
+  document.getElementById('const-mem-text').textContent   = s.text||'';
+  document.getElementById('const-mem-counter').textContent= (idx+1)+' / '+stars.length;
+  document.getElementById('const-mem-card').classList.add('open');
+}
+function constCloseCard() {
+  _constOpenIdx=-1;
+  document.getElementById('const-mem-card').classList.remove('open');
+}
+function constNavStar(dir) {
+  var stars=_constStarData||_constDefStars;
+  var next=(_constOpenIdx+dir+stars.length)%stars.length;
+  constOpenCard(next);
+}
+
+/* ── Admin: edit mode ── */
+function constToggleEdit() {
+  _constEditMode=!_constEditMode;
+  var btn=document.getElementById('const-edit-btn');
+  var addBtn=document.getElementById('const-add-btn');
+  if (_constEditMode) { btn.classList.add('on'); btn.textContent='✓ Sair'; if(addBtn) addBtn.style.display=''; }
+  else { constExitEdit(); }
+}
+function constExitEdit() {
+  _constEditMode=false; _constAddPend=false;
+  var btn=document.getElementById('const-edit-btn');
+  var addBtn=document.getElementById('const-add-btn');
+  if (btn) { btn.classList.remove('on'); btn.textContent='✏️ Editar'; }
+  if (addBtn) addBtn.style.display='none';
+  document.getElementById('pg-constellation').classList.remove('adm-adding');
+}
+function constStartAdd() {
+  _constAddPend=true;
+  document.getElementById('pg-constellation').classList.add('adm-adding');
+}
+function _constPlaceNew(xPct, yPct) {
+  _constAddPend=false;
+  document.getElementById('pg-constellation').classList.remove('adm-adding');
+  _constStarData.push({ x:xPct, y:yPct, label:'Nova Memória', date:'', text:'' });
+  _constEditIdx=_constStarData.length-1;
+  constOpenEdit(_constEditIdx);
+}
+
+/* ── Edit modal ── */
+function constOpenEdit(idx) {
+  _constEditIdx=idx;
+  var s=(_constStarData||_constDefStars)[idx];
+  document.getElementById('cedit-label').value=s.label||'';
+  document.getElementById('cedit-date').value =s.date||'';
+  document.getElementById('cedit-text').value =s.text||'';
+  document.getElementById('const-edit-overlay').classList.add('open');
+}
+function constCloseEdit() { document.getElementById('const-edit-overlay').classList.remove('open'); }
+async function constSaveStar() {
+  var stars=_constStarData||_constDefStars;
+  if (_constEditIdx<0||_constEditIdx>=stars.length) return;
+  stars[_constEditIdx].label=document.getElementById('cedit-label').value;
+  stars[_constEditIdx].date =document.getElementById('cedit-date').value;
+  stars[_constEditIdx].text =document.getElementById('cedit-text').value;
+  constCloseEdit();
+  try { await _SB.from('project_configs').upsert({key:'constellation_stars',value:JSON.stringify({stars:stars}),updated_at:new Date().toISOString()}); } catch(e){}
+}
+async function constDeleteStar() {
+  if (_constEditIdx<0) return;
+  if (!confirm('Remover esta estrela da constelação?')) return;
+  _constStarData.splice(_constEditIdx,1);
+  _constEditIdx=-1;
+  constCloseEdit();
+  try { await _SB.from('project_configs').upsert({key:'constellation_stars',value:JSON.stringify({stars:_constStarData}),updated_at:new Date().toISOString()}); } catch(e){}
 }
 
 /* ── Mensagem da seção Noivado Ativado ── */
