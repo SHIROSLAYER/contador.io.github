@@ -15,6 +15,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;300;400&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
+  <!-- Import map: resolve bare module specifiers para CDN (browser sem bundler) -->
+  <!-- Quando o Vite build estiver ativo, o bundle npm substitui automaticamente -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/": "https://cdn.jsdelivr.net/npm/three@0.170.0/"
+    }
+  }
+  </script>
+
   <!--
   ╔══════════════════════════════════════════════════════════════╗
   ║            LINHA DO TEMPO — GUIA DE PERSONALIZAÇÃO          ║
@@ -4422,6 +4433,7 @@ function _toWebP(file, quality) {
 </script>
 
 <!-- ══ Vite entry point — Three.js constellation + futuras features ══ -->
-<script type="module" src="/src/main.js"></script>
+<!-- Path relativo funciona no main branch E no gh-pages -->
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>
