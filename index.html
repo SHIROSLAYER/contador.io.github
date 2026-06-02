@@ -207,6 +207,13 @@
       50%     { box-shadow:0 20px 80px rgba(0,0,0,.85),0 0 0 1px rgba(140,80,255,.25),0 0 55px rgba(180,100,255,.45),0 0 90px rgba(140,80,255,.18); }
     }
 
+    /* ── Burst de luz ao entrar no centro ── */
+    .c3-burst {
+      position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:3;
+      background:radial-gradient(circle at 50% 42%,
+        rgba(190,90,255,.55) 0%, rgba(212,136,154,.32) 30%, transparent 65%);
+      opacity:0; transform:scale(.25); will-change:transform,opacity;
+    }
     /* ── Mini constelação SVG animada dentro do card-3 ── */
     .card-const-svg {
       position:absolute; top:5%; left:3%; width:94%; height:66%;
@@ -1538,6 +1545,8 @@
     <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)" style="display:none">
       <img class="card-photo" id="card-3-photo" alt="Constelação" style="display:none" onerror="this.style.display='none'">
       <div class="card-stars"></div>
+      <!-- Burst de luz ao entrar no centro -->
+      <div class="c3-burst" id="c3-burst"></div>
 
       <!-- Mini constelação SVG animada — linhas e estrelas conectadas -->
       <svg class="card-const-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -2173,12 +2182,57 @@ function goTo(id) {
 let cardOrder = [2, 0, 1]; // Casamento esq | Namoro centro | Noivado dir (card-3 entra ao desbloquear)
 const posClasses = ['pos-left', 'pos-center', 'pos-right', 'pos-hidden'];
 const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-constellation'];
+let _prevCenterCard = -1;
 
 function renderCards() {
   cardOrder.forEach((cardIdx, posIdx) => {
     const el = document.getElementById('card-' + cardIdx);
     el.className = el.className.replace(/\bpos-\w+\b/g, '').trim() + ' ' + posClasses[posIdx];
   });
+  /* Detecta quando card-3 entra no centro e dispara animação */
+  const newCenter = cardOrder[1] !== undefined ? cardOrder[1] : cardOrder[0];
+  if (newCenter === 3 && _prevCenterCard !== 3) {
+    setTimeout(_card3Animate, 160); /* aguarda a transição CSS começar */
+  }
+  _prevCenterCard = newCenter;
+}
+
+/* ── Animação de entrada do card Constelação ── */
+function _card3Animate() {
+  var card = document.getElementById('card-3');
+  if (!card) return;
+
+  /* 1 — Redesenha o SVG: clone reinicia todas as animações CSS */
+  var svg = card.querySelector('.card-const-svg');
+  if (svg) {
+    var clone = svg.cloneNode(true);
+    svg.parentNode.replaceChild(clone, svg);
+  }
+
+  if (!window.gsap) return;
+
+  /* 2 — Burst de luz roxa-rosa que expande e some */
+  var burst = document.getElementById('c3-burst');
+  if (burst) {
+    gsap.fromTo(burst,
+      { scale: .25, opacity: .85 },
+      { scale: 3.2, opacity: 0, duration: 1.05, ease: 'power2.out' }
+    );
+  }
+
+  /* 3 — Conteúdo sobe suavemente (icon + título + sub) */
+  var icon  = card.querySelector('.card-icon');
+  var title = card.querySelector('h2');
+  var sub   = card.querySelector('p');
+  if (icon && title && sub) {
+    gsap.fromTo([icon, title, sub],
+      { y: 16, opacity: 0 },
+      { y: 0,  opacity: 1, duration: .52, stagger: .11,
+        ease: 'power3.out', delay: .22,
+        onComplete: function() { gsap.set([icon,title,sub], { clearProps:'opacity,y' }); }
+      }
+    );
+  }
 }
 
 function shiftCards(dir) {
