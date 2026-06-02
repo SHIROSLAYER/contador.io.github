@@ -206,6 +206,44 @@
       0%,100% { box-shadow:0 16px 60px rgba(0,0,0,.8),0 0 0 1px rgba(0,0,0,.4),0 0 30px rgba(140,80,255,.2); }
       50%     { box-shadow:0 20px 80px rgba(0,0,0,.85),0 0 0 1px rgba(140,80,255,.25),0 0 55px rgba(180,100,255,.45),0 0 90px rgba(140,80,255,.18); }
     }
+
+    /* ── Mini constelação SVG animada dentro do card-3 ── */
+    .card-const-svg {
+      position:absolute; top:5%; left:3%; width:94%; height:66%;
+      z-index:1; pointer-events:none; overflow:visible;
+    }
+    /* Linhas de conexão — entram com draw + pulsam para sempre */
+    .ccl {
+      stroke:rgba(155,85,255,.26); stroke-width:.8; fill:none; stroke-linecap:round;
+      stroke-dasharray:220; stroke-dashoffset:220;
+      animation:
+        ccl-in   1.3s cubic-bezier(.4,0,.2,1) var(--d,0s) both,
+        ccl-glow 4s   ease-in-out calc(var(--d,0s) + 1.6s) infinite alternate;
+    }
+    .ccl-cross { stroke:rgba(212,136,154,.18); }
+    @keyframes ccl-in   { to { stroke-dashoffset:0; } }
+    @keyframes ccl-glow { from{stroke-opacity:.16} to{stroke-opacity:.48} }
+
+    /* Estrelas de memória — cada uma pulsa em fase diferente */
+    .ccs {
+      fill:rgba(215,190,255,.9);
+      animation: ccs-twinkle 3s ease-in-out var(--ap,0s) infinite alternate;
+    }
+    .ccs-hero { /* estrela principal — rosa, mais brilhante */
+      fill:rgba(255,205,225,.97);
+      animation: ccs-hero 2.4s ease-in-out infinite alternate;
+    }
+    @keyframes ccs-twinkle {
+      from { opacity:.38; filter:drop-shadow(0 0 2px rgba(170,100,255,.7)); }
+      to   { opacity:1;   filter:drop-shadow(0 0 8px rgba(195,130,255,1)) drop-shadow(0 0 18px rgba(160,70,255,.45)); }
+    }
+    @keyframes ccs-hero {
+      from { opacity:.6;  filter:drop-shadow(0 0 4px rgba(212,136,154,.9)); }
+      to   { opacity:1;   filter:drop-shadow(0 0 14px rgba(212,136,154,1)) drop-shadow(0 0 28px rgba(190,80,255,.55)); }
+    }
+    /* Mini estrelas de fundo espalhadas */
+    .cbg { fill:rgba(210,195,255,.6); animation:cbg-fade 3.5s ease-in-out var(--bp,0s) infinite alternate; }
+    @keyframes cbg-fade { from{opacity:.15} to{opacity:.7} }
     .sel-card.pos-hidden { left:50%; top:50%; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; z-index:0; }
 
     .sel-card .card-content { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 1.2rem 1.2rem; z-index:2; text-align:center; }
@@ -1500,6 +1538,41 @@
     <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)" style="display:none">
       <img class="card-photo" id="card-3-photo" alt="Constelação" style="display:none" onerror="this.style.display='none'">
       <div class="card-stars"></div>
+
+      <!-- Mini constelação SVG animada — linhas e estrelas conectadas -->
+      <svg class="card-const-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Mini estrelas de fundo -->
+        <circle class="cbg" cx="22"  cy="18"  r=".9" style="--bp:0s"/>
+        <circle class="cbg" cx="175" cy="25"  r=".7" style="--bp:.8s"/>
+        <circle class="cbg" cx="10"  cy="90"  r=".6" style="--bp:1.4s"/>
+        <circle class="cbg" cx="190" cy="75"  r=".8" style="--bp:.3s"/>
+        <circle class="cbg" cx="30"  cy="200" r=".7" style="--bp:1.9s"/>
+        <circle class="cbg" cx="185" cy="185" r=".9" style="--bp:.6s"/>
+        <circle class="cbg" cx="95"  cy="220" r=".6" style="--bp:1.1s"/>
+        <circle class="cbg" cx="150" cy="210" r=".7" style="--bp:2.1s"/>
+        <circle class="cbg" cx="55"  cy="228" r=".5" style="--bp:.4s"/>
+        <circle class="cbg" cx="5"   cy="148" r=".6" style="--bp:1.6s"/>
+
+        <!-- Linhas de conexão — draw sequencial -->
+        <line class="ccl"       x1="100" y1="36"  x2="58"  y2="70"  style="--d:.05s"/>
+        <line class="ccl"       x1="100" y1="36"  x2="142" y2="70"  style="--d:.22s"/>
+        <line class="ccl"       x1="58"  y1="70"  x2="36"  y2="118" style="--d:.39s"/>
+        <line class="ccl"       x1="142" y1="70"  x2="164" y2="118" style="--d:.56s"/>
+        <line class="ccl"       x1="36"  y1="118" x2="60"  y2="170" style="--d:.73s"/>
+        <line class="ccl"       x1="164" y1="118" x2="140" y2="170" style="--d:.90s"/>
+        <line class="ccl ccl-cross" x1="58" y1="70"  x2="142" y2="70"  style="--d:1.07s"/>
+        <line class="ccl ccl-cross" x1="60" y1="170" x2="140" y2="170" style="--d:1.24s"/>
+
+        <!-- Estrelas de memória -->
+        <circle class="ccs ccs-hero" cx="100" cy="36"  r="4.2"/>
+        <circle class="ccs" cx="58"  cy="70"  r="2.8" style="--ap:.55s"/>
+        <circle class="ccs" cx="142" cy="70"  r="2.8" style="--ap:1.0s"/>
+        <circle class="ccs" cx="36"  cy="118" r="2.2" style="--ap:.25s"/>
+        <circle class="ccs" cx="164" cy="118" r="2.2" style="--ap:1.3s"/>
+        <circle class="ccs" cx="60"  cy="170" r="2.8" style="--ap:.75s"/>
+        <circle class="ccs" cx="140" cy="170" r="2.8" style="--ap:.15s"/>
+      </svg>
+
       <div class="card-overlay"></div>
       <div class="card-shimmer"></div>
       <div class="card-content">
