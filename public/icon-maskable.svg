@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fundo sólido (obrigatório para maskable — zona segura 80% central) -->
+  <rect width="512" height="512" fill="#1e0812"/>
+  <ellipse cx="256" cy="256" rx="220" ry="220" fill="#120810"/>
+  <!-- Coração centralizado na zona segura -->
+  <path d="M256 355 C256 355 125 265 125 178 C125 134 158 106 193 106 C220 106 242 122 256 145 C270 122 292 106 319 106 C354 106 387 134 387 178 C387 265 256 355 256 355Z"
+        fill="#d4889a"/>
+  <path d="M205 138 C214 128 227 122 240 125 C226 136 217 151 212 170 C198 162 193 150 205 138Z"
+        fill="rgba(255,255,255,0.3)"/>
+</svg>

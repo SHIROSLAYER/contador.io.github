@@ -4417,13 +4417,11 @@ function _toWebP(file, quality) {
 }
 
 /* ════════════════════════════════════════════════════
-   PWA — registra Service Worker
+   PWA — Service Worker registrado via src/main.js (Vite)
 ════════════════════════════════════════════════════ */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').catch(function(){});
-  });
-}
 </script>
+
+<!-- ══ Vite entry point — Three.js constellation + futuras features ══ -->
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
