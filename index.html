@@ -1215,10 +1215,21 @@
     .adm-close:hover { color:rgba(255,255,255,.8); }
 
     /* Admin bar (bottom center, visível só logado) */
-    #adm-bar { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%); z-index:400; display:flex; align-items:center; gap:.7rem; background:rgba(8,0,18,.9); border:1px solid rgba(232,160,176,.28); backdrop-filter:blur(14px); border-radius:40px; padding:.5rem 1.2rem; white-space:nowrap; }
+    #adm-bar { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%); z-index:400; display:flex; align-items:center; gap:.55rem; background:rgba(8,0,18,.9); border:1px solid rgba(232,160,176,.28); backdrop-filter:blur(14px); border-radius:40px; padding:.42rem .9rem; white-space:nowrap; transition:padding .35s cubic-bezier(.4,0,.2,1); }
     #adm-bar.hidden { display:none; }
+    /* Toggle expand/collapse */
+    .adm-bar-toggle { background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:.32rem; color:rgba(232,160,176,.55); font-family:'Josefin Sans',sans-serif; font-size:.56rem; letter-spacing:.38em; text-transform:uppercase; padding:.1rem .2rem; line-height:1; transition:color .2s; flex-shrink:0; }
+    .adm-bar-toggle:hover { color:rgba(232,160,176,.95); }
+    .adm-bar-toggle-icon { display:inline-block; font-size:.62rem; transition:transform .38s cubic-bezier(.4,0,.2,1); }
+    #adm-bar.adm-collapsed .adm-bar-toggle-icon { transform:rotate(180deg); }
+    /* Separador vertical */
+    .adm-bar-sep { width:1px; height:14px; background:rgba(232,160,176,.2); flex-shrink:0; transition:opacity .28s ease,width .35s ease; }
+    #adm-bar.adm-collapsed .adm-bar-sep { opacity:0; width:0; }
+    /* Wrapper de botões — colapsa com max-width */
+    .adm-bar-content { display:flex; align-items:center; gap:.55rem; overflow:hidden; max-width:700px; transition:max-width .38s cubic-bezier(.4,0,.2,1), opacity .26s ease; }
+    #adm-bar.adm-collapsed .adm-bar-content { max-width:0; opacity:0; pointer-events:none; }
     .adm-bar-label { font-size:.58rem; letter-spacing:.35em; text-transform:uppercase; color:rgba(232,160,176,.55); }
-    .adm-bar-btn { background:transparent; border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; padding:.32rem .9rem; border-radius:20px; cursor:pointer; transition:all .3s; }
+    .adm-bar-btn { background:transparent; border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; padding:.32rem .9rem; border-radius:20px; cursor:pointer; transition:all .3s; white-space:nowrap; }
     .adm-bar-btn:hover { border-color:var(--rose); color:var(--rose); }
     .adm-bar-btn.out { border-color:rgba(255,80,80,.3); color:rgba(255,80,80,.55); }
     .adm-bar-btn.out:hover { border-color:rgba(255,80,80,.7); color:rgba(255,80,80,.9); }
@@ -2047,14 +2058,22 @@
 
 <!-- ══ ADMIN BAR ══ -->
 <div id="adm-bar" class="hidden">
-  <span class="adm-bar-label">Admin</span>
-  <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Foto</button>
-  <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
-  <button class="adm-bar-btn" onclick="engAdmOpenPanel()">💍 Noivado</button>
-  <button class="adm-bar-btn" id="adm-test-btn" onclick="engToggleTestMode()">🧪 Modo Teste</button>
-  <button class="adm-bar-btn" id="adm-unlock-btn" onclick="engPreviewUnlock()" style="display:none">🎬 Desbloqueio</button>
-  <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
-  <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
+  <!-- Botão toggle: sempre visível, colapsa/expande a bandeja -->
+  <button class="adm-bar-toggle" onclick="admToggleBar()" title="Expandir / Recolher bandeja">
+    <span>Admin</span>
+    <span class="adm-bar-toggle-icon">▾</span>
+  </button>
+  <div class="adm-bar-sep"></div>
+  <!-- Conteúdo colapsável -->
+  <div class="adm-bar-content" id="adm-bar-content">
+    <button class="adm-bar-btn" onclick="admOpenUpload()">📷 Foto</button>
+    <button class="adm-bar-btn" onclick="admOpenCartas()">💌 Cartas</button>
+    <button class="adm-bar-btn" onclick="engAdmOpenPanel()">💍 Noivado</button>
+    <button class="adm-bar-btn" id="adm-test-btn" onclick="engToggleTestMode()">🧪 Modo Teste</button>
+    <button class="adm-bar-btn" id="adm-unlock-btn" onclick="engPreviewUnlock()" style="display:none">🎬 Desbloqueio</button>
+    <button class="adm-bar-btn" id="adm-drive-btn" onclick="admToggleDrive()" title="Backup Google Drive">☁ Drive: OFF</button>
+    <button class="adm-bar-btn out" onclick="admLogout()">Sair</button>
+  </div>
 </div>
 
 <!-- ══ MODAL LOGIN ══ -->
@@ -3045,9 +3064,21 @@ async function admLogout() {
   _admHideUI();
 }
 
+/* ── Toggle expand/collapse da bandeja admin ── */
+function admToggleBar() {
+  var bar = document.getElementById('adm-bar');
+  if (!bar) return;
+  var isCollapsed = bar.classList.toggle('adm-collapsed');
+  try { localStorage.setItem('adm-bar-collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
+}
+
 /* ── Mostrar / esconder UI admin ── */
 function _admShowUI() {
-  document.getElementById('adm-bar').classList.remove('hidden');
+  var bar = document.getElementById('adm-bar');
+  bar.classList.remove('hidden');
+  /* Restaura o estado de colapso salvo */
+  try { if (localStorage.getItem('adm-bar-collapsed') === '1') bar.classList.add('adm-collapsed'); }
+  catch(e) {}
   document.getElementById('adm-trigger').style.opacity = '0.45';
   document.getElementById('galleryViewer').classList.add('adm-mode');
   _admShowCardEdits();
