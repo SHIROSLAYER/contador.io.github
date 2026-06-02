@@ -4313,9 +4313,12 @@ function _engTestRevert() {
     cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null;
   }
   _nvHideActMsgEdit();
-  /* Volta ao topo da página de noivado */
+  /* Limpa qualquer opacity inline deixado pelo GSAP e volta ao topo */
   var pg = document.getElementById('pg-noivado');
-  if (pg) { if (window.gsap) { gsap.to(pg, { scrollTop:0, duration:.8, ease:'power2.inOut' }); } else { pg.scrollTop = 0; } }
+  if (pg) {
+    if (window.gsap) { gsap.set(pg, { clearProps:'opacity' }); gsap.to(pg, { scrollTop:0, duration:.8, ease:'power2.inOut' }); }
+    else { pg.style.removeProperty('opacity'); pg.scrollTop = 0; }
+  }
   /* Esconde botão animação */
   var unlockBtn = document.getElementById('adm-unlock-btn');
   if (unlockBtn) unlockBtn.style.display = 'none';
@@ -4802,14 +4805,11 @@ function _nvRevealActivatedSection() {
       /* Página inteira faz fade-in enquanto sobe ao topo */
       gsap.fromTo(pg,
         { opacity: 0 },
-        { opacity: 1, duration: .7, ease: 'power2.out' }
+        { opacity: 1, duration: .7, ease: 'power2.out',
+          onComplete: function() { gsap.set(pg, { clearProps:'opacity' }); } }
       );
       /* Scroll suave e cinematográfico de volta ao TOPO */
-      gsap.to(pg, {
-        scrollTop: 0,
-        duration: 1.6,
-        ease: 'power4.inOut'
-      });
+      gsap.to(pg, { scrollTop: 0, duration: 1.6, ease: 'power4.inOut' });
     } else {
       pg.scrollTop = 0;
     }
