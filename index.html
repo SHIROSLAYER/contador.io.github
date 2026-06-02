@@ -4659,27 +4659,29 @@ function _nvRevealActivatedSection() {
   var pg         = document.getElementById('pg-noivado');
   var actSection = document.getElementById('nv-act-section');
   if (!pg || !actSection) return;
-  /* Garante que a seção está visível antes de rolar */
-  actSection.style.display = 'flex';
-  actSection.style.opacity = '0';
-  /* Pequena pausa para o usuário "respirar" após a celebração */
+
+  /* Prepara seção ativa mas invisível (será vista ao rolar) */
+  actSection.style.display  = 'flex';
+  actSection.style.opacity  = '1';
+
+  /* Pausa curta para a celebração terminar de fechar */
   setTimeout(function() {
     if (window.gsap) {
-      /* Scroll suave até a seção Aurora */
+      /* Página inteira faz fade-in enquanto sobe ao topo */
+      gsap.fromTo(pg,
+        { opacity: 0 },
+        { opacity: 1, duration: .7, ease: 'power2.out' }
+      );
+      /* Scroll suave e cinematográfico de volta ao TOPO */
       gsap.to(pg, {
-        scrollTop: actSection.offsetTop,
-        duration: 2,
-        ease: 'power3.inOut',
-        onComplete: function() {
-          /* Fade-in cinematográfico da seção ao chegar */
-          gsap.to(actSection, { opacity:1, duration:1.2, ease:'power2.out' });
-        }
+        scrollTop: 0,
+        duration: 1.6,
+        ease: 'power4.inOut'
       });
     } else {
-      pg.scrollTop = actSection.offsetTop;
-      actSection.style.opacity = '1';
+      pg.scrollTop = 0;
     }
-  }, 400);
+  }, 350);
 }
 
 /* ── Admin: ver e alterar código ── */
