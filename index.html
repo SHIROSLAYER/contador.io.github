@@ -766,6 +766,20 @@
     .letter-adm-bottom { display:flex; justify-content:center; margin-top:1rem; }
     .letter-adm-close-btn { background:none; border:1px solid rgba(180,100,255,.22); color:rgba(180,100,255,.48); font-family:'Josefin Sans',sans-serif; font-size:.53rem; letter-spacing:.18em; padding:.35rem 1rem; cursor:pointer; border-radius:20px; transition:all .2s; }
     .letter-adm-close-btn:hover { border-color:rgba(180,100,255,.5); color:rgba(180,100,255,.8); }
+    /* Canvas 3D */
+    #letters-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    /* FAB + Add panel */
+    .letter-fab { position:absolute; bottom:2rem; right:1.5rem; z-index:20; width:48px; height:48px; border-radius:50%; background:rgba(212,136,154,.15); border:1px solid rgba(212,136,154,.42); color:rgba(212,136,154,.9); font-size:1.7rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); box-shadow:0 4px 20px rgba(212,136,154,.22); transition:all .22s; }
+    .letter-fab:hover { background:rgba(212,136,154,.27); transform:scale(1.1) rotate(90deg); }
+    #letter-add-overlay { position:absolute; inset:0; z-index:30; background:rgba(2,0,10,.88); display:none; align-items:center; justify-content:center; }
+    #letter-add-overlay.open { display:flex; }
+    .letter-add-panel { width:min(420px,90vw); max-height:84vh; overflow-y:auto; background:rgba(15,5,30,.96); border:1px solid rgba(180,100,255,.18); border-radius:18px; padding:1.8rem; }
+    .letter-add-panel h3 { font-family:'Great Vibes',cursive; font-size:1.8rem; color:rgba(212,136,154,.9); text-align:center; margin-bottom:1.2rem; }
+    .letter-color-picker { display:flex; gap:.55rem; margin:.3rem 0 .85rem; }
+    .letter-color-btn { width:30px; height:30px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all .22s; flex-shrink:0; }
+    .letter-color-btn.active { transform:scale(1.22); border-color:rgba(255,255,255,.65); box-shadow:0 0 10px rgba(255,255,255,.4); }
+    .letter-surprise-row { display:flex; align-items:center; gap:.55rem; margin:.2rem 0 .8rem; font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.1em; color:rgba(200,180,255,.65); cursor:pointer; }
+    .letter-surprise-row input { accent-color:rgba(212,136,154,.9); width:14px; height:14px; cursor:pointer; }
 
     /* Admin edit overlay */
     .const-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
@@ -1804,14 +1818,16 @@
 <div class="page" id="pg-letters">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
 
+  <!-- Canvas Three.js (mesa 3D) -->
+  <canvas id="letters-canvas"></canvas>
+
+  <!-- Header flutuante sobre o canvas -->
   <div class="letter-header">
     <h2 class="letter-title">Para Você</h2>
-    <p class="letter-subtitle">palavras do meu coração ✉</p>
+    <p class="letter-subtitle">toque nas cartas para abrir ✉</p>
   </div>
 
-  <div class="letter-table" id="letter-table"></div>
-
-  <!-- Carta aberta -->
+  <!-- Carta aberta (overlay) -->
   <div id="letter-open-backdrop" onclick="letterClose()"></div>
   <div class="letter-open-card" id="letter-open-card">
     <button class="letter-open-close" onclick="letterClose()">✕</button>
@@ -1822,18 +1838,50 @@
     <p class="letter-open-sig">Com todo o meu amor, Steven 💕</p>
   </div>
 
+  <!-- FAB: adicionar carta (admin) -->
+  <button class="letter-fab" id="letter-fab" onclick="letterAddOpen()" style="display:none" title="Adicionar carta">+</button>
+
   <!-- Admin bar -->
   <div class="letter-adm-bar" id="letter-adm-bar">
-    <button class="letter-adm-btn" onclick="letterAdmOpen()">✏️ Editar Cartas</button>
+    <button class="letter-adm-btn" onclick="letterAdmOpen()">✏️ Editar</button>
   </div>
 
-  <!-- Admin panel -->
+  <!-- Admin: editar cartas existentes -->
   <div id="letter-adm-overlay">
     <div class="letter-adm-panel">
       <h3>Editar Cartas</h3>
       <div id="letter-adm-list"></div>
       <div class="letter-adm-bottom">
         <button class="letter-adm-close-btn" onclick="letterAdmClose()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Letter modal -->
+  <div id="letter-add-overlay">
+    <div class="letter-add-panel">
+      <h3>Nova Carta 💌</h3>
+      <span class="letter-adm-label">Título</span>
+      <input class="letter-adm-input" id="ladd-title" type="text" placeholder="Para você saber...">
+      <span class="letter-adm-label">Emoji da cera</span>
+      <input class="letter-adm-input" id="ladd-seal" type="text" placeholder="💌" style="width:90px">
+      <span class="letter-adm-label">Conteúdo</span>
+      <textarea class="letter-adm-input" id="ladd-content" rows="5" placeholder="Escreva aqui com todo o amor..."></textarea>
+      <span class="letter-adm-label">Cor do envelope</span>
+      <div class="letter-color-picker">
+        <button class="letter-color-btn active" data-color="rose"   style="background:#d4889a" onclick="letterSelColor(this,'rose')"></button>
+        <button class="letter-color-btn"        data-color="violet" style="background:#b464ff" onclick="letterSelColor(this,'violet')"></button>
+        <button class="letter-color-btn"        data-color="gold"   style="background:#c4a850" onclick="letterSelColor(this,'gold')"></button>
+        <button class="letter-color-btn"        data-color="teal"   style="background:#4bb9b9" onclick="letterSelColor(this,'teal')"></button>
+        <button class="letter-color-btn"        data-color="blue"   style="background:#6491dc" onclick="letterSelColor(this,'blue')"></button>
+      </div>
+      <label class="letter-surprise-row">
+        <input type="checkbox" id="ladd-surprise">
+        ✨ Carta surpresa — cartão holográfico especial
+      </label>
+      <div class="letter-adm-bottom" style="gap:.5rem">
+        <button class="letter-adm-close-btn" onclick="letterAddClose()">Cancelar</button>
+        <button class="letter-adm-save-btn"  onclick="letterAddSave()">Criar Carta ✓</button>
       </div>
     </div>
   </div>
@@ -2030,7 +2078,10 @@ function goTo(id) {
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
   }
   if (id === 'pg-letters') { setTimeout(letterInit, 200); }
-  else if (typeof constStop === 'function') constStop();
+  else {
+    if (typeof window.letterSceneStop === 'function') window.letterSceneStop();
+    if (typeof constStop === 'function') constStop();
+  }
   currentPage = id;
 }
 
@@ -3604,16 +3655,30 @@ var _LETTER_DEFAULTS = [
 var _LETTER_ROTS = [-7, 4, -3, 8, -5];
 
 async function letterInit() {
-  if (_letterData.length > 0) { _letterRender(); return; }  /* já carregado */
-  try {
-    var res = await _SB.from('love_letters').select('*').order('order_num');
-    _letterData = (res.data && res.data.length > 0) ? res.data : _LETTER_DEFAULTS;
-  } catch(e) {
-    _letterData = _LETTER_DEFAULTS;
+  /* Sempre reinicia a cena 3D (canvas pode ter mudado de tamanho) */
+  if (_letterData.length === 0) {
+    try {
+      var res = await _SB.from('love_letters').select('*').order('order_num');
+      _letterData = (res.data && res.data.length > 0) ? res.data : _LETTER_DEFAULTS;
+    } catch(e) {
+      _letterData = _LETTER_DEFAULTS;
+    }
   }
-  _letterRender();
+  /* Inicia cena Three.js (via src/main.js) */
+  if (typeof window.letterSceneInit === 'function') {
+    window.letterSceneInit(_letterData);
+  } else {
+    /* Fallback 2D se o módulo ainda não carregou */
+    _letterRender();
+  }
+  /* Callback quando o flap terminar de abrir no 3D */
+  window.letterOpen3DCallback = function(idx) { _letterShowCard(idx); };
+  /* Admin bar */
+  var isAdm = typeof sbIsAdmin==='function' && (sbIsAdmin()||sbIsSupreme());
   var bar = document.getElementById('letter-adm-bar');
-  if (bar) bar.classList.toggle('visible', typeof sbIsAdmin==='function' && (sbIsAdmin()||sbIsSupreme()));
+  if (bar) bar.classList.toggle('visible', isAdm);
+  var fab = document.getElementById('letter-fab');
+  if (fab) fab.style.display = isAdm ? 'flex' : 'none';
 }
 
 function _letterRender() {
@@ -3635,25 +3700,38 @@ function _letterRender() {
   });
 }
 
+/* letterOpen() agora só é chamado pelo 3D (via letterOpen3DCallback) */
 function letterOpen(idx) {
+  /* No modo 3D, o clique é detectado pelo Three.js raycaster.
+     O Three.js anima a abertura e chama letterOpen3DCallback(idx).
+     Esta função serve de fallback quando o canvas 3D não está ativo. */
+  _letterShowCard(idx);
+}
+
+/* Exibe o card overlay com o conteúdo da carta */
+function _letterShowCard(idx) {
   var letter = _letterData[idx]; if (!letter) return;
   _letterOpenIdx = idx;
-  document.getElementById('letter-open-seal').textContent  = letter.seal;
-  document.getElementById('letter-open-title').textContent = letter.title;
-  document.getElementById('letter-open-text').textContent  = letter.content;
+  document.getElementById('letter-open-seal').textContent  = letter.seal  || '💌';
+  document.getElementById('letter-open-title').textContent = letter.title || '';
+  document.getElementById('letter-open-text').textContent  = letter.content || '';
   var card     = document.getElementById('letter-open-card');
   var backdrop = document.getElementById('letter-open-backdrop');
   if (backdrop) backdrop.classList.add('open');
   card.style.pointerEvents = 'auto';
   if (window.gsap) {
     gsap.fromTo(card, { scale:.84, opacity:0, y:18 }, { scale:1, opacity:1, y:0, duration:.44, ease:'back.out(1.7)' });
-  } else { card.style.opacity = '1'; }
+  } else { card.style.opacity='1'; }
 }
 
 function letterClose() {
   var card     = document.getElementById('letter-open-card');
   var backdrop = document.getElementById('letter-open-backdrop');
   if (backdrop) backdrop.classList.remove('open');
+  /* Fecha no Three.js */
+  if (typeof window.letterSceneClose === 'function' && _letterOpenIdx >= 0) {
+    window.letterSceneClose(_letterOpenIdx);
+  }
   if (window.gsap) {
     gsap.to(card, { scale:.84, opacity:0, y:14, duration:.28, ease:'power2.in',
       onComplete: function() { _letterOpenIdx=-1; card.style.pointerEvents='none'; gsap.set(card,{scale:1,y:0}); }
@@ -3709,6 +3787,61 @@ async function letterAdmSave(idx) {
 
 function _lEsc(str) {
   return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Adicionar carta ── */
+var _lAddColor = 'rose';
+
+function letterAddOpen() {
+  var f = document.getElementById('ladd-title');    if(f) f.value='';
+  var s = document.getElementById('ladd-seal');     if(s) s.value='';
+  var c = document.getElementById('ladd-content');  if(c) c.value='';
+  var x = document.getElementById('ladd-surprise'); if(x) x.checked=false;
+  _lAddColor = 'rose';
+  Array.from(document.querySelectorAll('.letter-color-btn')).forEach(function(b){ b.classList.toggle('active', b.dataset.color==='rose'); });
+  var ov = document.getElementById('letter-add-overlay');
+  if (ov) ov.classList.add('open');
+}
+
+function letterAddClose() {
+  var ov = document.getElementById('letter-add-overlay');
+  if (ov) ov.classList.remove('open');
+}
+
+function letterSelColor(btn, color) {
+  _lAddColor = color;
+  Array.from(document.querySelectorAll('.letter-color-btn')).forEach(function(b){ b.classList.toggle('active', b===btn); });
+}
+
+async function letterAddSave() {
+  var title      = (document.getElementById('ladd-title').value    || '').trim();
+  var seal       = (document.getElementById('ladd-seal').value     || '').trim() || '💌';
+  var content    = (document.getElementById('ladd-content').value  || '').trim();
+  var isSurprise = document.getElementById('ladd-surprise').checked;
+  if (!title || !content) { alert('Preencha título e conteúdo.'); return; }
+
+  var newLetter = {
+    order_num:   _letterData.length + 1,
+    title:       title,
+    seal:        seal,
+    content:     content,
+    color_key:   _lAddColor,
+    is_surprise: isSurprise,
+    updated_at:  new Date().toISOString()
+  };
+
+  try {
+    var res = await _SB.from('love_letters').insert(newLetter).select().single();
+    if (res.data) newLetter.id = res.data.id;
+  } catch(e) { newLetter.id = Date.now(); }
+
+  var idx = _letterData.length;
+  _letterData.push(newLetter);
+
+  /* Adiciona na cena 3D com animação de queda */
+  if (typeof window.letterSceneAdd === 'function') window.letterSceneAdd(newLetter, idx);
+
+  letterAddClose();
 }
 
 /* ── Init ── */
