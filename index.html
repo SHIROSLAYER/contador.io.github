@@ -160,7 +160,7 @@
     .card-namoro    { background:linear-gradient(160deg,#6b0030,#1a0030); }
     .card-noivado   { background:linear-gradient(160deg,#2a0060,#0d001a); }
     .card-casamento      { background:linear-gradient(160deg,#3a2000,#1a0c00); }
-    .card-constellation  { background:linear-gradient(160deg,#00103a,#060020); }
+    .card-letters        { background:linear-gradient(160deg,#2a0818,#0d0020); }
     .sel-card.pos-hidden { left:50%; top:50%; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; z-index:0; }
 
     .sel-card .card-content { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 1.2rem 1.2rem; z-index:2; text-align:center; }
@@ -718,6 +718,54 @@
     /* Fechar */
     .const-mem-close { position:absolute; top:.6rem; right:.7rem; background:none; border:none; color:rgba(255,255,255,.18); font-size:.75rem; cursor:pointer; line-height:1; padding:.3rem; transition:color .2s; }
     .const-mem-close:hover { color:rgba(255,255,255,.6); }
+
+    /* ══ CAIXA DE CARTAS ══ */
+    #pg-letters { overflow:hidden; background:radial-gradient(ellipse at 50% 0%,rgba(35,10,15,.98),rgba(5,2,15,.99)); }
+    .letter-header { position:absolute; top:clamp(3.2rem,6.5vw,4.8rem); left:0; right:0; text-align:center; z-index:2; pointer-events:none; }
+    .letter-title { font-family:'Great Vibes',cursive; font-size:clamp(2.2rem,7vw,3.8rem); color:rgba(212,136,154,.75); text-shadow:0 0 50px rgba(212,136,154,.35); }
+    .letter-subtitle { font-size:.47rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(180,130,200,.28); margin-top:.3rem; }
+    .letter-table { position:absolute; inset:0; top:clamp(5.8rem,12vw,8.2rem); display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:clamp(.7rem,2vw,1.4rem); padding:1rem 1.5rem; }
+    /* Envelope */
+    .letter-env { width:clamp(108px,19vw,148px); height:clamp(78px,13.5vw,106px); position:relative; cursor:pointer; border-radius:4px; transform:rotate(var(--rot,0deg)); transition:transform .32s ease,box-shadow .32s ease; will-change:transform; }
+    .letter-env:hover { transform:rotate(calc(var(--rot,0deg)*.3)) translateY(-9px) scale(1.07); box-shadow:0 22px 58px rgba(0,0,0,.72),0 0 38px var(--env-accent,rgba(212,136,154,.28)); z-index:3; }
+    .env-body { position:absolute; inset:0; border-radius:4px; background:var(--env-bg,#1c0810); border:1px solid var(--env-border,rgba(212,136,154,.45)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.28rem; box-shadow:inset 0 0 28px rgba(0,0,0,.5),0 6px 22px rgba(0,0,0,.45); overflow:hidden; }
+    .env-body::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 49.5%,var(--env-v,rgba(212,136,154,.07)) 50%,transparent 50.5%),linear-gradient(225deg,transparent 49.5%,var(--env-v,rgba(212,136,154,.07)) 50%,transparent 50.5%); }
+    .env-flap { position:absolute; top:0; left:0; right:0; height:52%; pointer-events:none; clip-path:polygon(0 0,100% 0,50% 95%); background:var(--env-flap,rgba(212,136,154,.1)); }
+    .env-seal { font-size:clamp(.82rem,2vw,1.05rem); filter:drop-shadow(0 0 8px var(--env-accent,rgba(212,136,154,.7))); position:relative; z-index:1; }
+    .env-address { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(.46rem,1.3vw,.58rem); color:var(--env-accent,rgba(212,136,154,.65)); position:relative; z-index:1; letter-spacing:.05em; }
+    /* Open card */
+    #letter-open-backdrop { position:absolute; inset:0; z-index:19; background:rgba(2,0,10,.6); opacity:0; pointer-events:none; transition:opacity .35s; }
+    #letter-open-backdrop.open { opacity:1; pointer-events:auto; }
+    .letter-open-card { position:absolute; top:50%; left:50%; z-index:20; transform:translate(-50%,-50%); opacity:0; pointer-events:none; width:min(375px,88vw); background:linear-gradient(155deg,rgba(24,8,18,.96),rgba(10,3,20,.98)); backdrop-filter:blur(28px); border:1px solid rgba(212,136,154,.18); border-radius:22px; box-shadow:0 0 0 1px rgba(212,136,154,.06) inset,0 30px 100px rgba(0,0,0,.78),0 0 80px rgba(180,60,100,.07); padding:2.2rem 2rem 2rem; max-height:82vh; overflow-y:auto; }
+    .letter-open-card::-webkit-scrollbar { width:3px; }
+    .letter-open-card::-webkit-scrollbar-thumb { background:rgba(212,136,154,.22); border-radius:2px; }
+    .letter-open-close { position:absolute; top:.62rem; right:.72rem; background:none; border:none; color:rgba(255,255,255,.18); font-size:.75rem; cursor:pointer; transition:color .2s; padding:.3rem; }
+    .letter-open-close:hover { color:rgba(255,255,255,.6); }
+    .letter-open-seal { text-align:center; font-size:1.85rem; margin-bottom:.85rem; filter:drop-shadow(0 0 14px rgba(212,136,154,.65)); animation:loc-pulse 3s ease-in-out infinite; }
+    @keyframes loc-pulse { 0%,100%{filter:drop-shadow(0 0 14px rgba(212,136,154,.65))} 50%{filter:drop-shadow(0 0 28px rgba(212,136,154,.95))} }
+    .letter-open-title { font-family:'Great Vibes',cursive; font-size:2rem; color:rgba(212,136,154,.95); text-align:center; text-shadow:0 0 28px rgba(212,136,154,.4); line-height:1.2; margin-bottom:.55rem; }
+    .letter-open-divider { height:1px; background:linear-gradient(90deg,transparent,rgba(212,136,154,.3),transparent); margin:.4rem auto 1.1rem; width:68%; }
+    .letter-open-text { font-family:'Cormorant Garamond',serif; font-size:1rem; color:rgba(225,205,255,.7); line-height:2.05; text-align:center; white-space:pre-wrap; }
+    .letter-open-sig { font-family:'Great Vibes',cursive; font-size:1.4rem; color:rgba(212,136,154,.58); text-align:center; margin-top:1.3rem; }
+    /* Admin */
+    .letter-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
+    .letter-adm-bar.visible { display:flex; }
+    .letter-adm-btn { background:rgba(8,3,22,.88); border:1px solid rgba(150,100,255,.28); color:rgba(150,100,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.55rem; letter-spacing:.15em; padding:.38rem .85rem; cursor:pointer; border-radius:20px; transition:all .22s; backdrop-filter:blur(8px); }
+    .letter-adm-btn:hover { border-color:rgba(212,136,154,.45); color:rgba(212,136,154,.8); }
+    #letter-adm-overlay { position:absolute; inset:0; z-index:30; background:rgba(2,0,10,.88); display:none; align-items:center; justify-content:center; }
+    #letter-adm-overlay.open { display:flex; }
+    .letter-adm-panel { width:min(430px,92vw); max-height:82vh; overflow-y:auto; background:rgba(15,5,30,.96); border:1px solid rgba(180,100,255,.18); border-radius:18px; padding:1.8rem; }
+    .letter-adm-panel h3 { font-family:'Great Vibes',cursive; font-size:1.8rem; color:rgba(212,136,154,.9); text-align:center; margin-bottom:1.2rem; }
+    .letter-adm-item { margin-bottom:1.1rem; padding:.9rem; background:rgba(255,255,255,.03); border:1px solid rgba(180,100,255,.1); border-radius:10px; }
+    .letter-adm-label { font-size:.5rem; letter-spacing:.2em; text-transform:uppercase; color:rgba(180,100,255,.45); margin-bottom:.35rem; display:block; }
+    .letter-adm-input { width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid rgba(180,100,255,.16); border-radius:6px; color:rgba(220,200,255,.85); font-family:'Josefin Sans',sans-serif; font-size:.72rem; padding:.45rem .65rem; margin-bottom:.35rem; resize:vertical; }
+    .letter-adm-input::placeholder { color:rgba(180,150,255,.28); }
+    .letter-adm-item-actions { display:flex; justify-content:flex-end; }
+    .letter-adm-save-btn { background:rgba(212,136,154,.14); border:1px solid rgba(212,136,154,.38); color:rgba(212,136,154,.8); font-family:'Josefin Sans',sans-serif; font-size:.53rem; letter-spacing:.18em; padding:.35rem .85rem; cursor:pointer; border-radius:20px; transition:all .2s; }
+    .letter-adm-save-btn:hover { background:rgba(212,136,154,.24); }
+    .letter-adm-bottom { display:flex; justify-content:center; margin-top:1rem; }
+    .letter-adm-close-btn { background:none; border:1px solid rgba(180,100,255,.22); color:rgba(180,100,255,.48); font-family:'Josefin Sans',sans-serif; font-size:.53rem; letter-spacing:.18em; padding:.35rem 1rem; cursor:pointer; border-radius:20px; transition:all .2s; }
+    .letter-adm-close-btn:hover { border-color:rgba(180,100,255,.5); color:rgba(180,100,255,.8); }
 
     /* Admin edit overlay */
     .const-adm-bar { position:absolute; top:1rem; right:1.2rem; z-index:20; display:none; gap:.5rem; }
@@ -1446,12 +1494,12 @@
       </div>
     </div>
 
-    <div class="sel-card card-constellation pos-hidden" id="card-3" onclick="handleCardClick(3)">
+    <div class="sel-card card-letters pos-hidden" id="card-3" onclick="handleCardClick(3)">
       <div class="card-overlay"></div>
       <div class="card-content">
-        <span class="card-icon">🌟</span>
-        <h2>Constelação</h2>
-        <p>Nossas estrelas</p>
+        <span class="card-icon">💌</span>
+        <h2>Cartas</h2>
+        <p>Palavras do coração</p>
       </div>
     </div>
 
@@ -1751,59 +1799,41 @@
 </div>
 
 <!-- ════════════════════════════════════════
-     PÁGINA — NOSSA CONSTELAÇÃO
+     PÁGINA — CAIXA DE CARTAS
 ════════════════════════════════════════ -->
-<div class="page" id="pg-constellation">
+<div class="page" id="pg-letters">
   <button class="page-back" onclick="goTo('pg-selector')">← Voltar</button>
-  <canvas id="const-canvas"></canvas>
 
-  <!-- Admin controls -->
-  <div class="const-adm-bar" id="const-adm-bar">
-    <button class="const-adm-btn" id="const-edit-btn" onclick="constToggleEdit()">✏️ Editar</button>
-    <button class="const-adm-btn" id="const-add-btn" onclick="constStartAdd()" style="display:none">➕ Estrela</button>
+  <div class="letter-header">
+    <h2 class="letter-title">Para Você</h2>
+    <p class="letter-subtitle">palavras do meu coração ✉</p>
   </div>
 
-  <!-- Title -->
-  <div class="const-overlay">
-    <h2 class="const-title">Nossa Constelação</h2>
-    <p class="const-hint">toque nas estrelas especiais ✦</p>
+  <div class="letter-table" id="letter-table"></div>
+
+  <!-- Carta aberta -->
+  <div id="letter-open-backdrop" onclick="letterClose()"></div>
+  <div class="letter-open-card" id="letter-open-card">
+    <button class="letter-open-close" onclick="letterClose()">✕</button>
+    <div class="letter-open-seal" id="letter-open-seal">💌</div>
+    <h3 class="letter-open-title" id="letter-open-title"></h3>
+    <div class="letter-open-divider"></div>
+    <div class="letter-open-text" id="letter-open-text"></div>
+    <p class="letter-open-sig">Com todo o meu amor, Steven 💕</p>
   </div>
 
-  <!-- Memory card — carta estelar centralizada -->
-  <div id="const-mem-backdrop" onclick="constCloseCard()"></div>
-  <div class="const-mem-card" id="const-mem-card">
-    <button class="const-mem-close" onclick="constCloseCard()">✕</button>
-    <div class="const-mem-badge">
-      <div class="const-mem-badge-ring">
-        <span class="const-mem-badge-icon">✦</span>
-      </div>
-    </div>
-    <p class="const-mem-label" id="const-mem-label"></p>
-    <div class="const-mem-date-row">
-      <span class="const-mem-date-line"></span>
-      <span class="const-mem-date" id="const-mem-date"></span>
-      <span class="const-mem-date-line r"></span>
-    </div>
-    <p class="const-mem-text" id="const-mem-text"></p>
-    <div class="const-mem-dots" id="const-mem-dots"></div>
-    <div class="const-mem-arrows">
-      <button class="const-mem-nav-btn" onclick="constNavStar(-1)">‹</button>
-      <span class="const-mem-counter" id="const-mem-counter"></span>
-      <button class="const-mem-nav-btn" onclick="constNavStar(1)">›</button>
-    </div>
+  <!-- Admin bar -->
+  <div class="letter-adm-bar" id="letter-adm-bar">
+    <button class="letter-adm-btn" onclick="letterAdmOpen()">✏️ Editar Cartas</button>
   </div>
 
-  <!-- Edit modal -->
-  <div class="const-edit-overlay" id="const-edit-overlay">
-    <div class="const-edit-box">
-      <h3>Memória Estelar</h3>
-      <input  class="const-edit-input" id="cedit-label" type="text" placeholder="Nome desta estrela">
-      <input  class="const-edit-input" id="cedit-date"  type="text" placeholder="Data (ex: 04/09/2024)">
-      <textarea class="const-edit-input" id="cedit-text" placeholder="A memória por trás desta estrela..."></textarea>
-      <div class="const-edit-row">
-        <button class="const-edit-del"    onclick="constDeleteStar()">🗑</button>
-        <button class="const-edit-cancel" onclick="constCloseEdit()">Cancelar</button>
-        <button class="const-edit-save"   onclick="constSaveStar()">Salvar ✓</button>
+  <!-- Admin panel -->
+  <div id="letter-adm-overlay">
+    <div class="letter-adm-panel">
+      <h3>Editar Cartas</h3>
+      <div id="letter-adm-list"></div>
+      <div class="letter-adm-bottom">
+        <button class="letter-adm-close-btn" onclick="letterAdmClose()">Fechar</button>
       </div>
     </div>
   </div>
@@ -1999,7 +2029,7 @@ function goTo(id) {
     /* Para a aurora do noivado ao sair da página */
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
   }
-  if (id === 'pg-constellation') { setTimeout(constInit, 200); }
+  if (id === 'pg-letters') { setTimeout(letterInit, 200); }
   else if (typeof constStop === 'function') constStop();
   currentPage = id;
 }
@@ -2012,7 +2042,7 @@ function goTo(id) {
 ══════════════════════════════════════════════ */
 let cardOrder = [2, 0, 1, 3]; // Casamento esq | Namoro centro | Noivado dir | Constelação hidden
 const posClasses = ['pos-left', 'pos-center', 'pos-right', 'pos-hidden'];
-const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-constellation'];
+const cardDest   = ['pg-namoro', 'pg-noivado', 'pg-casamento', 'pg-letters'];
 
 function renderCards() {
   cardOrder.forEach((cardIdx, posIdx) => {
@@ -3548,6 +3578,138 @@ var _constDefStars = [
   { x:.68, y:.23, label:'Para Sempre',       date:'',           text:'E assim começa o resto das nossas vidas, de mãos dadas.' },
 ];
 var _constDefLines = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,0]];
+
+/* ══════════════════════════════════════════════
+   CAIXA DE CARTAS
+══════════════════════════════════════════════ */
+var _letterData     = [];
+var _letterOpenIdx  = -1;
+
+var _LETTER_COLORS = [
+  { key:'rose',   bg:'#1c0810', border:'rgba(212,136,154,.48)', flap:'rgba(212,136,154,.1)',  accent:'rgba(212,136,154,.82)' },
+  { key:'violet', bg:'#0c0618', border:'rgba(180,100,255,.48)', flap:'rgba(180,100,255,.1)',  accent:'rgba(180,100,255,.82)' },
+  { key:'gold',   bg:'#18120a', border:'rgba(196,168,112,.48)', flap:'rgba(196,168,112,.1)',  accent:'rgba(196,168,112,.82)' },
+  { key:'teal',   bg:'#061515', border:'rgba(75,185,185,.48)',  flap:'rgba(75,185,185,.1)',   accent:'rgba(75,185,185,.82)'  },
+  { key:'blue',   bg:'#060c1c', border:'rgba(100,145,220,.48)', flap:'rgba(100,145,220,.1)',  accent:'rgba(100,145,220,.82)' }
+];
+
+var _LETTER_DEFAULTS = [
+  { id:1, order_num:1, title:'Para Você Saber',    seal:'💌', color_key:'rose',   content:'Desde o momento em que te vi, algo mudou em mim.\n\nNão sei explicar direito, mas era como se o mundo tivesse ficado mais bonito de uma hora para outra.\n\nVocê chegou na minha vida com a leveza de quem não sabe o quanto transforma.' },
+  { id:2, order_num:2, title:'Sobre Nós Dois',     seal:'✉️', color_key:'violet', content:'Tem coisas que a gente não planeja.\n\nNão planejei te encontrar, não planejei sentir o que sinto.\n\nMas hoje sei que tudo que aconteceu foi exatamente como tinha que ser para nos trazer até aqui.' },
+  { id:3, order_num:3, title:'Meu Maior Presente', seal:'📜', color_key:'gold',   content:'Nunca imaginei que uma pessoa pudesse fazer tanto bem.\n\nVocê me ensinou a sorrir de um jeito diferente, a ter calma, a confiar.\n\nObrigado por existir e por me escolher todos os dias.' },
+  { id:4, order_num:4, title:'Para Sempre Sim',    seal:'💕', color_key:'teal',   content:'Essa palavra parecia tão grande antes de você.\n\n"Para sempre" era abstrato demais, distante demais.\n\nHoje, olhando para você, ela é a coisa mais simples e certa do mundo.' },
+  { id:5, order_num:5, title:'Nossa História',     seal:'🌹', color_key:'blue',   content:'Cada dia ao seu lado é um capítulo que eu não quero terminar de ler.\n\nSão os risos, as brigas bobas, os silêncios gostosos, os abraços que falam mais que qualquer palavra.\n\nÉ a nossa história. E ela é linda.' }
+];
+
+var _LETTER_ROTS = [-7, 4, -3, 8, -5];
+
+async function letterInit() {
+  if (_letterData.length > 0) { _letterRender(); return; }  /* já carregado */
+  try {
+    var res = await _SB.from('love_letters').select('*').order('order_num');
+    _letterData = (res.data && res.data.length > 0) ? res.data : _LETTER_DEFAULTS;
+  } catch(e) {
+    _letterData = _LETTER_DEFAULTS;
+  }
+  _letterRender();
+  var bar = document.getElementById('letter-adm-bar');
+  if (bar) bar.classList.toggle('visible', typeof sbIsAdmin==='function' && (sbIsAdmin()||sbIsSupreme()));
+}
+
+function _letterRender() {
+  var table = document.getElementById('letter-table');
+  if (!table) return;
+  table.innerHTML = '';
+  _letterData.forEach(function(letter, idx) {
+    var col = _LETTER_COLORS.find(function(c){ return c.key === letter.color_key; }) || _LETTER_COLORS[0];
+    var rot = _LETTER_ROTS[idx % _LETTER_ROTS.length];
+    var el  = document.createElement('div');
+    el.className = 'letter-env';
+    el.style.cssText = '--rot:'+rot+'deg;--env-bg:'+col.bg+';--env-border:'+col.border+';--env-flap:'+col.flap+';--env-accent:'+col.accent+';--env-v:'+col.border.replace(/[\d.]+\)$/,'0.07)')+';';
+    el.innerHTML = '<div class="env-body"><div class="env-flap"></div>'
+      + '<span class="env-seal">'+letter.seal+'</span>'
+      + '<span class="env-address">Para Vitória</span></div>';
+    el.onclick = (function(i){ return function(){ letterOpen(i); }; })(idx);
+    table.appendChild(el);
+    if (window.gsap) gsap.fromTo(el, { y:28, opacity:0 }, { y:0, opacity:1, duration:.48, delay:.08*idx, ease:'power2.out' });
+  });
+}
+
+function letterOpen(idx) {
+  var letter = _letterData[idx]; if (!letter) return;
+  _letterOpenIdx = idx;
+  document.getElementById('letter-open-seal').textContent  = letter.seal;
+  document.getElementById('letter-open-title').textContent = letter.title;
+  document.getElementById('letter-open-text').textContent  = letter.content;
+  var card     = document.getElementById('letter-open-card');
+  var backdrop = document.getElementById('letter-open-backdrop');
+  if (backdrop) backdrop.classList.add('open');
+  card.style.pointerEvents = 'auto';
+  if (window.gsap) {
+    gsap.fromTo(card, { scale:.84, opacity:0, y:18 }, { scale:1, opacity:1, y:0, duration:.44, ease:'back.out(1.7)' });
+  } else { card.style.opacity = '1'; }
+}
+
+function letterClose() {
+  var card     = document.getElementById('letter-open-card');
+  var backdrop = document.getElementById('letter-open-backdrop');
+  if (backdrop) backdrop.classList.remove('open');
+  if (window.gsap) {
+    gsap.to(card, { scale:.84, opacity:0, y:14, duration:.28, ease:'power2.in',
+      onComplete: function() { _letterOpenIdx=-1; card.style.pointerEvents='none'; gsap.set(card,{scale:1,y:0}); }
+    });
+  } else { _letterOpenIdx=-1; card.style.opacity='0'; card.style.pointerEvents='none'; }
+}
+
+function letterAdmOpen() {
+  var overlay = document.getElementById('letter-adm-overlay');
+  var list    = document.getElementById('letter-adm-list');
+  if (!overlay || !list) return;
+  list.innerHTML = '';
+  _letterData.forEach(function(letter, idx) {
+    var item = document.createElement('div');
+    item.className = 'letter-adm-item';
+    item.innerHTML = '<span class="letter-adm-label">Carta '+(idx+1)+'</span>'
+      + '<input class="letter-adm-input" id="ladm-title-'+idx+'" type="text" placeholder="Título" value="'+_lEsc(letter.title)+'">'
+      + '<input class="letter-adm-input" id="ladm-seal-'+idx+'"  type="text" placeholder="Emoji" value="'+_lEsc(letter.seal)+'" style="width:90px">'
+      + '<textarea class="letter-adm-input" id="ladm-content-'+idx+'" rows="4" placeholder="Conteúdo...">'+_lEsc(letter.content)+'</textarea>'
+      + '<div class="letter-adm-item-actions"><button class="letter-adm-save-btn" onclick="letterAdmSave('+idx+')">Salvar ✓</button></div>';
+    list.appendChild(item);
+  });
+  overlay.classList.add('open');
+}
+
+function letterAdmClose() {
+  var overlay = document.getElementById('letter-adm-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+async function letterAdmSave(idx) {
+  var letter  = _letterData[idx]; if (!letter) return;
+  var title   = document.getElementById('ladm-title-'+idx).value.trim();
+  var seal    = document.getElementById('ladm-seal-'+idx).value.trim() || letter.seal;
+  var content = document.getElementById('ladm-content-'+idx).value;
+  if (!title || !content) { alert('Preencha título e conteúdo.'); return; }
+  letter.title = title; letter.seal = seal; letter.content = content;
+  try {
+    await _SB.from('love_letters').upsert(
+      { id: letter.id, order_num: letter.order_num, title: title, content: content, seal: seal, color_key: letter.color_key, updated_at: new Date().toISOString() },
+      { onConflict: 'id' }
+    );
+    if (_letterOpenIdx === idx) {
+      document.getElementById('letter-open-title').textContent = title;
+      document.getElementById('letter-open-text').textContent  = content;
+      document.getElementById('letter-open-seal').textContent  = seal;
+    }
+    _letterRender();
+    var btns = document.querySelectorAll('.letter-adm-save-btn');
+    if (btns[idx]) { btns[idx].textContent='Salvo! ✓'; setTimeout(function(){ btns[idx].textContent='Salvar ✓'; }, 2000); }
+  } catch(e) { alert('Erro ao salvar: '+e.message); }
+}
+
+function _lEsc(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 /* ── Init ── */
 function constInit() {
