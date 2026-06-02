@@ -749,6 +749,19 @@
     /* Texto */
     .const-mem-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.98rem; color:rgba(225,205,255,.68); text-align:center; line-height:1.9; margin-bottom:1.2rem; }
 
+    /* Foto herói do card */
+    .const-mem-photo-wrap {
+      width:calc(100% + 3.6rem); margin:-2rem -1.8rem 1.2rem;
+      height:165px; border-radius:20px 20px 0 0;
+      overflow:hidden; position:relative; flex-shrink:0; display:none;
+    }
+    .const-mem-photo-wrap.has-photo { display:block; }
+    .const-mem-photo { width:100%; height:100%; object-fit:cover; display:block; }
+    .const-mem-photo-grad {
+      position:absolute; bottom:0; left:0; right:0; height:65%;
+      background:linear-gradient(to top,rgba(22,8,52,.96) 0%,transparent 100%);
+    }
+
     /* Dots */
     .const-mem-dots { display:flex; gap:.36rem; justify-content:center; flex-wrap:wrap; max-width:220px; margin:0 auto .6rem; }
     .const-mem-dot  { width:5px; height:5px; border-radius:50%; background:rgba(180,100,255,.2); transition:all .3s ease; flex-shrink:0; }
@@ -785,6 +798,11 @@
     .const-edit-save { flex:1; background:linear-gradient(135deg,rgba(90,50,190,.5),rgba(170,55,115,.4)); border:1px solid rgba(170,110,255,.35); color:white; font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.2em; padding:.6rem; cursor:pointer; border-radius:20px; transition:all .22s; }
     .const-edit-cancel { background:none; border:1px solid rgba(255,255,255,.13); color:rgba(255,255,255,.38); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.18em; padding:.6rem 1rem; cursor:pointer; border-radius:20px; transition:all .22s; }
     .const-edit-del { background:none; border:1px solid rgba(255,70,70,.18); color:rgba(255,100,100,.45); font-family:'Josefin Sans',sans-serif; font-size:.6rem; letter-spacing:.12em; padding:.55rem .9rem; cursor:pointer; border-radius:20px; transition:all .22s; }
+    /* Photo upload in edit overlay */
+    .const-edit-photo-wrap { display:flex; flex-direction:column; gap:.5rem; align-items:center; }
+    .const-edit-photo-prev { width:100%; max-height:120px; object-fit:cover; border-radius:8px; border:1px solid rgba(150,100,255,.2); display:none; }
+    .const-edit-photo-btn { width:100%; background:rgba(18,6,38,.75); border:1px dashed rgba(150,100,255,.35); color:rgba(180,140,255,.65); font-family:'Josefin Sans',sans-serif; font-size:.62rem; letter-spacing:.18em; padding:.65rem; cursor:pointer; border-radius:6px; transition:all .22s; }
+    .const-edit-photo-btn:hover { border-color:rgba(212,136,154,.5); color:rgba(212,136,154,.85); }
 
     /* ══════════════════════
        PÁGINA 5 — CASAMENTO
@@ -1823,7 +1841,12 @@
 
   <!-- Card de memória (aparece ao clicar numa estrela) -->
   <div class="const-mem-card" id="const-mem-card">
-    <button class="letter-open-close" onclick="constCloseCard()" style="position:absolute;top:.6rem;right:.72rem;background:none;border:none;color:rgba(255,255,255,.22);font-size:.75rem;cursor:pointer;transition:color .2s;padding:.3rem">✕</button>
+    <button class="letter-open-close" onclick="constCloseCard()" style="position:absolute;top:.6rem;right:.72rem;background:none;border:none;color:rgba(255,255,255,.22);font-size:.75rem;cursor:pointer;transition:color .2s;padding:.3rem;z-index:2">✕</button>
+    <!-- Foto herói (ocupa topo do card) -->
+    <div class="const-mem-photo-wrap" id="const-mem-photo-wrap">
+      <img class="const-mem-photo" id="const-mem-photo" alt="">
+      <div class="const-mem-photo-grad"></div>
+    </div>
     <div class="const-mem-badge">
       <div class="const-mem-badge-ring">
         <span class="const-mem-badge-icon" id="const-mem-icon">🌟</span>
@@ -1854,6 +1877,10 @@
   <div class="const-edit-overlay" id="const-edit-overlay">
     <div class="const-edit-box">
       <h3>Editar Memória</h3>
+      <div class="const-edit-photo-wrap">
+        <img class="const-edit-photo-prev" id="cedit-photo-prev" alt="">
+        <button class="const-edit-photo-btn" onclick="_constUploadStarPhoto(_constEditIdx)">📷 Foto da memória</button>
+      </div>
       <input  class="const-edit-input" id="cedit-label" placeholder="Nome do momento">
       <input  class="const-edit-input" id="cedit-date"  placeholder="Data (ex: 14 fev 2022)" type="text">
       <textarea class="const-edit-input" id="cedit-text" placeholder="O que aconteceu nesse dia..." rows="4"></textarea>
@@ -3594,15 +3621,17 @@ function _nvHideGalAdd() {
 /* ══════════════════════════════════════════════
    NOSSA CONSTELAÇÃO
 ══════════════════════════════════════════════ */
-var _constRAF      = null;
-var _constT        = 0;
-var _constBgStars  = [];
-var _constStarData = null;
-var _constOpenIdx  = -1;
-var _constEditIdx  = -1;
-var _constEditMode = false;
-var _constAddPend  = false;
-var _constParallax = { x:0, y:0, tx:0, ty:0 };
+var _constRAF           = null;
+var _constT             = 0;
+var _constBgStars       = [];
+var _constStarData      = null;
+var _constOpenIdx       = -1;
+var _constEditIdx       = -1;
+var _constEditMode      = false;
+var _constAddPend       = false;
+var _constParallax      = { x:0, y:0, tx:0, ty:0 };
+var _constShootingStars = [];   /* estrelas cadentes ativas */
+var _constNextShoot     = 120;  /* frames até a próxima estrela cadente */
 
 /* Estrelas padrão — coração de 10 pontos */
 var _constDefStars = [
@@ -3627,12 +3656,35 @@ function constInit() {
   if (!cv) return;
   cv.width  = cv.offsetWidth  || window.innerWidth;
   cv.height = cv.offsetHeight || window.innerHeight;
+  _constShootingStars = [];
+  _constNextShoot = 120;
   _constGenBg(cv.width, cv.height);
   _constBindEvents(cv);
   _constLoadStars();
 }
 function constStop() {
   if (_constRAF) { cancelAnimationFrame(_constRAF); _constRAF = null; }
+}
+
+/* ── Spawn estrela cadente ── */
+function _constSpawnShootingStar(W, H) {
+  /* Ângulo diagonal suave: 25°–55° */
+  var angle = (25 + Math.random() * 30) * Math.PI / 180;
+  /* Nasce aleatoriamente na borda superior ou lateral esquerda */
+  var fromTop = Math.random() > 0.25;
+  var sx = fromTop ? (Math.random() * W * 1.1 - W * 0.05) : (-20 - Math.random() * 30);
+  var sy = fromTop ? (-15 - Math.random() * 35)            : (Math.random() * H * 0.45);
+  var speed = 4.5 + Math.random() * 7;
+  _constShootingStars.push({
+    x: sx, y: sy,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    len:   70 + Math.random() * 130,
+    alpha: 0.65 + Math.random() * 0.35,
+    life:  1.0,
+    decay: 0.012 + Math.random() * 0.014,
+    w:     0.7 + Math.random() * 1.1
+  });
 }
 
 /* ── Background stars ── */
@@ -3710,6 +3762,38 @@ function _constDraw() {
     ctx.fillStyle='rgba(210,195,255,'+a.toFixed(2)+')'; ctx.fill();
   }
 
+  /* ── Estrelas cadentes ── */
+  if (--_constNextShoot <= 0) {
+    _constSpawnShootingStar(W, H);
+    _constNextShoot = 160 + Math.floor(Math.random() * 260); /* ~3-7s a 60fps */
+  }
+  for (var si = _constShootingStars.length - 1; si >= 0; si--) {
+    var ss = _constShootingStars[si];
+    ss.x += ss.vx; ss.y += ss.vy;
+    ss.life -= ss.decay;
+    if (ss.life <= 0 || ss.x > W + 200 || ss.y > H + 100) {
+      _constShootingStars.splice(si, 1); continue;
+    }
+    var spd = Math.hypot(ss.vx, ss.vy);
+    var tLen = ss.len * Math.min(ss.life * 2, 1);
+    var tx = ss.x - (ss.vx / spd) * tLen;
+    var ty = ss.y - (ss.vy / spd) * tLen;
+    var sg = ctx.createLinearGradient(tx, ty, ss.x, ss.y);
+    sg.addColorStop(0,   'rgba(255,255,255,0)');
+    sg.addColorStop(0.6, 'rgba(210,195,255,'+(ss.alpha * ss.life * 0.35).toFixed(2)+')');
+    sg.addColorStop(1,   'rgba(255,255,255,'+(ss.alpha * ss.life).toFixed(2)+')');
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(ss.x, ss.y);
+    ctx.strokeStyle = sg; ctx.lineWidth = ss.w * ss.life; ctx.stroke();
+    /* brilho na cabeça */
+    var hg = ctx.createRadialGradient(ss.x, ss.y, 0, ss.x, ss.y, ss.w * 3.5);
+    hg.addColorStop(0,   'rgba(255,255,255,'+(ss.alpha * ss.life).toFixed(2)+')');
+    hg.addColorStop(1,   'rgba(200,180,255,0)');
+    ctx.beginPath(); ctx.arc(ss.x, ss.y, ss.w * 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = hg; ctx.fill();
+    ctx.restore();
+  }
+
   /* Constellation lines */
   var lines = _constDefLines;
   for (var l=0;l<lines.length;l++) {
@@ -3785,6 +3869,19 @@ function constOpenCard(idx) {
   var s = stars[idx]; if (!s) return;
   var prev = _constOpenIdx;
   _constOpenIdx = idx;
+
+  /* Foto herói */
+  var photoWrap = document.getElementById('const-mem-photo-wrap');
+  var photoImg  = document.getElementById('const-mem-photo');
+  if (photoWrap && photoImg) {
+    if (s.photo_url) {
+      photoImg.src = s.photo_url;
+      photoWrap.classList.add('has-photo');
+    } else {
+      photoWrap.classList.remove('has-photo');
+      photoImg.src = '';
+    }
+  }
 
   /* Conteúdo */
   document.getElementById('const-mem-label').textContent   = s.label || '';
@@ -3895,6 +3992,9 @@ function constOpenEdit(idx) {
   document.getElementById('cedit-label').value=s.label||'';
   document.getElementById('cedit-date').value =s.date||'';
   document.getElementById('cedit-text').value =s.text||'';
+  /* Foto preview */
+  var prev = document.getElementById('cedit-photo-prev');
+  if (prev) { if (s.photo_url) { prev.src=s.photo_url; prev.style.display='block'; } else { prev.src=''; prev.style.display='none'; } }
   document.getElementById('const-edit-overlay').classList.add('open');
 }
 function constCloseEdit() { document.getElementById('const-edit-overlay').classList.remove('open'); }
@@ -3914,6 +4014,40 @@ async function constDeleteStar() {
   _constEditIdx=-1;
   constCloseEdit();
   try { await _SB.from('project_configs').upsert({key:'constellation_stars',value:JSON.stringify({stars:_constStarData}),updated_at:new Date().toISOString()}); } catch(e){}
+}
+
+/* ── Upload de foto para uma estrela ── */
+async function _constUploadStarPhoto(idx) {
+  if (!_admSession) return;
+  if (idx < 0) return;
+  var stars = _constStarData || _constDefStars;
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = async function() {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var btn = document.querySelector('.const-edit-photo-btn');
+    if (btn) btn.textContent = '⏳ Enviando…';
+    try {
+      var webp = await _toWebP(file, 0.85);
+      var storageName = 'constellation/star_' + idx + '_' + Date.now() + '.webp';
+      var { error: upErr } = await _SB.storage.from('gallery').upload(storageName, webp, { upsert:true, contentType:'image/webp' });
+      if (upErr) throw upErr;
+      var { data: urlData } = _SB.storage.from('gallery').getPublicUrl(storageName);
+      stars[idx].photo_url = urlData.publicUrl;
+      /* Salva no banco junto com os outros dados da estrela */
+      await _SB.from('project_configs').upsert({ key:'constellation_stars', value:JSON.stringify({stars:stars}), updated_at:new Date().toISOString() });
+      /* Atualiza preview no edit overlay */
+      var prev = document.getElementById('cedit-photo-prev');
+      if (prev) { prev.src = stars[idx].photo_url; prev.style.display = 'block'; }
+      if (btn) btn.textContent = '✓ Foto salva';
+      setTimeout(function(){ if (btn) btn.textContent = '📷 Trocar foto'; }, 2000);
+    } catch(e) {
+      if (btn) btn.textContent = '📷 Foto da memória';
+      console.error('Erro upload foto estrela:', e);
+    }
+  };
+  input.click();
 }
 
 /* ── Mensagem da seção Noivado Ativado ── */
