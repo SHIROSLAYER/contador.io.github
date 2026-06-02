@@ -3,16 +3,9 @@
  *
  * Módulos Three.js:
  *  1. Constelação (legado, mantido mas inativo)
- *  2. Caixa de Cartas 3D (ativo na 4ª página)
  */
 
 import { init as constInit3D, cleanup as constCleanup3D } from './modules/constellation-3d.js'
-import {
-  init            as lettersInit3D,
-  cleanup         as lettersCleanup3D,
-  addLetterToScene,
-  closeLetter     as closeLetterIn3D,
-} from './modules/letters-3d.js'
 
 /* ─────────────────────────────────────────────
    Constelação Three.js (legado — mantido)
@@ -37,33 +30,6 @@ window.constInit = function () {
   setTimeout(() => tryInit(), 300)
 }
 window.constStop = function () { constCleanup3D() }
-
-/* ─────────────────────────────────────────────
-   Caixa de Cartas 3D
-   API exposta ao código legado em index.html:
-     window.letterSceneInit(data)   — inicia cena
-     window.letterSceneStop()       — destroi cena
-     window.letterSceneAdd(ld, idx) — adiciona carta à cena
-     window.letterSceneClose(idx)   — fecha carta na cena
-───────────────────────────────────────────── */
-window.letterSceneInit = function (letterData) {
-  lettersInit3D(letterData || [], function (idx) {
-    /* Callback do Three.js quando o flap termina de abrir */
-    if (typeof window.letterOpen3DCallback === 'function') window.letterOpen3DCallback(idx)
-  })
-}
-
-window.letterSceneStop = function () {
-  lettersCleanup3D()
-}
-
-window.letterSceneAdd = function (ld, idx) {
-  addLetterToScene(ld, idx)
-}
-
-window.letterSceneClose = function (idx) {
-  closeLetterIn3D(idx)
-}
 
 /* ─────────────────────────────────────────────
    Service Worker
