@@ -4665,19 +4665,9 @@ function _engActivateVisuals(isoDate) {
   var fl = document.getElementById('namoro-frozen-label');
   if (fl) fl.style.display = 'block';
 
-  /* Mensagem do novo ciclo abaixo do relógio congelado */
+  /* Mensagem do novo ciclo abaixo do relógio congelado — aparece direto, sem animação */
   var cycleMsg = document.getElementById('namoro-cycle-msg');
-  if (cycleMsg) {
-    cycleMsg.style.display = 'block';
-    if (window.gsap) {
-      gsap.fromTo(cycleMsg,
-        { opacity:0, y:22 },
-        { opacity:1, y:0, duration:1.1, ease:'power3.out', delay:.35,
-          onComplete: function() { gsap.set(cycleMsg, { clearProps:'opacity,y' }); }
-        }
-      );
-    }
-  }
+  if (cycleMsg) cycleMsg.style.display = 'block';
 
   /* 2 — Atualiza botão + citação */
   var btn   = document.getElementById('eng-btn');
