@@ -3882,16 +3882,16 @@ function _constSpawnShootingStar(W, H) {
   var fromTop = Math.random() > 0.25;
   var sx = fromTop ? (Math.random() * W * 1.1 - W * 0.05) : (-20 - Math.random() * 30);
   var sy = fromTop ? (-15 - Math.random() * 35)            : (Math.random() * H * 0.45);
-  var speed = 5 + Math.random() * 8;
+  var speed = 1.8 + Math.random() * 2.4; /* bem mais lento — desliza suavemente */
   _constShootingStars.push({
     x: sx, y: sy,
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed,
-    len:   100 + Math.random() * 180, /* rastro mais longo */
-    alpha: 0.88 + Math.random() * 0.12, /* sempre bem visível */
+    len:   70 + Math.random() * 110,
+    alpha: 0.88 + Math.random() * 0.12,
     life:  1.0,
-    decay: 0.009 + Math.random() * 0.010, /* dura mais */
-    w:     1.4 + Math.random() * 1.6   /* traço mais espesso */
+    decay: 0.004 + Math.random() * 0.005, /* dura ~3-5s */
+    w:     1.4 + Math.random() * 1.6
   });
 }
 
