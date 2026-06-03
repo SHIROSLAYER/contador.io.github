@@ -3805,6 +3805,9 @@ var _constIntroActive   = false; /* intro de ascensão ativo */
 var _constIntroFrame    = 0;     /* frame atual do intro */
 var _INTRO_STRIDE       = 22;    /* frames entre cada estrela (≈ 0.37s a 60fps) */
 var _INTRO_DUR          = 30;    /* frames de duração do reveal de cada estrela (≈ 0.50s) */
+var _constPulseAllActive = false; /* pulso sincronizado — ocorre ao adicionar nova estrela */
+var _constPulseAllFrame  = 0;     /* frame atual do pulso */
+var _PULSE_ALL_DUR       = 108;   /* 3 ciclos × 36 frames ≈ 1.8s total, decai suavemente */
 
 /* ─────────────────────────────────────────────────────────
    Posições fixas — 15 slots pré-determinados que formam
@@ -4044,6 +4047,19 @@ function _constDraw() {
     if (_constIntroFrame > lastFrame) _constIntroActive = false;
   }
 
+  /* ── Pulso sincronizado: todas as estrelas pulsam juntas ao adicionar nova ── */
+  var syncBoost = 0;
+  if (_constPulseAllActive) {
+    _constPulseAllFrame++;
+    if (_constPulseAllFrame > _PULSE_ALL_DUR) {
+      _constPulseAllActive = false;
+    } else {
+      var _pt    = _constPulseAllFrame / _PULSE_ALL_DUR;
+      var _decay = (1 - _pt) * (1 - _pt); /* quadratic — decai suave */
+      syncBoost  = Math.max(0, Math.sin(_constPulseAllFrame * (Math.PI * 2 / 36))) * 0.9 * _decay;
+    }
+  }
+
   /* ── Linhas com faísca percorrendo durante o reveal ── */
   for (var l=0;l<_constSlotLines.length;l++) {
     var ai=_constSlotLines[l][0], bi=_constSlotLines[l][1];
@@ -4052,7 +4068,7 @@ function _constDraw() {
     if (rt <= 0) continue;
     var x1=stars[ai].x*W+px*.12, y1=stars[ai].y*H+py*.12;
     var x2=stars[bi].x*W+px*.12, y2=stars[bi].y*H+py*.12;
-    var br = lineBreath * rt;
+    var br = lineBreath * rt * (1 + syncBoost * 2.5);
     var lg1=ctx.createLinearGradient(x1,y1,x2,y2);
     lg1.addColorStop(0,'rgba(212,136,154,'+(0.08*br).toFixed(2)+')');
     lg1.addColorStop(.5,'rgba(212,136,154,'+(0.18*br).toFixed(2)+')');
@@ -4100,24 +4116,24 @@ function _constDraw() {
       ctx.fillStyle=fg; ctx.fill();
     }
 
-    /* aurora rosa */
-    var auraR=(isOpen?42:28)*pulse*bo;
+    /* aurora rosa — expande no pulso sincronizado */
+    var auraR=(isOpen?42:28)*pulse*bo*(1+syncBoost*2.0);
     var ag=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(auraR,0.1));
-    ag.addColorStop(0,  'rgba(212,136,154,'+(isOpen?.22:.10*rt).toFixed(2)+')');
-    ag.addColorStop(.5, 'rgba(212,136,154,'+(isOpen?.10:.04*rt).toFixed(2)+')');
+    ag.addColorStop(0,  'rgba(212,136,154,'+(isOpen?.22:Math.min(.10*rt+syncBoost*.18,1)).toFixed(2)+')');
+    ag.addColorStop(.5, 'rgba(212,136,154,'+(isOpen?.10:Math.min(.04*rt+syncBoost*.08,1)).toFixed(2)+')');
     ag.addColorStop(1,  'rgba(0,0,0,0)');
     ctx.beginPath(); ctx.arc(sx,sy,Math.max(auraR,0.1),0,Math.PI*2); ctx.fillStyle=ag; ctx.fill();
 
-    /* halo */
-    var haloR=(isOpen?18:10)*pulse*bo;
+    /* halo — brilha mais no pulso */
+    var haloR=(isOpen?18:10)*pulse*bo*(1+syncBoost*1.4);
     var hg=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(haloR,0.1));
-    hg.addColorStop(0,  'rgba(255,200,220,'+(isOpen?.75:(.55*rt)).toFixed(2)+')');
-    hg.addColorStop(.6, 'rgba(212,136,154,'+(isOpen?.30:(.18*rt)).toFixed(2)+')');
+    hg.addColorStop(0,  'rgba(255,200,220,'+(isOpen?.75:Math.min(.55*rt+syncBoost*.4,1)).toFixed(2)+')');
+    hg.addColorStop(.6, 'rgba(212,136,154,'+(isOpen?.30:Math.min(.18*rt+syncBoost*.2,1)).toFixed(2)+')');
     hg.addColorStop(1,  'rgba(0,0,0,0)');
     ctx.beginPath(); ctx.arc(sx,sy,Math.max(haloR,0.1),0,Math.PI*2); ctx.fillStyle=hg; ctx.fill();
 
-    /* núcleo com leve pop no flash */
-    var coreR=(isOpen?5.5:3.8)*pulse*Math.min(bo+flash*0.6,1.5);
+    /* núcleo com leve pop no flash + boost do pulso */
+    var coreR=(isOpen?5.5:3.8)*pulse*Math.min(bo+flash*0.6,1.5)*(1+syncBoost*0.8);
     ctx.beginPath(); ctx.arc(sx,sy,Math.max(coreR,0.1),0,Math.PI*2);
     ctx.fillStyle=isOpen?'rgba(255,235,242,'+Math.min(rt+flash*.3,1).toFixed(2)+')':
                          'rgba(255,218,232,'+Math.min(rt+flash*.3,1).toFixed(2)+')';
@@ -4346,6 +4362,12 @@ async function constSaveStar() {
   if (isNew && _constEditIdx >= 0) {
     _constIntroFrame  = _constEditIdx * _INTRO_STRIDE; /* pula para o frame exato desta estrela */
     _constIntroActive = true;
+    /* Após reveal + flash da nova estrela, pulsa TODAS as estrelas juntas */
+    var _newRevealMs = Math.round((_INTRO_DUR + 46) / 60 * 1000); /* ≈1.3s */
+    setTimeout(function() {
+      _constPulseAllFrame  = 0;
+      _constPulseAllActive = true;
+    }, _newRevealMs);
   }
   try { await _SB.from('project_configs').upsert({key:'constellation_stars',value:JSON.stringify({stars:stars}),updated_at:new Date().toISOString()}); } catch(e){}
 }
