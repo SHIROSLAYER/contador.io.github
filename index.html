@@ -2452,9 +2452,24 @@ function initNoivadoAnimation() {
 
   // Reset de estados iniciais
   gsap.set('.n-zoom-img',    { scale: 1,   z: 0,   transformOrigin: 'center center' });
-  gsap.set('.n-zoom-text',   { opacity: 0, y: -35 });
+  gsap.set('.n-zoom-text',   { opacity: 1, y: 0 }); /* visível ao abrir */
   gsap.set('.n-zoom-text-2', { opacity: 0, y: 28 });
   gsap.set('.n-zoom-overlay',{ opacity: 1 });
+
+  /* Animação de entrada cinematográfica ao abrir a página */
+  gsap.fromTo('.n-zoom-eyebrow',
+    { opacity: 0, y: -12, letterSpacing: '1em' },
+    { opacity: 1, y: 0,   letterSpacing: '.55em', duration: 1.0, ease: 'power3.out', delay: 0.55 }
+  );
+  gsap.fromTo('.n-zoom-title',
+    { opacity: 0, y: 24, scale: .96 },
+    { opacity: 1, y: 0,  scale: 1,   duration: 1.1, ease: 'power3.out', delay: 0.75,
+      onComplete: function() { gsap.set('.n-zoom-title', { clearProps:'opacity,y,scale' }); }
+    }
+  );
+  gsap.fromTo('.n-zoom-text::after',
+    { scaleX: 0 }, { scaleX: 1, duration: .7, ease: 'power2.out', delay: 1.3 }
+  );
 
   var tl = gsap.timeline({
     scrollTrigger: {
@@ -2469,11 +2484,7 @@ function initNoivadoAnimation() {
   });
 
   tl
-  // Fase 1 (0–20%): texto principal entra vindo de baixo
-  .to('.n-zoom-text', { opacity: 1, y: 0,
-      ease: 'power2.out', duration: 0.2 }, 0)
-
-  // Fase 1 (0–30%): zoom começa lento e suave
+  // Fase 1 (0–30%): zoom começa lento e suave (texto já visível)
   .to('.n-zoom-img', { scale: 1.25, z: 60,
       ease: 'power1.in', duration: 0.3 }, 0)
 
