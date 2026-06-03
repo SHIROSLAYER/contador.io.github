@@ -734,6 +734,66 @@
     }
     /* Label "congelado" do contador namoro */
     .namoro-frozen-label { text-align:center; font-size:.5rem; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.18); margin-top:.5rem; }
+
+    /* ── Mensagem do novo ciclo (aparece após desbloquear o noivado) ── */
+    .namoro-cycle-msg {
+      display:none; margin:2rem auto 0; max-width:500px;
+      width:calc(100% - 3rem); text-align:center;
+      padding:1.7rem 2rem 2rem;
+      background:linear-gradient(145deg,rgba(28,6,16,.72) 0%,rgba(12,3,22,.82) 100%);
+      border:1px solid rgba(212,136,154,.16);
+      border-radius:20px;
+      box-shadow:0 0 55px rgba(212,136,154,.07), 0 8px 32px rgba(0,0,0,.45),
+                 inset 0 0 28px rgba(180,90,120,.05);
+      position:relative; overflow:hidden;
+    }
+    .namoro-cycle-msg::before {
+      content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:55%; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,136,154,.5),transparent);
+    }
+    .namoro-cycle-msg::after {
+      content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+      width:35%; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(196,168,112,.3),transparent);
+    }
+    .namoro-cycle-icon {
+      font-size:1.15rem; margin-bottom:.65rem; display:block;
+      filter:drop-shadow(0 0 14px rgba(212,136,154,.7));
+      animation:ncm-float 4s ease-in-out infinite;
+    }
+    @keyframes ncm-float {
+      0%,100%{ transform:translateY(0); }
+      50%    { transform:translateY(-5px); }
+    }
+    .namoro-cycle-title {
+      font-family:'Great Vibes',cursive; font-size:2rem; line-height:1.2;
+      color:rgba(212,136,154,.95);
+      text-shadow:0 0 32px rgba(212,136,154,.38), 0 0 80px rgba(180,100,200,.18);
+      margin-bottom:1.1rem;
+    }
+    .namoro-cycle-body {
+      font-family:'Cormorant Garamond',serif; font-style:italic;
+      font-size:.97rem; line-height:2; color:rgba(228,205,218,.70);
+    }
+    .namoro-cycle-body + .namoro-cycle-body { margin-top:.85rem; }
+    .namoro-cycle-body em { font-style:normal; color:rgba(212,136,154,.88); }
+    .namoro-cycle-divider {
+      display:flex; align-items:center; gap:.8rem;
+      margin:1.1rem auto; max-width:180px;
+    }
+    .namoro-cycle-divider span {
+      flex:1; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(196,168,112,.35));
+    }
+    .namoro-cycle-divider span:last-child {
+      background:linear-gradient(270deg,transparent,rgba(196,168,112,.35));
+    }
+    .namoro-cycle-divider em {
+      font-style:normal; font-size:.72rem; color:rgba(196,168,112,.5);
+      letter-spacing:.08em;
+    }
+
     /* Badge modo teste admin */
     #eng-test-badge { display:none; position:fixed; top:.8rem; left:50%; transform:translateX(-50%); z-index:600; background:rgba(120,80,0,.92); border:1px solid rgba(255,200,60,.45); border-radius:20px; padding:.3rem 1.1rem; font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,220,80,.9); white-space:nowrap; backdrop-filter:blur(10px); pointer-events:none; }
 
@@ -1672,6 +1732,29 @@
     <div class="cd-unit"><div class="cd-num" id="cd-seg">0</div><div class="cd-label">Seg</div></div>
   </div>
   <div class="namoro-frozen-label" id="namoro-frozen-label" style="display:none">— tempo de namoro registrado —</div>
+
+  <!-- Mensagem do novo ciclo — visível apenas após o noivado ser desbloqueado -->
+  <div class="namoro-cycle-msg" id="namoro-cycle-msg">
+    <span class="namoro-cycle-icon">💍</span>
+    <p class="namoro-cycle-title">Um Novo Ciclo Começa</p>
+    <p class="namoro-cycle-body">
+      Este relógio não parou — ele <em>preservou</em>. Cada segundo marcado aqui
+      carrega o peso e a beleza de tudo que construímos juntos. Os desafios que
+      enfrentamos ao longo desse caminho não nos quebraram; eles nos moldaram,
+      nos aproximaram e nos tornaram mais fortes do que jamais imaginamos ser.
+      Esse tempo é a nossa prova viva: de que o amor verdadeiro não foge da
+      tempestade — ele atravessa junto, de mãos dadas, olho no olho.
+    </p>
+    <div class="namoro-cycle-divider">
+      <span></span><em>✦</em><span></span>
+    </div>
+    <p class="namoro-cycle-body">
+      Hoje, guardamos esse capítulo com gratidão, orgulho e carinho infinitos.
+      Tudo que vivemos aqui foi necessário para nos trazer até este momento.
+      E agora, de coração cheio e alma leve, abrimos juntos as páginas
+      de uma história ainda mais linda. ❤️
+    </p>
+  </div>
 
   <div class="love-message">
     <p>Desde o dia em que você entrou na minha vida, tudo mudou. Não apenas em pequenos detalhes, mas em todas as cores, sentidos e direções. Você trouxe luz aos meus dias mais nublados, trouxe música aos momentos de silêncio e fez meu coração bater em um ritmo que eu nunca tinha sentido antes.</p>
@@ -4582,6 +4665,20 @@ function _engActivateVisuals(isoDate) {
   var fl = document.getElementById('namoro-frozen-label');
   if (fl) fl.style.display = 'block';
 
+  /* Mensagem do novo ciclo abaixo do relógio congelado */
+  var cycleMsg = document.getElementById('namoro-cycle-msg');
+  if (cycleMsg) {
+    cycleMsg.style.display = 'block';
+    if (window.gsap) {
+      gsap.fromTo(cycleMsg,
+        { opacity:0, y:22 },
+        { opacity:1, y:0, duration:1.1, ease:'power3.out', delay:.35,
+          onComplete: function() { gsap.set(cycleMsg, { clearProps:'opacity,y' }); }
+        }
+      );
+    }
+  }
+
   /* 2 — Atualiza botão + citação */
   var btn   = document.getElementById('eng-btn');
   var quote = document.getElementById('eng-quote');
@@ -4651,9 +4748,11 @@ function _engTestRevert() {
     _countdownInterval = setInterval(updateCountdown, 1000);
     updateCountdown();
   }
-  /* Esconde frozen label */
+  /* Esconde frozen label e mensagem do novo ciclo */
   var fl = document.getElementById('namoro-frozen-label');
   if (fl) fl.style.display = 'none';
+  var cycleMsg = document.getElementById('namoro-cycle-msg');
+  if (cycleMsg) cycleMsg.style.display = 'none';
   /* Reverte botão Noivamos */
   var engBtn = document.getElementById('eng-btn');
   var quote  = document.getElementById('eng-quote');
