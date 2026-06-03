@@ -2247,7 +2247,7 @@ function goTo(id) {
   }
   if (id === 'pg-noivado') {
     document.getElementById('pg-noivado').scrollTop = 0;
-    setTimeout(initNoivadoAnimation, 400);
+    setTimeout(initNoivadoAnimation, 60);
   } else {
     /* Para a aurora do noivado ao sair da página */
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
@@ -2524,19 +2524,19 @@ function initNoivadoAnimation() {
   gsap.set('.n-zoom-text-2', { opacity: 0, y: 28 });
   gsap.set('.n-zoom-overlay',{ opacity: 1 });
 
-  /* Animação de entrada cinematográfica ao abrir a página */
+  /* Animação de entrada — aparece imediatamente ao abrir a página */
   gsap.fromTo('.n-zoom-eyebrow',
-    { opacity: 0, y: -12, letterSpacing: '1em' },
-    { opacity: 1, y: 0,   letterSpacing: '.55em', duration: 1.0, ease: 'power3.out', delay: 0.55 }
+    { opacity: 0, y: -8, letterSpacing: '1em' },
+    { opacity: 1, y: 0,  letterSpacing: '.55em', duration: 0.45, ease: 'power3.out', delay: 0 }
   );
   gsap.fromTo('.n-zoom-title',
-    { opacity: 0, y: 24, scale: .96 },
-    { opacity: 1, y: 0,  scale: 1,   duration: 1.1, ease: 'power3.out', delay: 0.75,
+    { opacity: 0, y: 16, scale: .97 },
+    { opacity: 1, y: 0,  scale: 1,   duration: 0.5, ease: 'power3.out', delay: 0.12,
       onComplete: function() { gsap.set('.n-zoom-title', { clearProps:'opacity,y,scale' }); }
     }
   );
   gsap.fromTo('.n-zoom-text::after',
-    { scaleX: 0 }, { scaleX: 1, duration: .7, ease: 'power2.out', delay: 1.3 }
+    { scaleX: 0 }, { scaleX: 1, duration: .4, ease: 'power2.out', delay: 0.3 }
   );
 
   var tl = gsap.timeline({
