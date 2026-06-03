@@ -3882,7 +3882,24 @@ function _constRevealT(idx) {
   var elapsed = _constIntroFrame - idx * _INTRO_STRIDE;
   if (elapsed <= 0) return 0;
   var t = Math.min(elapsed / _INTRO_DUR, 1);
-  return t * t * (3 - 2 * t); /* smoothstep: suave no início e no fim */
+  return t * t * (3 - 2 * t); /* smoothstep */
+}
+
+/* Overshoot suave (back.out) — estrela "estica" ao chegar */
+function _constBackOut(t) {
+  if (t >= 1) return 1;
+  var c = 1.70158;
+  return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+}
+
+/* Flash de nascimento: brilha por 28 frames logo após o reveal completo */
+function _constBirthFlash(idx) {
+  if (!_constIntroActive) return 0;
+  var born    = idx * _INTRO_STRIDE + _INTRO_DUR;
+  var elapsed = _constIntroFrame - born;
+  if (elapsed < 0 || elapsed > 28) return 0;
+  var t = elapsed / 28;
+  return (1 - t) * (1 - t); /* quadratic fade */
 }
 
 /* ── Spawn estrela cadente ── */
@@ -3893,16 +3910,16 @@ function _constSpawnShootingStar(W, H) {
   var fromTop = Math.random() > 0.25;
   var sx = fromTop ? (Math.random() * W * 1.1 - W * 0.05) : (-20 - Math.random() * 30);
   var sy = fromTop ? (-15 - Math.random() * 35)            : (Math.random() * H * 0.45);
-  var speed = 1.8 + Math.random() * 2.4; /* bem mais lento — desliza suavemente */
+  var speed = 0.9 + Math.random() * 1.2; /* muito lento — como meteoros distantes */
   _constShootingStars.push({
     x: sx, y: sy,
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed,
-    len:   70 + Math.random() * 110,
-    alpha: 0.88 + Math.random() * 0.12,
+    len:   55 + Math.random() * 80,
+    alpha: 0.85 + Math.random() * 0.15,
     life:  1.0,
-    decay: 0.004 + Math.random() * 0.005, /* dura ~3-5s */
-    w:     1.4 + Math.random() * 1.6
+    decay: 0.0015 + Math.random() * 0.0012, /* dura ~6-11s */
+    w:     1.3 + Math.random() * 1.5
   });
 }
 
@@ -4019,15 +4036,15 @@ function _constDraw() {
     ctx.restore();
   }
 
-  /* ── Avança frame do intro e verifica se terminou ── */
+  /* ── Avança frame do intro ── */
+  var lineBreath = 0.55 + Math.sin(_constT * .014) * 0.45;
   if (_constIntroActive) {
     _constIntroFrame++;
-    var lastFrame = (stars.length - 1) * _INTRO_STRIDE + _INTRO_DUR + 20;
+    var lastFrame = (stars.length - 1) * _INTRO_STRIDE + _INTRO_DUR + 38;
     if (_constIntroFrame > lastFrame) _constIntroActive = false;
   }
 
-  /* ── Constellation lines — glow + core, aparece conforme reveladas ── */
-  var lineBreath = 0.55 + Math.sin(_constT * .014) * 0.45;
+  /* ── Linhas com faísca percorrendo durante o reveal ── */
   for (var l=0;l<_constSlotLines.length;l++) {
     var ai=_constSlotLines[l][0], bi=_constSlotLines[l][1];
     if (!stars[ai]||!stars[bi]) continue;
@@ -4048,38 +4065,62 @@ function _constDraw() {
     lg2.addColorStop(1,'rgba(220,160,200,'+(0.28*br).toFixed(2)+')');
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
     ctx.strokeStyle=lg2; ctx.lineWidth=1.1; ctx.stroke();
+    /* ✦ faísca viajando ao longo da linha durante o reveal */
+    if (_constIntroActive && rt > 0 && rt < 1) {
+      var spx = x1+(x2-x1)*rt, spy = y1+(y2-y1)*rt;
+      var sg=ctx.createRadialGradient(spx,spy,0,spx,spy,9);
+      sg.addColorStop(0,  'rgba(255,235,245,.95)');
+      sg.addColorStop(.4, 'rgba(212,136,154,.55)');
+      sg.addColorStop(1,  'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(spx,spy,9,0,Math.PI*2);
+      ctx.fillStyle=sg; ctx.fill();
+    }
   }
 
-  /* ── Memory stars — ascendem uma a uma no intro, depois pulsam ── */
+  /* ── Memory stars com back-out + flash de nascimento ── */
   for (var j=0;j<stars.length;j++) {
     var rt = _constRevealT(j);
-    if (rt <= 0) continue; /* ainda não revelada */
+    if (rt <= 0) continue;
     var st=stars[j];
     var sx=st.x*W+px*.12;
-    var sy=(st.y*H+py*.12) + (1-rt)*58; /* ascende 58px durante o reveal */
-    var pulse = (1 + Math.sin(_constT*.022+j*.68)*.18) * rt;
+    var bo=_constBackOut(rt);
+    var sy=(st.y*H+py*.12) + (1-bo)*62; /* sobe com overshoot */
+    var pulse = 1 + Math.sin(_constT*.022+j*.68)*.18;
     var isOpen=(j===_constOpenIdx), isEdit=(_constEditMode);
 
-    /* aurora rosa externa */
-    var auraR=(isOpen?42:28)*pulse;
-    var ag=ctx.createRadialGradient(sx,sy,0,sx,sy,auraR);
+    /* ✦ flash de nascimento quando estrela chega */
+    var flash=_constBirthFlash(j);
+    if (flash > 0) {
+      var fr=42*flash;
+      var fg=ctx.createRadialGradient(sx,sy,0,sx,sy,fr);
+      fg.addColorStop(0,  'rgba(255,230,245,'+(0.75*flash).toFixed(2)+')');
+      fg.addColorStop(.4, 'rgba(212,136,154,'+(0.40*flash).toFixed(2)+')');
+      fg.addColorStop(1,  'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(sx,sy,fr,0,Math.PI*2);
+      ctx.fillStyle=fg; ctx.fill();
+    }
+
+    /* aurora rosa */
+    var auraR=(isOpen?42:28)*pulse*bo;
+    var ag=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(auraR,0.1));
     ag.addColorStop(0,  'rgba(212,136,154,'+(isOpen?.22:.10*rt).toFixed(2)+')');
     ag.addColorStop(.5, 'rgba(212,136,154,'+(isOpen?.10:.04*rt).toFixed(2)+')');
     ag.addColorStop(1,  'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(sx,sy,auraR,0,Math.PI*2); ctx.fillStyle=ag; ctx.fill();
+    ctx.beginPath(); ctx.arc(sx,sy,Math.max(auraR,0.1),0,Math.PI*2); ctx.fillStyle=ag; ctx.fill();
 
-    /* halo interno */
-    var haloR=(isOpen?18:10)*pulse;
-    var hg=ctx.createRadialGradient(sx,sy,0,sx,sy,haloR);
-    hg.addColorStop(0,  'rgba(255,200,220,'+(isOpen?.75:.55*rt).toFixed(2)+')');
-    hg.addColorStop(.6, 'rgba(212,136,154,'+(isOpen?.30:.18*rt).toFixed(2)+')');
+    /* halo */
+    var haloR=(isOpen?18:10)*pulse*bo;
+    var hg=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(haloR,0.1));
+    hg.addColorStop(0,  'rgba(255,200,220,'+(isOpen?.75:(.55*rt)).toFixed(2)+')');
+    hg.addColorStop(.6, 'rgba(212,136,154,'+(isOpen?.30:(.18*rt)).toFixed(2)+')');
     hg.addColorStop(1,  'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(sx,sy,haloR,0,Math.PI*2); ctx.fillStyle=hg; ctx.fill();
+    ctx.beginPath(); ctx.arc(sx,sy,Math.max(haloR,0.1),0,Math.PI*2); ctx.fillStyle=hg; ctx.fill();
 
-    /* núcleo */
-    var coreR=(isOpen?5.5:3.8)*pulse;
-    ctx.beginPath(); ctx.arc(sx,sy,coreR,0,Math.PI*2);
-    ctx.fillStyle=isOpen?'rgba(255,230,238,'+rt.toFixed(2)+')':'rgba(255,215,228,'+rt.toFixed(2)+')';
+    /* núcleo com leve pop no flash */
+    var coreR=(isOpen?5.5:3.8)*pulse*Math.min(bo+flash*0.6,1.5);
+    ctx.beginPath(); ctx.arc(sx,sy,Math.max(coreR,0.1),0,Math.PI*2);
+    ctx.fillStyle=isOpen?'rgba(255,235,242,'+Math.min(rt+flash*.3,1).toFixed(2)+')':
+                         'rgba(255,218,232,'+Math.min(rt+flash*.3,1).toFixed(2)+')';
     ctx.fill();
 
     if (isEdit) {
@@ -4088,7 +4129,6 @@ function _constDraw() {
       ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
     }
 
-    /* label */
     if (st.label) {
       ctx.font='400 8.5px "Josefin Sans",sans-serif';
       ctx.fillStyle='rgba(240,180,210,'+(isOpen?.82:(.42*rt)).toFixed(2)+')';
