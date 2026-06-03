@@ -4091,11 +4091,11 @@ var _constShootingStars = [];   /* estrelas cadentes ativas */
 var _constNextShoot     = 120;  /* frames até a próxima estrela cadente */
 var _constIntroActive   = false; /* intro de ascensão ativo */
 var _constIntroFrame    = 0;     /* frame atual do intro */
-var _INTRO_STRIDE       = 56;    /* frames entre cada estrela (≈ 0.93s a 60fps) */
-var _INTRO_DUR          = 74;    /* frames de duração do reveal de cada estrela (≈ 1.23s) */
+var _INTRO_STRIDE       = 45;    /* frames entre cada estrela (≈ 0.75s a 60fps) */
+var _INTRO_DUR          = 59;    /* frames de duração do reveal de cada estrela (≈ 0.98s) */
 var _constPulseAllActive = false; /* pulso sincronizado — ocorre ao adicionar nova estrela */
 var _constPulseAllFrame  = 0;     /* frame atual do pulso */
-var _PULSE_ALL_DUR       = 261;   /* 3 ciclos × 87 frames ≈ 4.4s total, decai suavemente */
+var _PULSE_ALL_DUR       = 209;   /* 3 ciclos × 70 frames ≈ 3.5s total, decai suavemente */
 
 /* ─────────────────────────────────────────────────────────
    Posições fixas — 15 slots pré-determinados que formam
@@ -4188,8 +4188,8 @@ function _constBirthFlash(idx) {
   if (!_constIntroActive) return 0;
   var born    = idx * _INTRO_STRIDE + _INTRO_DUR;
   var elapsed = _constIntroFrame - born;
-  if (elapsed < 0 || elapsed > 68) return 0;
-  var t = elapsed / 68;
+  if (elapsed < 0 || elapsed > 54) return 0;
+  var t = elapsed / 54;
   return (1 - t) * (1 - t); /* quadratic fade */
 }
 
@@ -4344,7 +4344,7 @@ function _constDraw() {
     } else {
       var _pt    = _constPulseAllFrame / _PULSE_ALL_DUR;
       var _decay = (1 - _pt) * (1 - _pt); /* quadratic — decai suave */
-      syncBoost  = Math.max(0, Math.sin(_constPulseAllFrame * (Math.PI * 2 / 87))) * 0.9 * _decay;
+      syncBoost  = Math.max(0, Math.sin(_constPulseAllFrame * (Math.PI * 2 / 70))) * 0.9 * _decay;
     }
   }
 
@@ -4651,7 +4651,7 @@ async function constSaveStar() {
     _constIntroFrame  = _constEditIdx * _INTRO_STRIDE; /* pula para o frame exato desta estrela */
     _constIntroActive = true;
     /* Após reveal + flash da nova estrela, pulsa TODAS as estrelas juntas */
-    var _newRevealMs = Math.round((_INTRO_DUR + 113) / 60 * 1000); /* ≈3.1s */
+    var _newRevealMs = Math.round((_INTRO_DUR + 90) / 60 * 1000); /* ≈2.5s */
     setTimeout(function() {
       _constPulseAllFrame  = 0;
       _constPulseAllActive = true;
