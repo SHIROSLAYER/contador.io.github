@@ -4772,6 +4772,12 @@ function _engPlayUnlock(onDone) {
   /* Segunda onda de emojis (t=5.2s) */
   gsap.delayedCall(5.2,  function() { _engSpawnHearts(hearts, 10); });
 
+  /* ── Scroll para o topo durante a animação (overlay cobre tudo — transição invisível) ── */
+  gsap.delayedCall(1.1, function() {
+    var pg = document.getElementById('pg-noivado');
+    if (pg) gsap.to(pg, { scrollTop: 0, duration: 2.4, ease: 'power4.inOut' });
+  });
+
   /* ── Fechamento automático em 7s ── */
   _engUnlockTimer = gsap.delayedCall(7, _doClose);
 }
