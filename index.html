@@ -4570,6 +4570,7 @@ async function _engLoadState() {
     if (_engActivated && _engDate) {
       _engActivateVisuals(_engDate);
       _engRevealConstellationCard(false); /* boot silencioso — sem animação de entrada */
+      _engCenterNoivadoCard();            /* Noivado sempre no centro ao abrir o projeto */
     }
   } catch(e) {}
 }
@@ -4690,10 +4691,10 @@ function _engTestRevert() {
   /* Esconde botão animação */
   var unlockBtn = document.getElementById('adm-unlock-btn');
   if (unlockBtn) unlockBtn.style.display = 'none';
-  /* Remove card-3 do carousel e esconde */
+  /* Remove card-3 do carousel e esconde; restaura ordem original (Namoro centro) */
   var c3 = document.getElementById('card-3');
   if (c3) { c3.style.display = 'none'; c3.classList.remove('unlocked'); }
-  cardOrder = cardOrder.filter(function(i) { return i !== 3; });
+  cardOrder = [2, 0, 1]; /* restaura: Casamento esq | Namoro centro | Noivado dir */
   renderCards();
 }
 
@@ -5076,6 +5077,7 @@ async function _engActivate() {
   } catch(e) {}
   _engActivateVisuals(now);
   _engRevealConstellationCard(true); /* primeira vez — com animação especial */
+  _engCenterNoivadoCard();           /* Noivado vai para o centro do carousel */
   _engPlayCelebration(now);
 }
 
@@ -5086,6 +5088,7 @@ function _engTestActivate() {
   _engDate = now;
   _engActivateVisuals(now);
   _engRevealConstellationCard(true);
+  _engCenterNoivadoCard();           /* Noivado no centro também no modo teste */
   _engPlayCelebration(now);
   /* Mostra botão de replay da animação para o admin */
   var unlockBtn = document.getElementById('adm-unlock-btn');
@@ -5096,6 +5099,14 @@ function _engTestActivate() {
     _nvShowGalAdd();       /* botão + foto na galeria do noivado */
     _nvShowActMsgEdit();   /* ✏️ na mensagem do noivado */
   }
+}
+
+/* ── Centraliza o card Noivado (card-1) sempre que o noivado está ativo ── */
+function _engCenterNoivadoCard() {
+  var has3 = cardOrder.indexOf(3) >= 0;
+  cardOrder = [0, 1, 2]; /* Namoro esq | Noivado centro | Casamento dir */
+  if (has3) cardOrder.push(3); /* Constelação permanece como hidden se já revelada */
+  renderCards();
 }
 
 /* ── Revela o card da Constelação no seletor ── */
