@@ -1544,9 +1544,9 @@
       100% { transform:translateY(113vh) translateX(-7px) rotate(-360deg); opacity:0; }
     }
 
-    /* ══ MOBILE PERFORMANCE — reduz efeitos GPU-caros ══ */
-    @media (max-width: 768px) {
-      /* Grain desativado (SVG turbulence + animação 8fps = lag no scroll) */
+    /* ══ MOBILE/TABLET PERFORMANCE — reduz efeitos GPU-caros ══ */
+    @media (max-width: 1024px) {
+      /* Grain desativado em mobile E tablet (SVG turbulence + 8fps = aquecimento) */
       #grain { display: none; }
       /* Backdrop blur reduzido: de 20px → 8px em todos os cards/modais */
       .eng-box, .eng-adm-box, .const-mem-card, .const-edit-box,
@@ -1558,6 +1558,9 @@
       /* Orbs de fundo: menos blurs */
       .orb { filter: blur(40px) !important; }
     }
+
+    /* ── Pausa animações CSS em páginas ocultas (libera GPU quando não visível) ── */
+    .page:not(.active) * { animation-play-state: paused !important; }
 
     /* ══ ESTRELAS (noivado) ══ */
     .star { position:absolute; border-radius:50%; animation:star-twinkle ease-in-out infinite alternate; }
@@ -2599,7 +2602,15 @@ function _spawnPetal() {
   setTimeout(() => p.remove(), 11000);
 }
 
-setInterval(spawnHeart, 1100);
+/* Heart spawn — pausa quando app vai para background */
+var _heartInterval = setInterval(spawnHeart, 1100);
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    clearInterval(_heartInterval); _heartInterval = null;
+  } else {
+    if (!_heartInterval) _heartInterval = setInterval(spawnHeart, 1100);
+  }
+});
 
 /* ══════════════════════════════════════════════
    NOIVADO — ScrollTrigger Image Zoom
@@ -2842,7 +2853,10 @@ function _nvLetterReveal(pg) {
     resize();
     window.addEventListener('resize', resize);
 
-    for (var i = 0; i < 55; i++) {
+    /* Menos pontos em mobile/tablet para economizar GPU */
+    var _casIsMobile = window.innerWidth <= 1024;
+    var dotCount = _casIsMobile ? 22 : 55;
+    for (var i = 0; i < dotCount; i++) {
       dots.push({
         x: Math.random() * W, y: Math.random() * H,
         r: 1.5 + Math.random() * 18,
@@ -2854,8 +2868,15 @@ function _nvLetterReveal(pg) {
     }
 
     var t = 0;
+    var _casBokehRAF = null;
     (function frame() {
+      var pg = document.getElementById('pg-casamento');
+      /* Não renderiza se: elemento sumiu, página não ativa, ou app em background */
       if (!document.getElementById('cas-bokeh')) return;
+      if (document.hidden || !pg || !pg.classList.contains('active')) {
+        _casBokehRAF = requestAnimationFrame(frame);
+        return;
+      }
       ctx.clearRect(0, 0, W, H);
       dots.forEach(function(d) {
         var pulse = d.a * (0.7 + Math.sin(t * d.spd + d.ph) * 0.3);
@@ -2869,7 +2890,7 @@ function _nvLetterReveal(pg) {
         ctx.fill();
       });
       t += 0.018;
-      requestAnimationFrame(frame);
+      _casBokehRAF = requestAnimationFrame(frame);
     })();
   }
   casBokeh();
@@ -3173,7 +3194,20 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
   resize();
   window.addEventListener('resize', resize);
 
+  /* ── Frame throttle: 30fps em mobile/tablet, 60fps em desktop ── */
+  var _auroraRAF   = null;
+  var _auroraMobile = window.innerWidth <= 1024;
+  var _auroraMinMs  = _auroraMobile ? 33 : 0; /* ~30fps mobile, ilimitado desktop */
+  var _auroraLastTs = 0;
+
   function frame(ts) {
+    /* Throttle de FPS em dispositivos pequenos */
+    if (_auroraMinMs > 0 && ts - _auroraLastTs < _auroraMinMs) {
+      _auroraRAF = requestAnimationFrame(frame);
+      return;
+    }
+    _auroraLastTs = ts;
+
     var W = cvs.width, H = cvs.height;
     ctx.clearRect(0, 0, W, H);
 
@@ -3183,7 +3217,9 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
 
     ctx.globalCompositeOperation = 'screen';
 
-    for (var i = 0; i < orbs.length; i++) {
+    /* Em mobile usa apenas 3 orbs dos 5 para economizar GPU */
+    var orbCount = _auroraMobile ? 3 : orbs.length;
+    for (var i = 0; i < orbCount; i++) {
       var o = orbs[i];
       var t = ts * o.sp;
       var x = (o.nx + Math.sin(t + o.ph) * 0.09) * W;
@@ -3203,9 +3239,18 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     }
 
     ctx.globalCompositeOperation = 'source-over';
-    requestAnimationFrame(frame);
+    _auroraRAF = requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+
+  function _auroraStart() { if (!_auroraRAF) _auroraRAF = requestAnimationFrame(frame); }
+  function _auroraStop()  { if (_auroraRAF)  { cancelAnimationFrame(_auroraRAF); _auroraRAF = null; } }
+
+  /* Pausa quando app vai para background (economiza bateria/GPU) */
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) _auroraStop(); else _auroraStart();
+  });
+
+  _auroraStart();
 })();
 
 /* ══════════════════════════════════════════════
@@ -3942,9 +3987,10 @@ function _nvStartAurora() {
   resize();
   window.addEventListener('resize', resize);
 
-  /* Partículas */
+  /* Partículas — reduzidas em mobile/tablet para economizar GPU */
+  var _nvIsMobile = window.innerWidth <= 1024;
   var pts = [];
-  for (var i = 0; i < 110; i++) pts.push(mkPt());
+  for (var i = 0; i < (_nvIsMobile ? 35 : 110); i++) pts.push(mkPt());
   function mkPt() {
     return {
       x: Math.random() * (W||400), y: Math.random() * (H||800),
