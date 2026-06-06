@@ -5424,7 +5424,16 @@ async function engVerify() {
     var { data: res, error } = await _SB.rpc('verify_engagement_code', { input_code: code });
     if (error || !res || !res.ok) {
       inputs.forEach(function(x){ x.classList.add('err'); });
-      msg.textContent = 'código incorreto — tente novamente';
+      if (res && res.locked) {
+        var mins = Math.ceil((res.retry_after_seconds || 600) / 60);
+        msg.textContent = 'muitas tentativas — tente novamente em ' + mins + ' min';
+      } else if (res && typeof res.attempts_left === 'number') {
+        msg.textContent = res.attempts_left === 1
+          ? 'código incorreto — última tentativa'
+          : 'código incorreto — restam ' + res.attempts_left + ' tentativas';
+      } else {
+        msg.textContent = 'código incorreto — tente novamente';
+      }
       btn.textContent = 'Confirmar'; btn.disabled = false;
       return;
     }
