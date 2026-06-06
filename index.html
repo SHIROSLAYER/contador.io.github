@@ -11,20 +11,22 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Nossa Linha do Tempo">
   <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- SEO + compartilhamento (link bonito no WhatsApp/Instagram) -->
+  <meta name="description" content="Nossa história de amor, eternamente guardada — uma linha do tempo do nosso namoro, noivado e casamento. ❤️">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nossa Linha do Tempo ❤️">
+  <meta property="og:description" content="Cada momento nosso, guardado para sempre. Toque e reviva a nossa história.">
+  <meta property="og:image" content="assets/covers/unidade00001.jpeg">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nossa Linha do Tempo ❤️">
+  <meta name="twitter:description" content="Cada momento nosso, guardado para sempre.">
+  <meta name="twitter:image" content="assets/covers/unidade00001.jpeg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;300;400&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&display=swap" rel="stylesheet">
-
-  <!-- Import map: resolve bare module specifiers para CDN (browser sem bundler) -->
-  <!-- Quando o Vite build estiver ativo, o bundle npm substitui automaticamente -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/": "https://cdn.jsdelivr.net/npm/three@0.170.0/"
-    }
-  }
-  </script>
 
   <!--
   ╔══════════════════════════════════════════════════════════════╗
@@ -1604,36 +1606,6 @@
   <script defer src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAL0WV45HbQHc04EnAsEfQ9-ZBvqtHWyWc",
-      authDomain: "nosso-time-fe541.firebaseapp.com",
-      databaseURL: "https://nosso-time-fe541-default-rtdb.firebaseio.com",
-      projectId: "nosso-time-fe541",
-      storageBucket: "nosso-time-fe541.firebasestorage.app",
-      messagingSenderId: "488592305783",
-      appId: "1:488592305783:web:b0af880e036c71b6fa2072"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
-
-    window._fbSet = (path, data) => set(ref(db, path), data);
-    window._fbGet = (path)       => get(ref(db, path));
-
-    // Verifica carta ao carregar
-    window._fbGet('carta02').then(snap => {
-      if (!snap.exists()) {
-        window._cartaNaoAberta = true;
-        window._verificarExibicaoCarta && window._verificarExibicaoCarta();
-      }
-    }).catch(() => {});
-  </script>
 </head>
 <body>
 
@@ -3129,10 +3101,6 @@ function abrirCarta() {
 
   localStorage.setItem('carta_lida_' + carta.id, '1');
 
-  if (window._fbSet) {
-    window._fbSet('carta_' + carta.id, { abertaEm: new Date().toISOString() }).catch(function(){});
-  }
-
   mostrarCarta();
   setTimeout(_atualizarBotaoCarta, 400);
 }
@@ -3860,6 +3828,7 @@ async function _admLoadGallery(page) {
       thumb.dataset.photoPath = photo.storage_path;
 
       const img = document.createElement('img');
+      img.decoding = 'async';
       img.alt = 'Memória #' + String(photo.photo_number).padStart(4,'0');
       img.dataset.photoId     = photo.id;
       img.dataset.photoPath   = photo.storage_path;
@@ -4142,6 +4111,7 @@ async function _nvLoadGallery() {
       var img = document.createElement('img');
       img.alt = 'Noivado #' + (idx+1);
       img.loading = idx < 6 ? 'eager' : 'lazy';
+      img.decoding = 'async';
       img.src = photo.url;
       img.onerror = function(){ thumb.remove(); };
       img.onclick = function(){ openLightbox(this); };
