@@ -6,15 +6,7 @@ export default defineConfig({
 
   build: {
     outDir:     'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        // Three.js em chunk separado (evita bloquear o carregamento inicial)
-        manualChunks: {
-          three: ['three'],
-        }
-      }
-    }
+    emptyOutDir: true
   },
 
   server: {
