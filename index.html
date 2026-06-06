@@ -5421,30 +5421,28 @@ async function engVerify() {
   var msg = document.getElementById('eng-msg');
   btn.disabled = true; btn.textContent = '...';
   try {
-    var { data: ok, error } = await _SB.rpc('verify_engagement_code', { input_code: code });
-    if (error || !ok) {
+    var { data: res, error } = await _SB.rpc('verify_engagement_code', { input_code: code });
+    if (error || !res || !res.ok) {
       inputs.forEach(function(x){ x.classList.add('err'); });
       msg.textContent = 'código incorreto — tente novamente';
       btn.textContent = 'Confirmar'; btn.disabled = false;
       return;
     }
+    /* código correto — a função do servidor já gravou a ativação (persiste p/ sempre,
+       em qualquer aparelho, mesmo sem login). Usamos a data canônica do servidor. */
     engCloseModal();
-    _engPlayUnlock(async function() { await _engActivate(); });
+    _engPlayUnlock(async function() { await _engActivate(res.date); });
   } catch(e) {
     msg.textContent = 'erro de conexão';
     btn.textContent = 'Confirmar'; btn.disabled = false;
   }
 }
 
-async function _engActivate() {
-  var now = new Date().toISOString();
+async function _engActivate(serverDate) {
+  /* A persistência é feita no servidor pela RPC verify_engagement_code (SECURITY DEFINER),
+     então aqui só aplicamos os visuais usando a data canônica devolvida pelo servidor. */
+  var now = serverDate || new Date().toISOString();
   _engActivated = true; _engDate = now;
-  try {
-    await _SB.from('project_configs').upsert([
-      { key:'engagement_activated', value:'true', updated_at:now },
-      { key:'engagement_date',      value:now,    updated_at:now }
-    ]);
-  } catch(e) {}
   _engActivateVisuals(now);
   _engRevealConstellationCard(true); /* primeira vez — com animação especial */
   _engCenterNoivadoCard();           /* Noivado vai para o centro do carousel */
