@@ -4173,6 +4173,13 @@ var _constPulseAllActive = false; /* pulso sincronizado — ocorre ao adicionar 
 var _constPulseAllFrame  = 0;     /* frame atual do pulso */
 var _PULSE_ALL_DUR       = 209;   /* 3 ciclos × 70 frames ≈ 3.5s total, decai suavemente */
 
+/* ── Galáxia espiral (backdrop) — pré-renderizada 1x p/ performance ── */
+var _constGalaxyCanvas   = null;  /* canvas offscreen com a galáxia desenhada */
+var _constGalaxyRot      = 0;     /* rotação acumulada (giro lento) */
+var _constGalaxyTilt     = 0.42;  /* projeção de inclinação (disco 3D) */
+var _constGalaxyAlpha    = 0.85;  /* intensidade do backdrop */
+var _constGalaxyDrawSize = 0;     /* diâmetro on-screen */
+
 /* ─────────────────────────────────────────────────────────
    Posições fixas — 15 slots pré-determinados que formam
    uma constelação orgânica (estilo real, não geométrica).
@@ -4236,6 +4243,7 @@ function constInit() {
   _constShootingStars = [];
   _constNextShoot = 120;
   _constGenBg(cv.width, cv.height);
+  _constRenderGalaxy(cv.width, cv.height);
   _constBindEvents(cv);
   _constLoadStars();
 }
@@ -4301,6 +4309,68 @@ function _constGenBg(W, H) {
   }
 }
 
+/* ── Pré-renderiza a galáxia espiral num canvas offscreen (1x) ──
+   Desenhada face-on; a inclinação e o giro são aplicados no draw.    */
+function _constRenderGalaxy(W, H) {
+  try {
+    var mob = (window.innerWidth <= 1024);
+    var D   = Math.round(Math.min(mob ? 540 : 920, Math.min(W, H) * (mob ? 1.4 : 1.7)));
+    if (D < 120) D = 120;
+    _constGalaxyDrawSize = Math.min(W, H) * (mob ? 1.55 : 1.78);
+
+    var oc = document.createElement('canvas');
+    oc.width = D; oc.height = D;
+    var g = oc.getContext('2d');
+    if (!g) { _constGalaxyCanvas = null; return; }
+    var cx = D / 2, cy = D / 2, maxR = D * 0.46;
+    g.globalCompositeOperation = 'lighter';
+
+    /* halo difuso do disco */
+    var disk = g.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+    disk.addColorStop(0,    'rgba(255,225,210,0.50)');
+    disk.addColorStop(0.12, 'rgba(255,178,150,0.28)');
+    disk.addColorStop(0.35, 'rgba(170,90,180,0.15)');
+    disk.addColorStop(0.65, 'rgba(80,90,200,0.09)');
+    disk.addColorStop(1,    'rgba(0,0,0,0)');
+    g.fillStyle = disk;
+    g.beginPath(); g.arc(cx, cy, maxR, 0, Math.PI * 2); g.fill();
+
+    /* braços espirais — partículas */
+    var arms  = 2, twist = 3.6;
+    var count = mob ? 720 : 1500;
+    for (var i = 0; i < count; i++) {
+      var t   = Math.pow(Math.random(), 0.62);            /* mais denso ao centro */
+      var arm = i % arms;
+      var ang = arm * (Math.PI * 2 / arms) + t * twist * Math.PI;
+      ang    += (Math.random() - 0.5) * (0.08 + t * 0.55); /* dispersão cresce p/ fora */
+      var r   = t * maxR * (0.92 + Math.random() * 0.16);
+      var x   = cx + Math.cos(ang) * r;
+      var y   = cy + Math.sin(ang) * r;
+
+      var col;                                            /* cor por raio */
+      if      (t < 0.18) col = '255,236,210';             /* núcleo quente */
+      else if (t < 0.45) col = '255,180,205';             /* rosa */
+      else if (t < 0.72) col = '190,140,235';             /* roxo */
+      else               col = '120,200,230';             /* azul-teal */
+      var bright = (1 - t) * 0.7 + 0.12;
+      var size   = (t < 0.2 ? 1.6 : 0.7 + Math.random() * 1.3);
+      g.fillStyle = 'rgba(' + col + ',' + (bright * (0.4 + Math.random() * 0.6)).toFixed(2) + ')';
+      g.beginPath(); g.arc(x, y, size, 0, Math.PI * 2); g.fill();
+    }
+
+    /* núcleo brilhante */
+    var core = g.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.22);
+    core.addColorStop(0,   'rgba(255,250,245,0.95)');
+    core.addColorStop(0.3, 'rgba(255,220,200,0.60)');
+    core.addColorStop(0.6, 'rgba(255,170,190,0.25)');
+    core.addColorStop(1,   'rgba(0,0,0,0)');
+    g.fillStyle = core;
+    g.beginPath(); g.arc(cx, cy, maxR * 0.22, 0, Math.PI * 2); g.fill();
+
+    _constGalaxyCanvas = oc;
+  } catch (e) { _constGalaxyCanvas = null; }
+}
+
 /* ── Load stars from Supabase ── */
 async function _constLoadStars() {
   try {
@@ -4348,6 +4418,20 @@ function _constDraw() {
   bg.addColorStop(.5, 'rgba(3,0,12,1)');
   bg.addColorStop(1,  'rgba(1,0,5,1)');
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  /* ── Galáxia espiral (backdrop) — 1 drawImage, gira devagar + inclinação 3D ── */
+  if (_constGalaxyCanvas) {
+    var _gd = _constGalaxyDrawSize;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = _constGalaxyAlpha * (0.86 + Math.sin(_constT * 0.012) * 0.07);
+    ctx.translate(W * 0.5 + px * 0.06, H * 0.42 + py * 0.06);
+    ctx.scale(1, _constGalaxyTilt);       /* projeção de inclinação (squash vertical) */
+    ctx.rotate(_constGalaxyRot);          /* giro no plano do disco */
+    ctx.drawImage(_constGalaxyCanvas, -_gd / 2, -_gd / 2, _gd, _gd);
+    ctx.restore();
+    _constGalaxyRot += 0.00035;           /* rotação lenta, contínua */
+  }
 
   /* Nebula wisps */
   var wisps = [{cx:.28,cy:.35,r:.48,h:255,a:.16},{cx:.72,cy:.58,r:.42,h:215,a:.13},{cx:.50,cy:.48,r:.6,h:270,a:.09}];
