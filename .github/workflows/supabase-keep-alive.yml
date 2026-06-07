@@ -16,8 +16,10 @@ jobs:
     steps:
       - name: 🏓 Consulta keep-alive na gallery_photos
         env:
-          # Usando vars. porque foi adicionado como Repository Variable (não Secret)
-          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          # Chave PUBLISHABLE (publica — ja vai no client index.html, sem segredo).
+          # Hardcoded de proposito: a Repository Variable antiga usava a chave anon
+          # legada (JWT), que o Supabase desativou, e isso quebrava o keep-alive.
+          SUPABASE_ANON_KEY: 'sb_publishable_1qi0aW8SsJh_omDi2KtpAA_la5uITiT'
         run: |
           echo "⏰  $(date -u '+%Y-%m-%d %H:%M UTC')"
 
@@ -31,6 +33,6 @@ jobs:
           if [ "${STATUS}" = "200" ]; then
             echo "✅  Supabase está ativo! Cronômetro de 7 dias resetado."
           else
-            echo "⚠️  Status inesperado (${STATUS}). Verifique a variável SUPABASE_ANON_KEY."
+            echo "⚠️  Status inesperado (${STATUS}). Verifique a chave publishable / o projeto Supabase."
             exit 1
           fi
