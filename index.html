@@ -939,7 +939,8 @@
       width:min(520px,90vw);
       aspect-ratio:3/2;
       transform:rotate(-1.5deg);
-      transform-style:preserve-3d;
+      overflow:hidden;            /* recorta o shimmer ao envelope (fix do brilho vazando) */
+      border-radius:5px;          /* casa com o arredondamento do card ao recortar */
       cursor:pointer;
       transition:transform .5s cubic-bezier(.23,1,.32,1), filter .3s ease;
       filter:
