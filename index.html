@@ -2383,6 +2383,10 @@ function goTo(id) {
   }
   document.getElementById(currentPage).classList.remove('active');
   document.getElementById(id).classList.add('active');
+  /* Aurora é o fundo da home: roda só quando ela está visível (as outras
+     páginas a cobrem com canvas próprio) — economiza CPU/GPU. */
+  if (id === 'pg-welcome') { if (window._auroraStart) window._auroraStart(); }
+  else                     { if (window._auroraStop)  window._auroraStop();  }
   if (id === 'pg-namoro') {
     document.getElementById('pg-namoro').scrollTop = 0;
     setTimeout(() => {
@@ -3226,7 +3230,7 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
   /* ── Frame throttle: 30fps em mobile/tablet, 60fps em desktop ── */
   var _auroraRAF   = null;
   var _auroraMobile = window.innerWidth <= 1024;
-  var _auroraMinMs  = _auroraMobile ? 33 : 0; /* ~30fps mobile, ilimitado desktop */
+  var _auroraMinMs  = _auroraMobile ? 40 : 33; /* ~25fps mobile, ~30fps desktop (fundo lento — imperceptível) */
   var _auroraLastTs = 0;
 
   function frame(ts) {
@@ -3271,8 +3275,12 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     _auroraRAF = requestAnimationFrame(frame);
   }
 
-  function _auroraStart() { if (!_auroraRAF) _auroraRAF = requestAnimationFrame(frame); }
+  function _auroraStart() { if (!_auroraRAF) { _auroraLastTs = 0; _auroraRAF = requestAnimationFrame(frame); } }
   function _auroraStop()  { if (_auroraRAF)  { cancelAnimationFrame(_auroraRAF); _auroraRAF = null; } }
+  /* Exposto p/ a navegação pausar a aurora fora da home (ela é fundo global fixo,
+     coberto pelas demais páginas — não precisa renderizar quando invisível) */
+  window._auroraStart = _auroraStart;
+  window._auroraStop  = _auroraStop;
 
   /* Pausa quando app vai para background (economiza bateria/GPU) */
   document.addEventListener('visibilitychange', function() {
@@ -4157,6 +4165,10 @@ function _nvHideGalAdd() {
 ══════════════════════════════════════════════ */
 var _constRAF           = null;
 var _constT             = 0;
+var _constLastTs        = 0;     /* throttle de FPS */
+var _constGlowSprite    = null;  /* sprite de glow pré-renderizado (evita radial-gradient por frame) */
+var _constBgGrad        = null;  /* gradiente de fundo cacheado */
+var _constBgGradKey     = '';    /* W+'x'+H do gradiente cacheado */
 var _constBgStars       = [];
 var _constStarData      = null;
 var _constOpenIdx       = -1;
@@ -4236,6 +4248,8 @@ function constInit() {
   cv.height = cv.offsetHeight || window.innerHeight;
   _constShootingStars = [];
   _constNextShoot = 120;
+  _constBgGrad = null; _constBgGradKey = '';
+  _constBuildGlowSprite();
   _constGenBg(cv.width, cv.height);
   _constBindEvents(cv);
   _constLoadStars();
@@ -4291,6 +4305,23 @@ function _constSpawnShootingStar(W, H) {
   });
 }
 
+/* ── Sprite de glow pré-renderizado ──
+   Desenhar um radial-gradient por estrela a cada frame custa caro (~160 alocações/frame).
+   Em vez disso renderizamos UM gradiente numa textura 64×64 e a reaproveitamos com
+   drawImage (10-50× mais barato), modulando o brilho via globalAlpha. */
+function _constBuildGlowSprite() {
+  if (_constGlowSprite) return;
+  var s = 64, off = document.createElement('canvas');
+  off.width = s; off.height = s;
+  var o = off.getContext('2d');
+  var g = o.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  g.addColorStop(0,   'rgba(216,202,255,1)');
+  g.addColorStop(0.5, 'rgba(216,202,255,0.35)');
+  g.addColorStop(1,   'rgba(216,202,255,0)');
+  o.fillStyle = g; o.fillRect(0, 0, s, s);
+  _constGlowSprite = off;
+}
+
 /* ── Background stars ── */
 function _constGenBg(W, H) {
   _constBgStars = [];
@@ -4326,12 +4357,16 @@ async function _constLoadStars() {
 /* ── Animation loop ── */
 function _constStartLoop() {
   _constT = 0;
-  function frame() {
+  _constLastTs = 0;
+  var _minMs = window.innerWidth <= 1024 ? 33 : 22; /* ~30fps mobile, ~45fps desktop */
+  function frame(ts) {
+    _constRAF = requestAnimationFrame(frame);
+    if (ts && ts - _constLastTs < _minMs) return; /* throttle */
+    _constLastTs = ts || 0;
     _constDraw();
     _constT++;
-    _constRAF = requestAnimationFrame(frame);
   }
-  frame();
+  _constRAF = requestAnimationFrame(frame);
 }
 
 function _constDraw() {
@@ -4348,12 +4383,16 @@ function _constDraw() {
 
   ctx.clearRect(0, 0, W, H);
 
-  /* Space gradient */
-  var bg = ctx.createRadialGradient(W*.5, H*.42, 0, W*.5, H*.42, W*.75);
-  bg.addColorStop(0,  'rgba(6,2,22,1)');
-  bg.addColorStop(.5, 'rgba(3,0,12,1)');
-  bg.addColorStop(1,  'rgba(1,0,5,1)');
-  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  /* Space gradient — cacheado (só muda no resize) */
+  var _key = W + 'x' + H;
+  if (!_constBgGrad || _constBgGradKey !== _key) {
+    var bg = ctx.createRadialGradient(W*.5, H*.42, 0, W*.5, H*.42, W*.75);
+    bg.addColorStop(0,  'rgba(6,2,22,1)');
+    bg.addColorStop(.5, 'rgba(3,0,12,1)');
+    bg.addColorStop(1,  'rgba(1,0,5,1)');
+    _constBgGrad = bg; _constBgGradKey = _key;
+  }
+  ctx.fillStyle = _constBgGrad; ctx.fillRect(0,0,W,H);
 
   /* Nebula wisps */
   var wisps = [{cx:.28,cy:.35,r:.48,h:255,a:.16},{cx:.72,cy:.58,r:.42,h:215,a:.13},{cx:.50,cy:.48,r:.6,h:270,a:.09}];
@@ -4373,12 +4412,14 @@ function _constDraw() {
     var tw=Math.sin(_constT*.007*bs.spd+bs.ph);
     var a=bs.base+tw*(bs.base*.55);
     var bsx=bs.x+px*.35, bsy=bs.y+py*.35;
-    if (bs.glow) {                                   /* halo aditivo suave */
+    if (bs.glow && _constGlowSprite) {               /* halo aditivo suave (sprite cacheado) */
       var gR=bs.r*7.5;
-      var gG=ctx.createRadialGradient(bsx,bsy,0,bsx,bsy,gR);
-      gG.addColorStop(0,'rgba(216,202,255,'+((a+bs.base*.35)*.5).toFixed(3)+')');
-      gG.addColorStop(1,'rgba(216,202,255,0)');
-      ctx.beginPath(); ctx.arc(bsx,bsy,gR,0,Math.PI*2); ctx.fillStyle=gG; ctx.fill();
+      var ga=Math.min((a+bs.base*.35)*.5, 1);
+      if (ga > 0.01) {
+        ctx.globalAlpha = ga;
+        ctx.drawImage(_constGlowSprite, bsx-gR, bsy-gR, gR*2, gR*2);
+        ctx.globalAlpha = 1;
+      }
     }
     ctx.beginPath(); ctx.arc(bsx, bsy, bs.r, 0, Math.PI*2);
     ctx.fillStyle='rgba(220,208,255,'+a.toFixed(2)+')'; ctx.fill();
