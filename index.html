@@ -74,8 +74,11 @@
     html, body { width:100%; height:100%; overflow:hidden; font-family:'Josefin Sans',sans-serif; background:var(--night); color:var(--white); cursor:default; }
 
     /* ══ SISTEMA DE PÁGINAS — blur-fade cinematográfico ══ */
-    .page { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .95s cubic-bezier(.4,0,.2,1), filter .95s cubic-bezier(.4,0,.2,1); filter:blur(6px) brightness(.85); z-index:1; overflow:hidden; }
-    .page.active { opacity:1; pointer-events:all; z-index:10; filter:blur(0px) brightness(1); }
+    /* visibility:hidden nas inativas garante ZERO paint/composite das 4 páginas
+       full-screen ocultas (opacity:0 sozinho ainda pode manter camadas vivas);
+       o delay de .95s preserva o crossfade — só esconde depois do fade terminar. */
+    .page { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:opacity .95s cubic-bezier(.4,0,.2,1), filter .95s cubic-bezier(.4,0,.2,1), visibility 0s linear .95s; filter:blur(6px) brightness(.85); z-index:1; overflow:hidden; }
+    .page.active { opacity:1; visibility:visible; pointer-events:all; z-index:10; filter:blur(0px) brightness(1); transition:opacity .95s cubic-bezier(.4,0,.2,1), filter .95s cubic-bezier(.4,0,.2,1), visibility 0s; }
 
     /* ══ FUNDO — Aurora Veludo ══ */
     .bg-canvas { position:fixed; inset:0; z-index:0; background:radial-gradient(ellipse at 28% 18%,#1c0810 0%,#07040a 65%); overflow:hidden; }
@@ -90,7 +93,9 @@
     @keyframes orb4 { from{transform:translate(0,0)scale(1)}   to{transform:translate(-4vw,8vh)scale(1.08)} }
 
     /* ══ GRAIN DE FILME ══ */
-    #grain { position:fixed; inset:-50%; width:200%; height:200%; z-index:9999; pointer-events:none; opacity:.032; animation:grain 0.12s steps(1) infinite; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)'/%3E%3C/svg%3E"); background-size:280px; }
+    /* Camada 112% (era 200% = 4× os pixels da tela em VRAM); 5.5fps (era 8fps).
+       Translates de ±3% do elemento ≈ 3.4vw — folga de 6vw cobre sem mostrar borda. */
+    #grain { position:fixed; inset:-6%; width:112%; height:112%; z-index:9999; pointer-events:none; opacity:.032; animation:grain 0.18s steps(1) infinite; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)'/%3E%3C/svg%3E"); background-size:280px; }
     @keyframes grain { 0%{transform:translate(0,0)} 20%{transform:translate(-3%,-2%)} 40%{transform:translate(2%,3%)} 60%{transform:translate(-2%,1%)} 80%{transform:translate(3%,-3%)} 100%{transform:translate(-1%,2%)} }
 
     /* ══ VINHETA CINEMATOGRÁFICA ══ */
@@ -1486,7 +1491,7 @@
 </div>
 
 <!-- Aurora Canvas — substitui os CSS orbs -->
-<canvas id="aurora-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none"></canvas>
+<canvas id="aurora-canvas" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
 <!-- Grain + Vinheta (z-index acima do canvas) -->
 <div id="grain"></div>
 <div id="vignette"></div>
@@ -2573,9 +2578,13 @@ function _nvLetterReveal(pg) {
     var ctx = cv.getContext('2d');
     var W, H, dots = [];
 
+    /* Render em 40% da resolução — bokeh é desfocado por natureza, o CSS estica
+       sem perda visível; ~84% menos pixels por frame. Raios/velocidades escalam
+       junto p/ manter o tamanho e ritmo VISUAL idênticos. */
+    var CAS_SCALE = .4;
     function resize() {
-      W = cv.width  = cv.offsetWidth  || window.innerWidth;
-      H = cv.height = cv.offsetHeight || window.innerHeight;
+      W = cv.width  = Math.max(2, Math.round((cv.offsetWidth  || window.innerWidth)  * CAS_SCALE));
+      H = cv.height = Math.max(2, Math.round((cv.offsetHeight || window.innerHeight) * CAS_SCALE));
     }
     resize();
     window.addEventListener('resize', resize);
@@ -2586,7 +2595,7 @@ function _nvLetterReveal(pg) {
     for (var i = 0; i < dotCount; i++) {
       dots.push({
         x: Math.random() * W, y: Math.random() * H,
-        r: 2 + Math.random() * 22,
+        r: (2 + Math.random() * 22) * CAS_SCALE,
         a: .03 + Math.random() * .11,   /* mais sutil — bokeh de vela */
         spd: .08 + Math.random() * .22, /* mais lento */
         ph: Math.random() * Math.PI * 2,
@@ -2599,8 +2608,8 @@ function _nvLetterReveal(pg) {
     for (var mi = 0; mi < moteCount; mi++) {
       motes.push({
         x: Math.random() * W, y: Math.random() * H,
-        r: .6 + Math.random() * 1.6,
-        s: .12 + Math.random() * .38,   /* velocidade de subida */
+        r: (.6 + Math.random() * 1.6) * CAS_SCALE,
+        s: (.12 + Math.random() * .38) * CAS_SCALE, /* velocidade de subida */
         ph: Math.random() * Math.PI * 2,
         a: .22 + Math.random() * .38
       });
@@ -2608,7 +2617,8 @@ function _nvLetterReveal(pg) {
 
     var t = 0;
     var _casBokehRAF = null;
-    (function frame() {
+    var _casLastTs = 0;
+    (function frame(ts) {
       var pg = document.getElementById('pg-casamento');
       /* Não renderiza se: elemento sumiu, página não ativa, ou app em background */
       if (!document.getElementById('cas-bokeh')) return;
@@ -2616,6 +2626,12 @@ function _nvLetterReveal(pg) {
         _casBokehRAF = requestAnimationFrame(frame);
         return;
       }
+      /* Throttle ~30fps — bokeh lento não precisa de 60 */
+      if (ts && ts - _casLastTs < 32) {
+        _casBokehRAF = requestAnimationFrame(frame);
+        return;
+      }
+      _casLastTs = ts || 0;
       ctx.clearRect(0, 0, W, H);
       dots.forEach(function(d) {
         var pulse = d.a * (0.7 + Math.sin(t * d.spd + d.ph) * 0.3);
@@ -2628,10 +2644,11 @@ function _nvLetterReveal(pg) {
         ctx.fillStyle = grd;
         ctx.fill();
       });
-      /* Poeira dourada subindo com drift senoidal e cintilação */
+      /* Poeira dourada subindo com drift senoidal e cintilação
+         (×2 compensa os 30fps — mesmo ritmo visual dos 60fps originais) */
       motes.forEach(function(m) {
-        m.y -= m.s;
-        m.x += Math.sin(t * 1.4 + m.ph) * .18;
+        m.y -= m.s * 2;
+        m.x += Math.sin(t * 1.4 + m.ph) * .18 * CAS_SCALE * 2;
         if (m.y < -4) { m.y = H + 4; m.x = Math.random() * W; }
         var tw = .6 + Math.sin(t * 2.2 + m.ph) * .4;
         ctx.beginPath();
@@ -2639,7 +2656,7 @@ function _nvLetterReveal(pg) {
         ctx.fillStyle = 'rgba(232,200,122,' + (m.a * tw).toFixed(3) + ')';
         ctx.fill();
       });
-      t += 0.018;
+      t += 0.036; /* 2× o passo original — compensa o throttle de 60→30fps */
       _casBokehRAF = requestAnimationFrame(frame);
     })();
   }
@@ -2933,9 +2950,12 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     { nx:0.72, ny:0.22, r:0.24, rgb:[60,20,110],   sp:0.00048, ph:3.0 },
   ];
 
+  /* Render em 1/3 da resolução — o conteúdo é só gradiente suave, o CSS estica
+     sem perda visível e o trabalho de pixel por frame cai ~89%. */
+  var AUR_SCALE = 1/3;
   function resize() {
-    cvs.width  = window.innerWidth;
-    cvs.height = window.innerHeight;
+    cvs.width  = Math.max(2, Math.round(window.innerWidth  * AUR_SCALE));
+    cvs.height = Math.max(2, Math.round(window.innerHeight * AUR_SCALE));
   }
   resize();
   window.addEventListener('resize', resize);
@@ -2973,9 +2993,10 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     for (var i = 0; i < orbCount; i++) {
       var o = orbs[i];
       var t = ts * o.sp;
-      /* offset de parallax alternado por orb — camadas se movem em direções opostas */
-      var x = (o.nx + Math.sin(t + o.ph) * 0.09) * W + _auMx * (i % 2 ? 46 : -30);
-      var y = (o.ny + Math.cos(t * 0.73 + o.ph) * 0.08) * H + _auMy * (i % 2 ? -26 : 38);
+      /* offset de parallax alternado por orb — camadas se movem em direções opostas
+         (escalado por AUR_SCALE p/ manter o deslocamento visual no canvas reduzido) */
+      var x = (o.nx + Math.sin(t + o.ph) * 0.09) * W + _auMx * (i % 2 ? 46 : -30) * AUR_SCALE;
+      var y = (o.ny + Math.cos(t * 0.73 + o.ph) * 0.08) * H + _auMy * (i % 2 ? -26 : 38) * AUR_SCALE;
       var r = o.r * Math.max(W, H);
 
       var g = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -3736,9 +3757,12 @@ function _nvStartAurora() {
   var ctx = cv.getContext('2d');
   var W, H;
 
+  /* Render em 45% da resolução — aurora/partículas suaves, CSS estica sem perda
+     visível (~80% menos pixels/frame). Raios e velocidades escalam junto. */
+  var NV_SCALE = .45;
   function resize() {
-    W = cv.width  = cv.offsetWidth  || window.innerWidth;
-    H = cv.height = cv.offsetHeight || window.innerHeight;
+    W = cv.width  = Math.max(2, Math.round((cv.offsetWidth  || window.innerWidth)  * NV_SCALE));
+    H = cv.height = Math.max(2, Math.round((cv.offsetHeight || window.innerHeight) * NV_SCALE));
   }
   resize();
   window.addEventListener('resize', resize);
@@ -3750,8 +3774,8 @@ function _nvStartAurora() {
   function mkPt() {
     return {
       x: Math.random() * (W||400), y: Math.random() * (H||800),
-      r: .4 + Math.random() * 1.8,
-      vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35,
+      r: (.4 + Math.random() * 1.8) * NV_SCALE,
+      vx: (Math.random()-.5)*.35*NV_SCALE*2, vy: (Math.random()-.5)*.35*NV_SCALE*2,
       a: .08 + Math.random() * .45,
       h: 255 + Math.random() * 70   // violeta → rosa
     };
@@ -3768,13 +3792,17 @@ function _nvStartAurora() {
     { x:.5,  y:.5, hue:240, r:.4  }
   ];
   var tick = 0;
+  var _nvLastTs = 0;
 
-  function frame() {
+  function frame(ts) {
     _nvAuroraRAF = requestAnimationFrame(frame);
-    tick += .004;
+    /* Throttle ~30fps (incrementos ×2 compensam — mesmo ritmo visual) */
+    if (ts && ts - _nvLastTs < 32) return;
+    _nvLastTs = ts || 0;
+    tick += .008;
 
-    /* Fundo */
-    ctx.fillStyle = 'rgba(4,0,14,.1)';
+    /* Fundo (alpha .19 ≈ dois passos de .1 — mantém o rastro dos 60fps) */
+    ctx.fillStyle = 'rgba(4,0,14,.19)';
     ctx.fillRect(0,0,W,H);
 
     /* Blobs aurora */
@@ -3800,14 +3828,14 @@ function _nvStartAurora() {
       ctx.fill();
     });
 
-    /* Anéis */
+    /* Anéis (valores ×NV_SCALE p/ o canvas reduzido; contadores ajustados aos 30fps) */
     ringT++;
-    if (ringT > 90) {
-      rings.push({ x:W*(.2+Math.random()*.6), y:H*(.15+Math.random()*.7), r:0, dr:1+Math.random()*.8, maxR:120+Math.random()*180, a:.45, h:265+Math.random()*55 });
+    if (ringT > 45) {
+      rings.push({ x:W*(.2+Math.random()*.6), y:H*(.15+Math.random()*.7), r:0, dr:(1+Math.random()*.8)*NV_SCALE*2, maxR:(120+Math.random()*180)*NV_SCALE, a:.45, h:265+Math.random()*55 });
       ringT = 0;
     }
     rings = rings.filter(function(rg) {
-      rg.r += rg.dr; rg.a -= .004;
+      rg.r += rg.dr; rg.a -= .008;
       if (rg.a <= 0) return false;
       ctx.beginPath(); ctx.arc(rg.x,rg.y,rg.r,0,Math.PI*2);
       ctx.strokeStyle = 'hsla('+rg.h+',70%,72%,'+rg.a+')';
@@ -4893,19 +4921,24 @@ function _toWebP(file, quality) {
     /* heartbeat entra depois que o fade-up CSS terminou (1.3s delay + 1s) */
     if (!_rm) setTimeout(function() { btn.classList.add('wbtn-alive'); }, 2600);
     if (!window.gsap || _rm || !_fine) return;
+    /* overwrite:'auto' mata o tween anterior (sem acumular); o retorno elástico
+       só dispara na TRANSIÇÃO de dentro→fora (não a cada mousemove distante) */
+    var _inside = false;
+    function _release() {
+      if (!_inside) return;
+      _inside = false;
+      gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, .45)', overwrite: 'auto' });
+    }
     pgW.addEventListener('mousemove', function(e) {
       var r  = btn.getBoundingClientRect();
       var dx = e.clientX - (r.left + r.width / 2);
       var dy = e.clientY - (r.top + r.height / 2);
       if (Math.hypot(dx, dy) < 140) {
-        gsap.to(btn, { x: dx * .24, y: dy * .24, duration: .4, ease: 'power2.out' });
-      } else {
-        gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, .45)' });
-      }
+        _inside = true;
+        gsap.to(btn, { x: dx * .24, y: dy * .24, duration: .4, ease: 'power2.out', overwrite: 'auto' });
+      } else { _release(); }
     });
-    pgW.addEventListener('mouseleave', function() {
-      gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, .45)' });
-    });
+    pgW.addEventListener('mouseleave', _release);
   }
 
   /* ── Aurora da home: alvo do parallax (lerp acontece no frame da aurora) ── */
@@ -4931,10 +4964,16 @@ function _toWebP(file, quality) {
         ['--tx','--ty','--ppx','--ppy'].forEach(function(v) { c.style.removeProperty(v); });
       });
     }
+    /* Cache do rect (250ms) — evita layout-read em todo mousemove */
+    var _tr = null, _trAt = 0, _trEl = null;
     stage.addEventListener('mousemove', function(e) {
       var c = stage.querySelector('.sel-card.pos-center');
       if (!c) return;
-      var r  = c.getBoundingClientRect();
+      var now = Date.now();
+      if (!_tr || c !== _trEl || now - _trAt > 250) {
+        _tr = c.getBoundingClientRect(); _trAt = now; _trEl = c;
+      }
+      var r  = _tr;
       var dx = (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2);
       var dy = (e.clientY - (r.top  + r.height / 2)) / (r.height / 2);
       if (Math.abs(dx) > 1.55 || Math.abs(dy) > 1.55) { off(); return; }
