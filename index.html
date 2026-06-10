@@ -475,7 +475,7 @@
     .nv-letter-eyebrow { font-size:.54rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(180,100,255,.4); text-align:center; margin-bottom:2rem; }
     .nv-letter-to { font-family:'Great Vibes',cursive; font-size:clamp(2.4rem,7vw,3.5rem); color:var(--blush); text-shadow:0 0 45px rgba(212,136,154,.4); text-align:center; line-height:1.15; margin-bottom:.7rem; }
     .nv-letter-hdivider { width:70px; height:1px; background:linear-gradient(to right,transparent,rgba(180,100,255,.42),transparent); margin:0 auto 2.2rem; }
-    .nv-letter-body p { font-family:'Cormorant Garamond',serif; font-size:clamp(.96rem,2.5vw,1.1rem); font-weight:300; line-height:2.1; color:rgba(245,237,226,.68); margin-bottom:1.4rem; }
+    .nv-letter-body p { font-family:'Cormorant Garamond',serif; font-size:clamp(.96rem,2.5vw,1.1rem); font-weight:300; line-height:2.1; color:rgba(245,237,226,.85); margin-bottom:1.4rem; }
     .nv-letter-body p:first-of-type::first-letter { font-size:1.7em; float:left; line-height:.82; margin-right:.07em; color:var(--rose); font-style:italic; font-family:'Cormorant Garamond',serif; }
     .nv-letter-footer { margin-top:2.4rem; text-align:right; border-top:1px solid rgba(160,80,255,.1); padding-top:1.6rem; }
     .nv-letter-closing { font-size:.53rem; letter-spacing:.38em; text-transform:uppercase; color:rgba(255,255,255,.18); margin-bottom:.5rem; }
@@ -1371,6 +1371,62 @@
       100% { transform:translateY(113vh) translateX(-7px) rotate(-360deg); opacity:0; }
     }
 
+    /* ══════════════════════
+       POLIMENTO VISUAL v14 — animações & profundidade
+    ══════════════════════ */
+    /* Palavras do título da welcome (reveal por palavra via GSAP) */
+    .wt-w { display:inline-block; }
+
+    /* Batida de coração no botão Explorar (classe adicionada via JS após a entrada) */
+    @keyframes wbtn-heartbeat {
+      0%, 78%, 100% { box-shadow:0 0 0 rgba(212,136,154,0); }
+      84%           { box-shadow:0 0 28px rgba(212,136,154,.32), 0 0 60px rgba(180,70,100,.14); }
+      92%           { box-shadow:0 0 12px rgba(212,136,154,.16); }
+    }
+    .welcome-btn.wbtn-alive { opacity:1; animation:wbtn-heartbeat 3.6s ease-in-out infinite; }
+
+    /* Tilt 3D no card central do seletor (vars setadas por JS, só pointer fine).
+       .tilting encurta a transition p/ seguir o mouse; ao sair, volta à transition
+       longa original com overshoot — retorno elástico de graça. */
+    .sel-card.pos-center.tilting {
+      transform:translate(-50%,-50%) scale(1.09) rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg));
+      transition:transform .16s ease-out, opacity .5s, box-shadow .4s;
+    }
+    .sel-card.pos-center.tilting .card-photo {
+      transform:translate3d(var(--ppx,0px),var(--ppy,0px),0) scale(1.07);
+      transition:transform .16s ease-out;
+    }
+    /* Sombra em 2 camadas nos cards laterais (curta + ambiente) */
+    .sel-card.pos-left, .sel-card.pos-right {
+      box-shadow:0 12px 28px rgba(0,0,0,.6), 0 42px 90px rgba(0,0,0,.42);
+    }
+
+    /* Reveals por scroll (classe aplicada via JS; sem JS nada muda) */
+    .rv-prep { opacity:0; transform:translate3d(0,26px,0); transition:opacity .75s ease, transform .85s cubic-bezier(.23,1,.32,1); }
+    .rv-prep.rv-in { opacity:1; transform:translate3d(0,0,0); }
+
+    /* Fechamento do capítulo Namoro — monograma */
+    .nm-close { display:flex; flex-direction:column; align-items:center; gap:.55rem; margin:3rem auto 1.5rem; }
+    .nm-close-line { width:130px; height:1px; background:linear-gradient(to right,transparent,rgba(212,136,154,.5),transparent); transform:scaleX(0); transition:transform 1.2s cubic-bezier(.23,1,.32,1) .2s; }
+    .nm-close.rv-in .nm-close-line, .nm-close:not(.rv-prep) .nm-close-line { transform:scaleX(1); }
+    .nm-close-mono { font-family:'Great Vibes',cursive; font-size:2.3rem; color:rgba(232,160,176,.88); text-shadow:0 0 32px rgba(212,136,154,.4); line-height:1.2; }
+    .nm-close-sub { font-size:.55rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(245,237,226,.3); }
+
+    /* Lacre de cera — pulso de brilho ocasional convidando o toque */
+    @keyframes seal-idle {
+      0%, 76%, 100% { filter:drop-shadow(0 5px 16px rgba(130,96,14,.42)); }
+      84%           { filter:drop-shadow(0 5px 16px rgba(130,96,14,.42)) drop-shadow(0 0 24px rgba(201,169,110,.6)); }
+      92%           { filter:drop-shadow(0 5px 16px rgba(130,96,14,.42)) drop-shadow(0 0 10px rgba(201,169,110,.28)); }
+    }
+    .cas-seal { animation:seal-idle 5.4s ease-in-out 3s infinite; }
+
+    /* Acessibilidade: reduz movimento decorativo */
+    @media (prefers-reduced-motion: reduce) {
+      .cas-seal, .welcome-btn.wbtn-alive { animation:none; }
+      .rv-prep { opacity:1; transform:none; transition:none; }
+      .nm-close-line { transform:scaleX(1); transition:none; }
+    }
+
     /* ══ MOBILE/TABLET PERFORMANCE — reduz efeitos GPU-caros ══ */
     @media (max-width: 1024px) {
       /* Grain desativado em mobile E tablet (SVG turbulence + 8fps = aquecimento) */
@@ -1444,7 +1500,7 @@
 <div class="page active" id="pg-welcome">
   <div class="welcome-line"></div>
   <p class="welcome-eyebrow">Uma história de amor</p>
-  <h1 class="welcome-title">Nossa Linha<br>do Tempo</h1>
+  <h1 class="welcome-title"><span class="wt-w">Nossa</span> <span class="wt-w">Linha</span><br><span class="wt-w">do</span> <span class="wt-w">Tempo</span></h1>
   <p class="welcome-sub">Cada momento, eternamente guardado</p>
   <div class="welcome-divider"><span></span><em>✦</em><span></span></div>
   <button class="welcome-btn" onclick="goTo('pg-selector')">Explorar ❤</button>
@@ -1617,6 +1673,13 @@
         <span>Nossas memórias em breve…</span>
       </div>
     </div>
+  </div>
+
+  <!-- Fechamento do capítulo — monograma com linha que se desenha -->
+  <div class="nm-close">
+    <div class="nm-close-line"></div>
+    <p class="nm-close-mono">Steven &amp; Vitória</p>
+    <p class="nm-close-sub">para sempre ❤</p>
   </div>
 
 </div>
@@ -2077,6 +2140,8 @@ function goTo(id) {
     /* Para a aurora do noivado ao sair da página */
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
   }
+  /* Movimento cinematográfico de entrada (definido no bloco POLIMENTO VISUAL) */
+  if (typeof window._pageEnterFx === 'function') window._pageEnterFx(id);
   currentPage = id;
 }
 
@@ -2529,6 +2594,18 @@ function _nvLetterReveal(pg) {
       });
     }
 
+    /* Poeira dourada — partículas minúsculas subindo devagar (fill sólido, barato) */
+    var moteCount = _casIsMobile ? 12 : 28, motes = [];
+    for (var mi = 0; mi < moteCount; mi++) {
+      motes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: .6 + Math.random() * 1.6,
+        s: .12 + Math.random() * .38,   /* velocidade de subida */
+        ph: Math.random() * Math.PI * 2,
+        a: .22 + Math.random() * .38
+      });
+    }
+
     var t = 0;
     var _casBokehRAF = null;
     (function frame() {
@@ -2549,6 +2626,17 @@ function _nvLetterReveal(pg) {
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fillStyle = grd;
+        ctx.fill();
+      });
+      /* Poeira dourada subindo com drift senoidal e cintilação */
+      motes.forEach(function(m) {
+        m.y -= m.s;
+        m.x += Math.sin(t * 1.4 + m.ph) * .18;
+        if (m.y < -4) { m.y = H + 4; m.x = Math.random() * W; }
+        var tw = .6 + Math.sin(t * 2.2 + m.ph) * .4;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(232,200,122,' + (m.a * tw).toFixed(3) + ')';
         ctx.fill();
       });
       t += 0.018;
@@ -2857,6 +2945,9 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
   var _auroraMobile = window.innerWidth <= 1024;
   var _auroraMinMs  = _auroraMobile ? 40 : 33; /* ~25fps mobile, ~30fps desktop (fundo lento — imperceptível) */
   var _auroraLastTs = 0;
+  /* Parallax de mouse — alvo setado por _auSetPar (bloco POLIMENTO VISUAL), lerp aqui */
+  var _auMx = 0, _auMy = 0, _auTx = 0, _auTy = 0;
+  window._auSetPar = function(x, y) { _auTx = x; _auTy = y; };
 
   function frame(ts) {
     /* Throttle de FPS em dispositivos pequenos */
@@ -2865,6 +2956,8 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
       return;
     }
     _auroraLastTs = ts;
+    _auMx += (_auTx - _auMx) * .05;
+    _auMy += (_auTy - _auMy) * .05;
 
     var W = cvs.width, H = cvs.height;
     ctx.clearRect(0, 0, W, H);
@@ -2880,8 +2973,9 @@ document.getElementById('bgMusic').addEventListener('timeupdate', function() {
     for (var i = 0; i < orbCount; i++) {
       var o = orbs[i];
       var t = ts * o.sp;
-      var x = (o.nx + Math.sin(t + o.ph) * 0.09) * W;
-      var y = (o.ny + Math.cos(t * 0.73 + o.ph) * 0.08) * H;
+      /* offset de parallax alternado por orb — camadas se movem em direções opostas */
+      var x = (o.nx + Math.sin(t + o.ph) * 0.09) * W + _auMx * (i % 2 ? 46 : -30);
+      var y = (o.ny + Math.cos(t * 0.73 + o.ph) * 0.08) * H + _auMy * (i % 2 ? -26 : 38);
       var r = o.r * Math.max(W, H);
 
       var g = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -4742,8 +4836,177 @@ function _toWebP(file, quality) {
 ════════════════════════════════════════════════════ */
 </script>
 
-<!-- ══ Vite entry point — Three.js constellation + futuras features ══ -->
+<!-- ══ Vite entry point ══ -->
 <!-- Path relativo funciona no main branch E no gh-pages -->
 <script type="module" src="./src/main.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════
+   POLIMENTO VISUAL v14
+   Transições de página · welcome cinematográfico ·
+   tilt 3D no seletor · reveals por scroll no namoro
+   Tudo GPU-only (transform/opacity) e gated por
+   prefers-reduced-motion + pointer:fine onde cabe.
+══════════════════════════════════════════════ */
+(function() {
+  var _rm   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var _fine = window.matchMedia('(pointer: fine)').matches;
+
+  /* ── Movimento de entrada de página (chamado pelo goTo) ──
+     Compõe com o crossfade CSS existente: a página nova sobe
+     levemente com expo.out enquanto o fade/blur CSS acontece. */
+  window._pageEnterFx = function(id) {
+    if (id === 'pg-namoro') _nmBindReveals();
+    if (!window.gsap || _rm) return;
+    var pg = document.getElementById(id);
+    if (!pg) return;
+    gsap.fromTo(pg,
+      { y: 24, scale: .988 },
+      { y: 0, scale: 1, duration: .9, ease: 'expo.out', clearProps: 'transform' });
+    if (id === 'pg-selector') {
+      var cards = Array.prototype.filter.call(
+        pg.querySelectorAll('.sel-card'),
+        function(c) { return c.style.display !== 'none'; });
+      gsap.from(cards, { opacity: 0, duration: .55, stagger: .11, delay: .08,
+                         ease: 'power2.out', clearProps: 'opacity' });
+    }
+  };
+
+  /* ── Welcome: título palavra a palavra ──
+     Sem gsap/com reduced-motion, o fade-up CSS original fica de fallback. */
+  function welcomeIntro() {
+    if (!window.gsap || _rm) return;
+    var title = document.querySelector('.welcome-title');
+    var words = document.querySelectorAll('.wt-w');
+    if (!title || !words.length) return;
+    title.style.animation = 'none';
+    title.style.opacity = '1';
+    gsap.from(words, { yPercent: 60, opacity: 0, duration: .95,
+                       stagger: .14, ease: 'power3.out', delay: .55 });
+  }
+
+  /* ── Welcome: botão Explorar magnético + batida de coração ── */
+  function welcomeButton() {
+    var btn = document.querySelector('.welcome-btn');
+    var pgW = document.getElementById('pg-welcome');
+    if (!btn || !pgW) return;
+    /* heartbeat entra depois que o fade-up CSS terminou (1.3s delay + 1s) */
+    if (!_rm) setTimeout(function() { btn.classList.add('wbtn-alive'); }, 2600);
+    if (!window.gsap || _rm || !_fine) return;
+    pgW.addEventListener('mousemove', function(e) {
+      var r  = btn.getBoundingClientRect();
+      var dx = e.clientX - (r.left + r.width / 2);
+      var dy = e.clientY - (r.top + r.height / 2);
+      if (Math.hypot(dx, dy) < 140) {
+        gsap.to(btn, { x: dx * .24, y: dy * .24, duration: .4, ease: 'power2.out' });
+      } else {
+        gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, .45)' });
+      }
+    });
+    pgW.addEventListener('mouseleave', function() {
+      gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, .45)' });
+    });
+  }
+
+  /* ── Aurora da home: alvo do parallax (lerp acontece no frame da aurora) ── */
+  if (_fine && !_rm) {
+    document.addEventListener('mousemove', function(e) {
+      if (window._auSetPar) {
+        window._auSetPar(e.clientX / window.innerWidth - .5,
+                         e.clientY / window.innerHeight - .5);
+      }
+    }, { passive: true });
+  }
+
+  /* ── Seletor: tilt 3D no card central + parallax interno da foto ──
+     Seta CSS vars direto; a classe .tilting encurta a transition pra
+     seguir o mouse, e ao sair a transition longa original devolve o
+     card com o overshoot elástico de fábrica. */
+  function selectorTilt() {
+    var stage = document.getElementById('cardsStage');
+    if (!stage || !_fine || _rm) return;
+    function off() {
+      document.querySelectorAll('.sel-card.tilting').forEach(function(c) {
+        c.classList.remove('tilting');
+        ['--tx','--ty','--ppx','--ppy'].forEach(function(v) { c.style.removeProperty(v); });
+      });
+    }
+    stage.addEventListener('mousemove', function(e) {
+      var c = stage.querySelector('.sel-card.pos-center');
+      if (!c) return;
+      var r  = c.getBoundingClientRect();
+      var dx = (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2);
+      var dy = (e.clientY - (r.top  + r.height / 2)) / (r.height / 2);
+      if (Math.abs(dx) > 1.55 || Math.abs(dy) > 1.55) { off(); return; }
+      dx = Math.max(-1, Math.min(1, dx));
+      dy = Math.max(-1, Math.min(1, dy));
+      c.classList.add('tilting');
+      c.style.setProperty('--ty',  (dx * 6).toFixed(2) + 'deg');
+      c.style.setProperty('--tx',  (-dy * 4.5).toFixed(2) + 'deg');
+      c.style.setProperty('--ppx', (dx * -7).toFixed(1) + 'px');
+      c.style.setProperty('--ppy', (dy * -5).toFixed(1) + 'px');
+    });
+    stage.addEventListener('mouseleave', off);
+  }
+
+  /* ── Namoro: reveal por scroll das cartas + monograma ── */
+  var _rvIO = null;
+  function _nmBindReveals() {
+    var pg = document.getElementById('pg-namoro');
+    if (!pg || _rm) return;
+    if (!_rvIO) {
+      _rvIO = new IntersectionObserver(function(es) {
+        es.forEach(function(en) {
+          if (!en.isIntersecting) return;
+          en.target.classList.add('rv-in');
+          _rvIO.unobserve(en.target);
+          /* limpa as classes após a transição → hover/estilos originais intactos */
+          setTimeout(function() {
+            en.target.classList.remove('rv-prep', 'rv-in');
+          }, 1100);
+        });
+      }, { root: pg, rootMargin: '0px 0px -8% 0px' });
+    }
+    pg.querySelectorAll('.love-message p, #namoro-cycle-msg, .nm-close').forEach(function(el) {
+      if (el.dataset.rv) return;
+      el.dataset.rv = '1';
+      el.classList.add('rv-prep');
+      _rvIO.observe(el);
+    });
+    _nmGalleryReveal(pg);
+  }
+  window._nmBindReveals = _nmBindReveals;
+
+  /* ── Namoro: cascata da galeria na 1ª visita ──
+     _animateMosaico roda no boot com a página invisível (ninguém vê);
+     aqui re-disparamos quando a galeria entra na viewport de verdade. */
+  var _nmGalPlayed = false;
+  function _nmGalleryReveal(pg) {
+    if (_nmGalPlayed || _rm || !window.gsap || typeof _animateMosaico !== 'function') return;
+    var gal = pg.querySelector('.gallery-section');
+    if (!gal) return;
+    var io = new IntersectionObserver(function(es) {
+      es.forEach(function(en) {
+        if (!en.isIntersecting) return;
+        io.disconnect();
+        if (_nmGalPlayed) return;
+        var thumbs = pg.querySelectorAll('.gallery-thumb');
+        if (!thumbs.length) return; /* galeria ainda carregando — o load anima sozinho */
+        _nmGalPlayed = true;
+        var arr = Array.prototype.slice.call(thumbs);
+        gsap.set(arr, { autoAlpha: 0 });
+        _animateMosaico(arr);
+      });
+    }, { root: pg, threshold: .1 });
+    io.observe(gal);
+  }
+
+  /* boot — gsap é defer, então no DOMContentLoaded ele já executou */
+  function boot() { welcomeIntro(); welcomeButton(); selectorTilt(); }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
 </body>
 </html>
