@@ -1419,8 +1419,8 @@
 
     /* Anel 3D no hero do Noivado — substitui o emoji 💍 quando o GLB carrega.
        Canvas escondido até o primeiro render; emoji é o fallback permanente. */
-    #nv-ring-3d { display:none; width:clamp(150px,32vw,230px); height:clamp(150px,32vw,230px); }
-    #nv-ring.r3d { animation:ring3d-float 4.5s ease-in-out infinite alternate; filter:drop-shadow(0 22px 30px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(160,80,255,.4)); }
+    #nv-ring-3d { display:none; width:clamp(115px,22vw,172px); height:clamp(115px,22vw,172px); }
+    #nv-ring.r3d { margin-top:1.6rem; animation:ring3d-float 4.5s ease-in-out infinite alternate; filter:drop-shadow(0 16px 22px rgba(0,0,0,.5)) drop-shadow(0 0 22px rgba(160,80,255,.32)); }
     #nv-ring.r3d #nv-ring-emoji { display:none; }
     #nv-ring.r3d #nv-ring-3d { display:block; }
     @keyframes ring3d-float { from{transform:translateY(0)} to{transform:translateY(-12px)} }
