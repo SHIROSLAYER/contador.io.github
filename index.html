@@ -4886,6 +4886,9 @@ function _toWebP(file, quality) {
   window._pageEnterFx = function(id) {
     if (id === 'pg-namoro') _nmBindReveals();
     if (!window.gsap || _rm) return;
+    /* Parallax de scroll — registra 1× por página, após o layout assentar */
+    if (id === 'pg-namoro')  setTimeout(_nmParallaxInit, 350);
+    if (id === 'pg-noivado') setTimeout(_nvScrollFxInit, 450);
     var pg = document.getElementById(id);
     if (!pg) return;
     gsap.fromTo(pg,
@@ -5006,7 +5009,9 @@ function _toWebP(file, quality) {
         });
       }, { root: pg, rootMargin: '0px 0px -8% 0px' });
     }
-    pg.querySelectorAll('.love-message p, #namoro-cycle-msg, .nm-close').forEach(function(el) {
+    /* .love-message p saiu daqui — agora tem reveal+parallax combinado via
+       ScrollTrigger scrub em _nmParallaxInit (evita 2 tweens no mesmo transform) */
+    pg.querySelectorAll('#namoro-cycle-msg, .nm-close').forEach(function(el) {
       if (el.dataset.rv) return;
       el.dataset.rv = '1';
       el.classList.add('rv-prep');
@@ -5015,6 +5020,131 @@ function _toWebP(file, quality) {
     _nmGalleryReveal(pg);
   }
   window._nmBindReveals = _nmBindReveals;
+
+  /* ── Namoro: parallax de scroll (scrub GPU-only — custo zero parado) ── */
+  var _nmParallaxDone = false;
+  function _nmParallaxInit() {
+    if (_nmParallaxDone || _rm || !window.gsap || !window.ScrollTrigger) return;
+    var pg = document.getElementById('pg-namoro');
+    if (!pg) return;
+    _nmParallaxDone = true;
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero: título/coração sobem mais devagar que o scroll e desvanecem */
+    gsap.to('.namoro-hero', {
+      yPercent: 30, opacity: .22, ease: 'none',
+      scrollTrigger: { trigger: '.namoro-hero', scroller: pg,
+                       start: 'top top', end: 'bottom top', scrub: true }
+    });
+    /* Contador acompanha com profundidade menor
+       (elemento direto — há outro .countdown-wrap no noivado) */
+    var cdw = pg.querySelector('.countdown-wrap');
+    if (cdw) {
+      gsap.to(cdw, { yPercent: 14, ease: 'none',
+        scrollTrigger: { trigger: cdw, scroller: pg,
+                         start: 'top 60%', end: 'bottom top', scrub: true } });
+    }
+
+    /* Cartas de amor: reveal + parallax combinados — cada carta cruza a tela
+       numa profundidade alternada; opacity completa cedo (scrub curto) */
+    pg.querySelectorAll('.love-message p').forEach(function(p, i) {
+      var d = i % 2 ? 38 : 20;
+      gsap.fromTo(p, { y: d + 26 }, { y: -d, ease: 'none',
+        scrollTrigger: { trigger: p, scroller: pg,
+                         start: 'top bottom', end: 'bottom top', scrub: .6 } });
+      gsap.fromTo(p, { opacity: 0 }, { opacity: 1, ease: 'none',
+        scrollTrigger: { trigger: p, scroller: pg,
+                         start: 'top 96%', end: 'top 68%', scrub: true } });
+    });
+
+    /* Galeria: se o replay do mosaico já tocou, liga o mural agora;
+       senão _nmGalleryReveal agenda após o replay terminar */
+    if (_nmGalPlayed) _nmGalParallax();
+    ScrollTrigger.refresh();
+  }
+
+  /* Galeria mural: 3 grupos de thumbs em profundidades diferentes.
+     Criado só DEPOIS do replay do mosaico (que anima y e dá clearProps) —
+     senão os dois brigariam pelo mesmo transform. */
+  var _nmGalPxDone = false;
+  function _nmGalParallax() {
+    if (_nmGalPxDone || _rm || !window.gsap || !window.ScrollTrigger) return;
+    var pg = document.getElementById('pg-namoro');
+    var thumbs = pg ? pg.querySelectorAll('.gallery-thumb') : [];
+    if (!thumbs.length) return;
+    _nmGalPxDone = true;
+    var groups = [[], [], []];
+    thumbs.forEach(function(t, i) { groups[i % 3].push(t); });
+    [[groups[0], 10], [groups[1], 20], [groups[2], 30]].forEach(function(pair) {
+      gsap.fromTo(pair[0], { y: pair[1] }, { y: -pair[1], ease: 'none',
+        scrollTrigger: { trigger: '.gallery-section', scroller: pg,
+                         start: 'top bottom', end: 'bottom top', scrub: .5 } });
+    });
+  }
+
+  /* ── Noivado: profundidade no scroll ── */
+  var _nvScrollFxDone = false;
+  function _nvScrollFxInit() {
+    if (_nvScrollFxDone || _rm || !window.gsap || !window.ScrollTrigger) return;
+    var pg = document.getElementById('pg-noivado');
+    if (!pg) return;
+    _nvScrollFxDone = true;
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Céu estrelado numa camada mais lenta que o conteúdo (profundidade real) */
+    var stars = document.getElementById('noivadoParticles');
+    if (stars) {
+      gsap.to(stars, { yPercent: 16, ease: 'none',
+        scrollTrigger: { trigger: '.n-hero-section', scroller: pg,
+                         start: 'top bottom', end: 'bottom top', scrub: true } });
+    }
+
+    /* Seção "Oficialmente Noivos": elementos sobem em camadas
+       (crown fica de fora — a animation CSS dele venceria o transform inline) */
+    var sec = pg.querySelector('.nv-act-section');
+    if (sec && getComputedStyle(sec).display !== 'none') {
+      var els = pg.querySelectorAll('.nv-act-title,.nv-act-date-label,.nv-act-divider,.nv-msg-card');
+      els.forEach(function(el, i) {
+        gsap.fromTo(el, { y: 34 + i * 16 }, { y: -(8 + i * 5), ease: 'none',
+          scrollTrigger: { trigger: sec, scroller: pg,
+                           start: 'top bottom', end: 'top 15%', scrub: .5 } });
+      });
+    }
+    ScrollTrigger.refresh();
+  }
+
+  /* ── Welcome + Seletor: profundidade de mouse em camadas opostas à aurora ── */
+  function mouseDepth() {
+    if (!window.gsap || _rm || !_fine || !gsap.quickTo) return;
+    function mk(sel, f, page) {
+      var el = document.querySelector(sel);
+      if (!el) return null;
+      return { page: page, f: f,
+               qx: gsap.quickTo(el, 'x', { duration: .9, ease: 'power2.out' }),
+               qy: gsap.quickTo(el, 'y', { duration: .9, ease: 'power2.out' }) };
+    }
+    var layers = [
+      mk('.welcome-eyebrow',  6, 'pg-welcome'),
+      mk('.welcome-title',   13, 'pg-welcome'),
+      mk('.welcome-sub',      9, 'pg-welcome'),
+      mk('.welcome-divider',  7, 'pg-welcome'),
+      mk('.selector-title',   8, 'pg-selector'),
+      mk('#cardsStage',       5, 'pg-selector')
+    ].filter(Boolean);
+    document.addEventListener('mousemove', function(e) {
+      /* currentPage é `let` de outro script — acessível como binding global,
+         mas NÃO como window.currentPage */
+      var cp = (typeof currentPage === 'string') ? currentPage : '';
+      var nx = e.clientX / window.innerWidth  - .5;
+      var ny = e.clientY / window.innerHeight - .5;
+      for (var i = 0; i < layers.length; i++) {
+        var L = layers[i];
+        if (cp !== L.page) continue; /* só a página visível */
+        L.qx(nx * -L.f * 2);
+        L.qy(ny * -L.f * 1.5);
+      }
+    }, { passive: true });
+  }
 
   /* ── Namoro: cascata da galeria na 1ª visita ──
      _animateMosaico roda no boot com a página invisível (ninguém vê);
@@ -5030,18 +5160,20 @@ function _toWebP(file, quality) {
         io.disconnect();
         if (_nmGalPlayed) return;
         var thumbs = pg.querySelectorAll('.gallery-thumb');
-        if (!thumbs.length) return; /* galeria ainda carregando — o load anima sozinho */
+        if (!thumbs.length) { setTimeout(_nmGalParallax, 3500); return; } /* load anima sozinho */
         _nmGalPlayed = true;
         var arr = Array.prototype.slice.call(thumbs);
         gsap.set(arr, { autoAlpha: 0 });
         _animateMosaico(arr);
+        /* mural parallax só depois do mosaico pousar (~2.6s) — sem briga de transform */
+        setTimeout(_nmGalParallax, 3200);
       });
     }, { root: pg, threshold: .1 });
     io.observe(gal);
   }
 
   /* boot — gsap é defer, então no DOMContentLoaded ele já executou */
-  function boot() { welcomeIntro(); welcomeButton(); selectorTilt(); }
+  function boot() { welcomeIntro(); welcomeButton(); selectorTilt(); mouseDepth(); }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else { boot(); }
