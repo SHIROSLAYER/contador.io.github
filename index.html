@@ -1417,6 +1417,15 @@
     .nm-close-mono { font-family:'Great Vibes',cursive; font-size:2.3rem; color:rgba(232,160,176,.88); text-shadow:0 0 32px rgba(212,136,154,.4); line-height:1.2; }
     .nm-close-sub { font-size:.55rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(245,237,226,.3); }
 
+    /* Anel 3D no hero do Noivado — substitui o emoji 💍 quando o GLB carrega.
+       Canvas escondido até o primeiro render; emoji é o fallback permanente. */
+    #nv-ring-3d { display:none; width:clamp(150px,32vw,230px); height:clamp(150px,32vw,230px); }
+    #nv-ring.r3d { animation:ring3d-float 4.5s ease-in-out infinite alternate; filter:drop-shadow(0 22px 30px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(160,80,255,.4)); }
+    #nv-ring.r3d #nv-ring-emoji { display:none; }
+    #nv-ring.r3d #nv-ring-3d { display:block; }
+    @keyframes ring3d-float { from{transform:translateY(0)} to{transform:translateY(-12px)} }
+    @media (prefers-reduced-motion: reduce) { #nv-ring.r3d { animation:none; } }
+
     /* Lacre de cera — pulso de brilho ocasional convidando o toque */
     @keyframes seal-idle {
       0%, 76%, 100% { filter:drop-shadow(0 5px 16px rgba(130,96,14,.42)); }
@@ -1463,6 +1472,9 @@
   <!-- GSAP + ScrollTrigger -->
   <script defer src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
   <script defer src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+  <!-- Three.js: carregado dinamicamente via jsDelivr +esm só quando o usuário
+       entra no Noivado (anel 3D) — nada é baixado no boot -->
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1719,7 +1731,7 @@
   <div class="n-section n-hero-section">
     <div class="noivado-particles" id="noivadoParticles"></div>
     <div class="n-hero-content">
-      <div class="noivado-ring" id="nv-ring">💍</div>
+      <div class="noivado-ring" id="nv-ring"><span id="nv-ring-emoji">💍</span><canvas id="nv-ring-3d" width="2" height="2" aria-hidden="true"></canvas></div>
       <h1 class="noivado-title" id="nv-title">Noivado</h1>
       <div class="noivado-divider" id="nv-divider">
         <span></span>
@@ -4888,7 +4900,7 @@ function _toWebP(file, quality) {
     if (!window.gsap || _rm) return;
     /* Parallax de scroll — registra 1× por página, após o layout assentar */
     if (id === 'pg-namoro')  setTimeout(_nmParallaxInit, 350);
-    if (id === 'pg-noivado') setTimeout(_nvScrollFxInit, 450);
+    if (id === 'pg-noivado') { setTimeout(_nvScrollFxInit, 450); setTimeout(_nvRing3D, 200); }
     var pg = document.getElementById(id);
     if (!pg) return;
     gsap.fromTo(pg,
@@ -5111,6 +5123,91 @@ function _toWebP(file, quality) {
       });
     }
     ScrollTrigger.refresh();
+  }
+
+  /* ── Noivado: anel 3D real no hero (GLB 668KB, lazy) ──
+     Three.js só é baixado quando o usuário entra no Noivado (dynamic import
+     via importmap). Gira sozinho e ACELERA com o scroll; emoji 💍 é fallback
+     se CDN/WebGL/load falharem. Render ~30fps só com a página ativa. */
+  var _r3dStarted = false;
+  function _nvRing3D() {
+    if (_r3dStarted) return;
+    _r3dStarted = true;
+    var cv     = document.getElementById('nv-ring-3d');
+    var holder = document.getElementById('nv-ring');
+    if (!cv || !holder || !window.WebGLRenderingContext) return;
+    /* jsDelivr +esm reescreve os imports internos p/ URLs absolutas — dispensa
+       importmap (que o build do Vite não aceita). URL concatenada de propósito:
+       impede o Vite de tentar resolver o import em build-time. */
+    var CDN = 'https://cdn.jsdelivr.net/npm/' + 'three@0.160.1';
+    Promise.all([
+      import(CDN + '/+esm'),
+      import(CDN + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
+      import(CDN + '/examples/jsm/environments/RoomEnvironment.js/+esm')
+    ]).then(function(mods) {
+      var THREE = mods[0];
+      var GLTFLoader = mods[1].GLTFLoader;
+      var RoomEnvironment = mods[2].RoomEnvironment;
+
+      var renderer = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setSize(230, 230, false); /* CSS clamp dimensiona na tela */
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 2.1; /* calibrado ao vivo — ouro radiante no céu noturno */
+
+      var scene = new THREE.Scene();
+      var pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+
+      var cam = new THREE.PerspectiveCamera(32, 1, .1, 20);
+      var key = new THREE.DirectionalLight(0xfff2e0, 2.4); key.position.set(2.5, 4, 3);  scene.add(key);
+      var rim = new THREE.DirectionalLight(0xb070ff, 1.2); rim.position.set(-3, -1, -2); scene.add(rim);
+      scene.add(new THREE.HemisphereLight(0xeadfff, 0x3a2a55, .65)); /* levanta as sombras */
+
+      var root = new THREE.Group(); scene.add(root);
+
+      new GLTFLoader().load('anel.glb', function(g) {
+        var obj = g.scene;
+        /* Material Meshy vem metallic=1 com baseColor escuro — metal puro só
+           acende via reflexo de environment. Valores calibrados ao vivo:
+           ouro polido brilhante sem estourar. */
+        obj.traverse(function(o) {
+          if (o.isMesh && o.material) {
+            o.material.metalness = .75;
+            o.material.roughness = .22;
+            o.material.envMapIntensity = 4;
+            o.material.needsUpdate = true;
+          }
+        });
+        var box = new THREE.Box3().setFromObject(obj);
+        obj.position.sub(box.getCenter(new THREE.Vector3()));
+        var s = box.getSize(new THREE.Vector3());
+        obj.scale.setScalar(2.1 / Math.max(s.x, s.y, s.z));
+        root.add(obj);
+        root.rotation.x = .3;  /* tilt — mostra o diamante por cima */
+        root.rotation.y = .65; /* ângulo 3/4 já no 1º frame */
+        cam.position.set(0, .3, 3.4); cam.lookAt(0, 0, 0);
+
+        renderer.render(scene, cam);   /* 1º frame antes do reveal — sem flash */
+        holder.classList.add('r3d');   /* troca emoji → 3D */
+
+        var pg   = document.getElementById('pg-noivado');
+        var last = 0, idle = .65; /* abre já num ângulo 3/4 — mostra banda + diamante */
+        function frame(ts) {
+          requestAnimationFrame(frame);
+          if (document.hidden) return;
+          if (typeof currentPage === 'string' && currentPage !== 'pg-noivado') return;
+          if (ts - last < 33) return; /* ~30fps */
+          var dt = Math.min(ts - last, 100); last = ts;
+          if (!_rm) idle += dt * .00045;            /* giro contínuo lento */
+          var scroll = (pg ? pg.scrollTop : 0) * .003; /* scroll acelera o giro */
+          root.rotation.y = idle + scroll;
+          root.rotation.z = Math.sin(idle * .8) * .05; /* balanço sutil */
+          renderer.render(scene, cam);
+        }
+        requestAnimationFrame(frame);
+      }, undefined, function() { /* GLB falhou — emoji fica */ });
+    }).catch(function() { /* CDN/WebGL falhou — emoji fica */ });
   }
 
   /* ── Welcome + Seletor: profundidade de mouse em camadas opostas à aurora ── */
