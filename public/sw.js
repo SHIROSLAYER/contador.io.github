@@ -5,7 +5,7 @@
    - Fotos Supabase → stale-while-revalidate
    - APIs REST → network-first (nunca cacheadas)
 ════════════════════════════════════════════════ */
-const CACHE_NAME = 'nossa-linha-v14';
+const CACHE_NAME = 'nossa-linha-v15';
 const SHELL = [
   './',
   './index.html',
