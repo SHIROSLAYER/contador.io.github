@@ -5182,7 +5182,7 @@ function _toWebP(file, quality) {
         var box = new THREE.Box3().setFromObject(obj);
         obj.position.sub(box.getCenter(new THREE.Vector3()));
         var s = box.getSize(new THREE.Vector3());
-        obj.scale.setScalar(2.1 / Math.max(s.x, s.y, s.z));
+        obj.scale.setScalar(1.86 / Math.max(s.x, s.y, s.z)); /* ~11% menor — margem no topo, diamante nunca corta */
         root.add(obj);
         root.rotation.x = .3;  /* tilt — mostra o diamante por cima */
         root.rotation.y = .65; /* ângulo 3/4 já no 1º frame */
