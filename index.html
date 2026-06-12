@@ -4287,7 +4287,7 @@ function _engRing3DPreload() {
     var pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
     var cam = new THREE.PerspectiveCamera(32, 1, .1, 20);
-    cam.position.set(0, .3, 3.4); cam.lookAt(0, 0, 0);
+    cam.position.set(0, .25, 3.95); cam.lookAt(0, 0, 0); /* mais longe = mais margem ao redor */
     var key = new THREE.DirectionalLight(0xfff2e0, 2.4); key.position.set(2.5, 4, 3);  scene.add(key);
     var rim = new THREE.DirectionalLight(0xb070ff, 1.2); rim.position.set(-3, -1, -2); scene.add(rim);
     scene.add(new THREE.HemisphereLight(0xeadfff, 0x3a2a55, .65));
@@ -4303,10 +4303,10 @@ function _engRing3DPreload() {
       var box = new THREE.Box3().setFromObject(obj);
       obj.position.sub(box.getCenter(new THREE.Vector3()));
       var s = box.getSize(new THREE.Vector3());
-      obj.scale.setScalar(2.0 / Math.max(s.x, s.y, s.z));
+      obj.scale.setScalar(1.55 / Math.max(s.x, s.y, s.z)); /* menor — cabe inteiro com folga p/ pulso+float */
       root.add(obj);
       root.rotation.x = .32; /* tilt cinematográfico — diamante por cima */
-      var BASE = 1.05, last = 0;
+      var BASE = 1.0, last = 0;
       function frame(ts) {
         requestAnimationFrame(frame);
         if (!_euActive || document.hidden) { last = ts; return; }
@@ -4416,7 +4416,7 @@ function _engPlayUnlock(onDone) {
   if (use3d) {
     /* spin rápido que desacelera + escala com overshoot suave (sem elastic) */
     tl.to(_euState, { spin:0,     duration:1.55, ease:'power3.out'  }, 0.07);
-    tl.to(_euState, { scale:1.12, duration:0.58, ease:'power4.out'  }, 0.07);
+    tl.to(_euState, { scale:1.06, duration:0.58, ease:'power4.out'  }, 0.07);
     tl.to(_euState, { scale:1,    duration:0.62, ease:'power2.inOut' }, 0.66);
   } else {
     tl.to(ring, { scale:1.25, opacity:1, rotation:18, duration:0.58, ease:'power3.out'         }, 0.07);
@@ -4465,7 +4465,7 @@ function _engPlayUnlock(onDone) {
 
   /* Pulso no anel + brilho nas palavras no meio da espera (t=4.5s) */
   gsap.delayedCall(4.5,  function() {
-    if (use3d) gsap.to(_euState, { scale:1.12, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
+    if (use3d) gsap.to(_euState, { scale:1.05, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
     else       gsap.to(ring,     { scale:1.14, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
     gsap.to(spans, { textShadow:'0 0 80px rgba(212,136,154,.95)', duration:0.45,
                      ease:'power2.out', stagger:0.07, yoyo:true, repeat:1 });
