@@ -4280,8 +4280,8 @@ function _engRing3DPreload() {
   ]).then(function(mods) {
     var THREE = mods[0], GLTFLoader = mods[1].GLTFLoader, RoomEnvironment = mods[2].RoomEnvironment;
     var renderer = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(320, 320, false);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+    renderer.setSize(460, 460, false); /* buffer alto = anel nítido no clímax */
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     var scene = new THREE.Scene();
     var pmrem = new THREE.PMREMGenerator(renderer);
@@ -4292,12 +4292,20 @@ function _engRing3DPreload() {
     var rim = new THREE.DirectionalLight(0xb070ff, 1.2); rim.position.set(-3, -1, -2); scene.add(rim);
     scene.add(new THREE.HemisphereLight(0xeadfff, 0x3a2a55, .65));
     var root = new THREE.Group(); scene.add(root);
-    new GLTFLoader().load('anel.glb', function(g) {
+    new GLTFLoader().load('anel-hd.glb', function(g) {  /* versão HD (textura 2048) só no clímax */
       var obj = g.scene;
+      if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) {
+        var maxAniso = renderer.capabilities.getMaxAnisotropy();
+      }
       obj.traverse(function(o) {
         if (o.isMesh && o.material) {
-          o.material.metalness = .75; o.material.roughness = .22;
-          o.material.envMapIntensity = 4; o.material.needsUpdate = true;
+          o.material.metalness = .78; o.material.roughness = .17; /* highlights mais nítidos = mais sparkle */
+          o.material.envMapIntensity = 5;
+          /* anisotropia nas texturas — detalhe do ouro nítido em ângulo raso */
+          ['map','normalMap','roughnessMap','metalnessMap'].forEach(function(k) {
+            if (o.material[k] && maxAniso) { o.material[k].anisotropy = maxAniso; o.material[k].needsUpdate = true; }
+          });
+          o.material.needsUpdate = true;
         }
       });
       var box = new THREE.Box3().setFromObject(obj);
@@ -4746,7 +4754,8 @@ async function _engActivate(serverDate) {
   _engActivated = true; _engDate = now;
   _engActivateVisuals(now);
   _engCenterNoivadoCard();           /* Noivado vai para o centro do carousel */
-  _engPlayCelebration(now);
+  /* Sem tela de celebração extra — o clímax 3D do unlock já é o desfecho;
+     ao fechar, cai direto no Noivado ativado (contador + data). */
 }
 
 /* Versão teste: idêntico a _engActivate mas SEM salvar no banco e SEM setar _engActivated */
@@ -4756,7 +4765,7 @@ function _engTestActivate() {
   _engDate = now;
   _engActivateVisuals(now);
   _engCenterNoivadoCard();           /* Noivado no centro também no modo teste */
-  _engPlayCelebration(now);
+  /* Sem tela de celebração extra — clímax 3D do unlock é o desfecho */
   /* Mostra botão de replay da animação para o admin */
   var unlockBtn = document.getElementById('adm-unlock-btn');
   if (unlockBtn) unlockBtn.style.display = '';
