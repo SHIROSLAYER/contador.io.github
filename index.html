@@ -611,6 +611,12 @@
     .eng-unlock-inner     { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
     .eng-unlock-ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
     .eng-unlock-ring      { font-size:4.5rem; line-height:1; filter:drop-shadow(0 0 28px rgba(212,136,154,.85)); display:block; will-change:transform,filter; }
+    /* Anel 3D real no clímax do desbloqueio (substitui o emoji quando carrega) */
+    .eng-unlock-ring3d    { display:none; width:clamp(190px,46vw,310px); height:clamp(190px,46vw,310px); will-change:transform; }
+    .eng-unlock-ring-wrap.has3d .eng-unlock-ring   { display:none; }
+    .eng-unlock-ring-wrap.has3d .eng-unlock-ring3d { display:block; }
+    /* Clarão de luz que estoura atrás do anel quando o diamante "acende" */
+    .eng-ring3d-burst { position:absolute; left:50%; top:50%; width:120%; height:120%; transform:translate(-50%,-50%) scale(.4); border-radius:50%; background:radial-gradient(circle, rgba(255,242,250,.95) 0%, rgba(212,136,154,.5) 32%, rgba(180,100,255,.18) 55%, transparent 72%); opacity:0; pointer-events:none; mix-blend-mode:screen; z-index:0; }
     .eng-unlock-label     { font-family:'Great Vibes',cursive; font-size:clamp(2rem,8vw,3.4rem); color:var(--blush); text-align:center; line-height:1.35; text-shadow:0 0 50px rgba(212,136,154,.75),0 0 100px rgba(212,136,154,.3); }
     .eng-unlock-label span { display:inline-block; opacity:0; }
     .eng-unlock-sub       { font-family:'Josefin Sans',sans-serif; font-size:.58rem; letter-spacing:.55em; text-transform:uppercase; color:rgba(180,100,255,.55); opacity:0; }
@@ -1972,8 +1978,10 @@
   <div id="eng-unlock-bg"></div>
   <div id="eng-unlock-hearts"></div>
   <div class="eng-unlock-inner">
-    <div class="eng-unlock-ring-wrap">
+    <div class="eng-unlock-ring-wrap" id="eng-unlock-ring-wrap">
+      <div class="eng-ring3d-burst" id="eng-ring3d-burst"></div>
       <span class="eng-unlock-ring" id="eng-unlock-ring">💍</span>
+      <canvas class="eng-unlock-ring3d" id="eng-unlock-ring3d" width="320" height="320" aria-hidden="true"></canvas>
       <div id="eng-unlock-orbit-root">
         <div class="eng-unlock-orb" id="eng-unlock-orb1" style="width:7px;height:7px;margin:-3.5px;background:rgba(212,136,154,.95);box-shadow:0 0 10px 3px rgba(212,136,154,.7);animation:_euo1 2.1s linear infinite paused"></div>
         <div class="eng-unlock-orb" id="eng-unlock-orb2" style="width:6px;height:6px;margin:-3px;background:rgba(180,100,255,.95);box-shadow:0 0 9px 3px rgba(180,100,255,.7);animation:_euo2 2.9s linear infinite paused"></div>
@@ -2163,6 +2171,8 @@ function goTo(id, fromPop) {
   if (id === 'pg-noivado') {
     document.getElementById('pg-noivado').scrollTop = 0;
     setTimeout(initNoivadoAnimation, 60);
+    /* aquece o anel 3D do desbloqueio com folga (após o hero assentar) */
+    if (typeof _engRing3DPreload === 'function') setTimeout(_engRing3DPreload, 1400);
   } else {
     /* Para a aurora do noivado ao sair da página */
     if (_nvAuroraRAF) { cancelAnimationFrame(_nvAuroraRAF); _nvAuroraRAF = null; }
@@ -4246,6 +4256,76 @@ function _engTestRevert() {
 var _engUnlockRAF   = null;
 var _engUnlockTimer = null;   /* gsap.delayedCall — fecha em 7s */
 
+/* ══════════════════════════════════════════════
+   ANEL 3D NO CLÍMAX DO DESBLOQUEIO
+   O GSAP guia números num estado; o loop rAF do Three.js os aplica.
+   Pré-carregado ao abrir o modal (buffer enquanto o usuário digita).
+══════════════════════════════════════════════ */
+var _engRing3DReady = false;
+var _euActive = false;
+var _euIdle   = 0;
+var _euState  = { spin: 0, scale: 0, exp: 2.1, burst: 0 };
+var _euCtl    = null;
+function _engRing3DPreload() {
+  if (_engRing3DReady || _euCtl === 'loading') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; /* fallback emoji */
+  var cv = document.getElementById('eng-unlock-ring3d');
+  if (!cv || !window.WebGLRenderingContext) return;
+  _euCtl = 'loading';
+  var CDN = 'https://cdn.jsdelivr.net/npm/' + 'three@0.160.1';
+  Promise.all([
+    import(CDN + '/+esm'),
+    import(CDN + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
+    import(CDN + '/examples/jsm/environments/RoomEnvironment.js/+esm')
+  ]).then(function(mods) {
+    var THREE = mods[0], GLTFLoader = mods[1].GLTFLoader, RoomEnvironment = mods[2].RoomEnvironment;
+    var renderer = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(320, 320, false);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    var scene = new THREE.Scene();
+    var pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+    var cam = new THREE.PerspectiveCamera(32, 1, .1, 20);
+    cam.position.set(0, .3, 3.4); cam.lookAt(0, 0, 0);
+    var key = new THREE.DirectionalLight(0xfff2e0, 2.4); key.position.set(2.5, 4, 3);  scene.add(key);
+    var rim = new THREE.DirectionalLight(0xb070ff, 1.2); rim.position.set(-3, -1, -2); scene.add(rim);
+    scene.add(new THREE.HemisphereLight(0xeadfff, 0x3a2a55, .65));
+    var root = new THREE.Group(); scene.add(root);
+    new GLTFLoader().load('anel.glb', function(g) {
+      var obj = g.scene;
+      obj.traverse(function(o) {
+        if (o.isMesh && o.material) {
+          o.material.metalness = .75; o.material.roughness = .22;
+          o.material.envMapIntensity = 4; o.material.needsUpdate = true;
+        }
+      });
+      var box = new THREE.Box3().setFromObject(obj);
+      obj.position.sub(box.getCenter(new THREE.Vector3()));
+      var s = box.getSize(new THREE.Vector3());
+      obj.scale.setScalar(2.0 / Math.max(s.x, s.y, s.z));
+      root.add(obj);
+      root.rotation.x = .32; /* tilt cinematográfico — diamante por cima */
+      var BASE = 1.05, last = 0;
+      function frame(ts) {
+        requestAnimationFrame(frame);
+        if (!_euActive || document.hidden) { last = ts; return; }
+        if (ts - last < 22) return; /* ~45fps no clímax — mais fluido */
+        var dt = Math.min(ts - last, 60); last = ts;
+        _euIdle += dt * .0007;
+        root.rotation.y = _euIdle + _euState.spin;
+        root.rotation.z = Math.sin(_euIdle * .7) * .06;
+        root.scale.setScalar(Math.max(_euState.scale, .0001) * BASE);
+        renderer.toneMappingExposure = _euState.exp + _euState.burst;
+        renderer.render(scene, cam);
+      }
+      requestAnimationFrame(frame);
+      _euCtl = { renderer: renderer, scene: scene, cam: cam, root: root };
+      _engRing3DReady = true;
+    }, undefined, function() { _euCtl = null; });
+  }).catch(function() { _euCtl = null; });
+}
+
 function engPreviewUnlock() {
   _engPlayUnlock(null);
 }
@@ -4263,6 +4343,15 @@ function _engPlayUnlock(onDone) {
   var orb3    = document.getElementById('eng-unlock-orb3');
   if (!overlay || !window.gsap) { if (onDone) onDone(); return; }
 
+  /* ── Anel 3D real se carregou; senão cai no emoji (fallback) ── */
+  var wrap    = document.getElementById('eng-unlock-ring-wrap');
+  var ring3d  = document.getElementById('eng-unlock-ring3d');
+  var burst3d = document.getElementById('eng-ring3d-burst');
+  var use3d   = _engRing3DReady && _euCtl && typeof _euCtl === 'object'
+                && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window._engUnlockActive = use3d; /* pausa o anel do hero p/ poupar GPU */
+  if (wrap) wrap.classList.toggle('has3d', use3d);
+
   /* ── Reset ── */
   overlay.classList.add('active');
   if (hearts) hearts.innerHTML = '';
@@ -4270,6 +4359,13 @@ function _engPlayUnlock(onDone) {
   gsap.set(spans,  { opacity:0, y:34, scale:.87 });
   gsap.set(sub,    { opacity:0, y:18 });
   gsap.set(ring,   { scale:0, opacity:0, rotation:-210, y:0 });
+  if (use3d) {
+    _euActive = true;
+    _euState.spin = -Math.PI * 4; _euState.scale = 0; _euState.exp = 2.1; _euState.burst = 0;
+    gsap.killTweensOf([_euState, ring3d, burst3d]);
+    gsap.set(ring3d, { y:0, opacity:1 });
+    if (burst3d) gsap.set(burst3d, { opacity:0, scale:.4 });
+  }
   if (flash) gsap.set(flash, { opacity:0 });
   if (bg)    gsap.set(bg,    { opacity:0, scale:.65 });
   if (orb1)  { orb1.style.animationPlayState = 'paused'; gsap.set(orb1, { opacity:0 }); }
@@ -4286,6 +4382,7 @@ function _engPlayUnlock(onDone) {
   /* ── Função de fechar chamada em exatos 7s ── */
   function _doClose() {
     gsap.killTweensOf(ring, { y: true });
+    if (use3d) gsap.killTweensOf(ring3d, { y: true });
     gsap.to(overlay, {
       opacity: 0, duration: 1.2, ease: 'power2.in',
       onComplete: function() {
@@ -4295,6 +4392,9 @@ function _engPlayUnlock(onDone) {
         if (orb2) orb2.style.animationPlayState = 'paused';
         if (orb3) orb3.style.animationPlayState = 'paused';
         if (_engUnlockRAF) { cancelAnimationFrame(_engUnlockRAF); _engUnlockRAF = null; }
+        /* desliga o anel 3D do unlock e devolve o hero */
+        _euActive = false; window._engUnlockActive = false;
+        if (wrap) wrap.classList.remove('has3d');
         if (onDone) onDone();
       }
     });
@@ -4312,19 +4412,35 @@ function _engPlayUnlock(onDone) {
   /* 2 — Glow de fundo */
   if (bg) tl.to(bg, { opacity:1, scale:1, duration:1.5, ease:'power2.out' }, 0.04);
 
-  /* 3 — Anel gira e pousa com overshoot */
-  tl.to(ring, { scale:1.25, opacity:1, rotation:18,  duration:0.58, ease:'power3.out'         }, 0.07);
-  tl.to(ring, { scale:1,    rotation:0,              duration:0.52, ease:'elastic.out(1.1,.5)' }, 0.65);
+  /* 3 — Anel voa de longe girando e pousa com peso */
+  if (use3d) {
+    /* spin rápido que desacelera + escala com overshoot suave (sem elastic) */
+    tl.to(_euState, { spin:0,     duration:1.55, ease:'power3.out'  }, 0.07);
+    tl.to(_euState, { scale:1.12, duration:0.58, ease:'power4.out'  }, 0.07);
+    tl.to(_euState, { scale:1,    duration:0.62, ease:'power2.inOut' }, 0.66);
+  } else {
+    tl.to(ring, { scale:1.25, opacity:1, rotation:18, duration:0.58, ease:'power3.out'         }, 0.07);
+    tl.to(ring, { scale:1,    rotation:0,             duration:0.52, ease:'elastic.out(1.1,.5)' }, 0.65);
+  }
 
-  /* 4 — Glow explosivo */
-  tl.to(ring, {
-    filter:'drop-shadow(0 0 68px rgba(212,136,154,1)) drop-shadow(0 0 140px rgba(180,100,255,1))',
-    duration:0.36, ease:'power2.out'
-  }, 0.86);
-  tl.to(ring, {
-    filter:'drop-shadow(0 0 28px rgba(212,136,154,.85))',
-    duration:0.75, ease:'power2.in'
-  }, 1.22);
+  /* 4 — O diamante "acende": clarão de luz + exposição estoura e recua */
+  if (use3d) {
+    tl.to(_euState, { burst:1.5, duration:0.36, ease:'power2.out' }, 0.86);
+    tl.to(_euState, { burst:0,   duration:0.9,  ease:'power2.in'  }, 1.22);
+    if (burst3d) {
+      tl.to(burst3d, { opacity:.95, scale:1.18, duration:0.32, ease:'power2.out' }, 0.84);
+      tl.to(burst3d, { opacity:0,   scale:1.55, duration:0.85, ease:'power2.in'  }, 1.16);
+    }
+  } else {
+    tl.to(ring, {
+      filter:'drop-shadow(0 0 68px rgba(212,136,154,1)) drop-shadow(0 0 140px rgba(180,100,255,1))',
+      duration:0.36, ease:'power2.out'
+    }, 0.86);
+    tl.to(ring, {
+      filter:'drop-shadow(0 0 28px rgba(212,136,154,.85))',
+      duration:0.75, ease:'power2.in'
+    }, 1.22);
+  }
 
   /* 5 — Orbits ligam */
   tl.add(function() {
@@ -4342,14 +4458,15 @@ function _engPlayUnlock(onDone) {
   /* ── Fora do tl: animações infinitas e eventos temporizados ── */
 
   /* Anel flutua suavemente para sempre (FORA do tl para não travar onComplete) */
-  gsap.to(ring, { y:-11, duration:0.88, ease:'sine.inOut', yoyo:true, repeat:-1, delay:1.05 });
+  gsap.to(use3d ? ring3d : ring, { y:-11, duration:0.88, ease:'sine.inOut', yoyo:true, repeat:-1, delay:1.05 });
 
   /* Primeira onda de emojis (t=2.5s) */
   gsap.delayedCall(2.5,  function() { _engSpawnHearts(hearts, 14); });
 
   /* Pulso no anel + brilho nas palavras no meio da espera (t=4.5s) */
   gsap.delayedCall(4.5,  function() {
-    gsap.to(ring,  { scale:1.14, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
+    if (use3d) gsap.to(_euState, { scale:1.12, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
+    else       gsap.to(ring,     { scale:1.14, duration:0.3, ease:'power2.out', yoyo:true, repeat:1 });
     gsap.to(spans, { textShadow:'0 0 80px rgba(212,136,154,.95)', duration:0.45,
                      ease:'power2.out', stagger:0.07, yoyo:true, repeat:1 });
   });
@@ -4543,6 +4660,7 @@ function _engUnlockCanvas() {
 
 function engOpenModal() {
   if (_engActivated) return;
+  _engRing3DPreload(); /* aquece o anel 3D enquanto o usuário interage */
   /* Modo teste: pula OTP e vai direto para a animação de desbloqueio */
   if (_engTestMode && !_engTestUnlocked) {
     _engPlayUnlock(function() { _engTestActivate(); });
@@ -5232,6 +5350,7 @@ function _toWebP(file, quality) {
           requestAnimationFrame(frame);
           if (document.hidden) return;
           if (typeof currentPage === 'string' && currentPage !== 'pg-noivado') return;
+          if (window._engUnlockActive) return; /* unlock 3D cobre a tela — poupa GPU */
           if (ts - last < 33) return; /* ~30fps */
           var dt = Math.min(ts - last, 100); last = ts;
           if (!_rm) idle += dt * .00045;            /* giro contínuo lento */
